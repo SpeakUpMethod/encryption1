@@ -1,0 +1,497 @@
+<link href="https://cdn.jsdelivr.net/npm/prismjs/themes/prism.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/prismjs/prism.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs/components/prism-php.min.js"></script>
+
+<h2>Encryption 1 - Online : Source Code</h2>
+<pre><code class="language-js">
+&nbsp;&nbsp;&lt;style&gt;
+	:root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--warning-bg: #fff8e1;--warning-border: #f4d03f;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+	* { box-sizing: border-box; }
+	body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+	.container {max-width: 980px;margin: 0 auto;padding: 24px;}
+	.hero {text-align: center;margin-bottom: 20px;}
+	.hero h1 {margin: 0 0 8px;font-size: clamp(1.8rem, 3vw, 2.4rem);}
+	.hero p {margin: 0;color: var(--muted);line-height: 1.55;}
+	.warning {margin: 20px 0;padding: 14px 16px;border: 1px solid var(--warning-border);background: var(--warning-bg);border-radius: 14px;color: #5f4b00;line-height: 1.5;}
+	.card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;}
+	.tabs {display: flex;border-bottom: 1px solid var(--border);background: #fbfcff;flex-wrap: wrap;}
+	.tab-btn {appearance: none;border: 0;background: transparent;padding: 16px 20px;cursor: pointer;font-size: 1rem;color: var(--muted);border-bottom: 3px solid transparent;transition: .2s ease;}
+	.tab-btn:hover,
+	.tab-btn.active {color: var(--accent);border-bottom-color: var(--accent);background: rgba(13, 110, 253, 0.04);}
+	.panel {display: none;padding: 24px;}
+	.panel.active { display: block; }
+	.grid {display: grid;grid-template-columns: 1fr 1fr;gap: 20px;}
+	@media (max-width: 820px) {.grid { grid-template-columns: 1fr; }
+	}
+	label {display: block;font-weight: 600;margin-bottom: 8px;}
+	textarea,
+	input[type="password"],
+	input[type="text"],
+	input[type="file"] {width: 100%;padding: 12px 14px;border: 1px solid var(--border);border-radius: 14px;font: inherit;background: #fff;color: var(--text);}
+	textarea {/*min-height: 240px;*/ resize: vertical;line-height: 1.5;}
+	.field { margin-bottom: 16px; }
+	.help {margin-top: 6px;font-size: .92rem;color: var(--muted);line-height: 1.45;}
+	.actions {display: flex;gap: 10px;flex-wrap: wrap;margin-top: 18px;}
+	button {appearance: none;border: 0;cursor: pointer;padding: 12px 16px;border-radius: 14px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+	button:active { transform: translateY(1px); }
+	button:disabled { opacity: .55; cursor: not-allowed; }
+	.btn-primary { background: var(--accent); color: white; }
+	.btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+	.btn-secondary { background: #eef2f7; color: var(--text); }
+	.btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+	.btn-danger { background: #fbeaea; color: var(--danger); }
+	.btn-danger:hover:not(:disabled) { background: #f7dede; }
+	.status {margin-top: 16px;min-height: 24px;font-weight: 600;}
+	.status.error { color: var(--danger); }
+	.status.success { color: var(--success); }
+	.meta {margin-top: 16px;padding: 14px 16px;border-radius: 14px;background: #f8fafc;border: 1px solid var(--border);color: var(--muted);line-height: 1.5;font-size: .95rem;}
+	.mono {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;word-break: break-word;}
+	.footer-note {margin-top: 18px;color: var(--muted);font-size: .92rem;line-height: 1.5;}
+.strength-wrap {margin-top: 10px;}
+.strength-bar {width: 100%;height: 10px;border-radius: 999px;background: #e9eef5;border: 1px solid var(--border);overflow: hidden;}
+.strength-fill {height: 100%;width: 0%;border-radius: 999px;background: #d0d7e2;transition: width .2s ease, background .2s ease;}
+.strength-text {margin-top: 8px;font-size: .92rem;color: var(--muted);line-height: 1.4;}	
+&nbsp;&nbsp;&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&nbsp;&nbsp;&lt;div class="container"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="hero"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;h1&gt;Encryption 1 &lt;em&gt;Online&lt;/em&gt;&lt;/h1&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;p&gt;Encrypt and decrypt text locally in your browser. Nothing is sent to a server, stored in a database, or tied to an account.&lt;/p&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="warning"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;strong&gt;Important:&lt;/strong&gt; If you forget your password, your text cannot be recovered. Also, avoid decrypting sensitive text on public or untrusted computers.
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="card"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="tabs"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button class="tab-btn active" data-tab="encrypt"&gt;Encrypt&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button class="tab-btn" data-tab="decrypt"&gt;Decrypt&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div id="encrypt" class="panel active"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="grid"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="field"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for="plainText"&gt;Text to encrypt&lt;/label&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;textarea id="plainText" rows="12"&gt;&lt;/textarea&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;!-- &lt;div class="help"&gt;This text stays in your browser session unless you choose to save the encrypted file.&lt;/div&gt; --&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;
+			&lt;div class="field"&gt;
+			&nbsp;&nbsp;&lt;label for="encryptPassword"&gt;Password / passphrase&lt;/label&gt;
+			&nbsp;&nbsp;&lt;input id="encryptPassword" type="password" placeholder="Enter a strong password" autocomplete="new-password" /&gt;
+			&nbsp;&nbsp;&lt;div id="passwordStrengthWrap" class="strength-wrap" aria-live="polite"&gt;
+				&lt;div class="strength-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"&gt;
+				&nbsp;&nbsp;&lt;div id="passwordStrengthBar" class="strength-fill"&gt;&lt;/div&gt;
+				&lt;/div&gt;
+				&lt;div id="passwordStrengthText" class="strength-text"&gt;Password strength: not entered yet&lt;/div&gt;
+			&nbsp;&nbsp;&lt;/div&gt;
+			&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="field"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for="encryptPassword2"&gt;Confirm password&lt;/label&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input id="encryptPassword2" type="password" placeholder="Re-enter the password" autocomplete="new-password" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;!-- &lt;div class="help"&gt;Use a long, memorable phrase. The strength of the password matters a lot.&lt;/div&gt; --&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="field"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for="downloadName"&gt;Download filename&lt;/label&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input id="downloadName" type="text" value="private-note.pvault" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;!-- &lt;div class="help"&gt;The encrypted file contains the ciphertext, salt, IV, and version info needed for decryption.&lt;/div&gt; --&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="actions"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button id="encryptBtn" class="btn-primary"&gt;Encrypt & Download&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button id="clearEncryptBtn" class="btn-danger" type="button"&gt;Clear&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div id="encryptStatus" class="status" aria-live="polite"&gt;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div id="encryptMeta" class="meta" hidden&gt;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div id="decrypt" class="panel"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="grid"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="field"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for="encryptedFile"&gt;Encrypted file&lt;/label&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input id="encryptedFile" type="file" accept=".pvault,.json,application/json,text/plain" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="help"&gt;Select an encrypted file previously created by this tool.&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="field"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for="decryptPassword"&gt;Password / passphrase&lt;/label&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;input id="decryptPassword" type="password" placeholder="Enter the same password used to encrypt" autocomplete="current-password" /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="actions"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button id="decryptBtn" class="btn-primary"&gt;Decrypt&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button id="downloadPlainBtn" class="btn-secondary" type="button" disabled&gt;Download as .txt&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button id="clearDecryptBtn" class="btn-danger" type="button"&gt;Clear&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div id="decryptStatus" class="status" aria-live="polite"&gt;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div id="decryptMeta" class="meta" hidden&gt;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="field"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;label for="decryptedText"&gt;Decrypted text&lt;/label&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;textarea id="decryptedText" placeholder="Your decrypted text will appear here..." spellcheck="false"&gt;&lt;/textarea&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="actions"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;button id="copyPlainBtn" class="btn-secondary" type="button" disabled&gt;Copy text&lt;/button&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;div class="footer-note"&gt;
+	Encryption 1 software &copy; 1996-2026 by Sean L. Young&lt;br /&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This tool uses AES-GCM encryption with a password-derived key. It is designed as a local-only browser utility. For maximum trust, you can keep this HTML file offline and carry it with your encrypted files. 
+	&nbsp;&nbsp;&lt;a href="README" target="_blank"&gt;View Readme&lt;/a&gt; | 
+	&nbsp;&nbsp;&lt;a href="license.txt" target="_blank"&gt;View License (MIT)&lt;/a&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;/div&gt;
+&nbsp;&nbsp;&lt;/div&gt;
+<p>&nbsp;</p>
+&nbsp;&nbsp;&lt;script&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;const APP_VERSION = 1.3;
+&nbsp;&nbsp;&nbsp;&nbsp;const PBKDF2_ITERATIONS = 250000;
+&nbsp;&nbsp;&nbsp;&nbsp;const SALT_LENGTH = 16;
+&nbsp;&nbsp;&nbsp;&nbsp;const IV_LENGTH = 12;
+&nbsp;&nbsp;&nbsp;&nbsp;const encoder = new TextEncoder();
+&nbsp;&nbsp;&nbsp;&nbsp;const decoder = new TextDecoder();
+const els = {
+&nbsp;&nbsp;tabs: document.querySelectorAll('.tab-btn'),
+&nbsp;&nbsp;panels: document.querySelectorAll('.panel'),
+&nbsp;&nbsp;plainText: document.getElementById('plainText'),
+&nbsp;&nbsp;encryptPassword: document.getElementById('encryptPassword'),
+&nbsp;&nbsp;encryptPassword2: document.getElementById('encryptPassword2'),
+&nbsp;&nbsp;downloadName: document.getElementById('downloadName'),
+&nbsp;&nbsp;encryptBtn: document.getElementById('encryptBtn'),
+&nbsp;&nbsp;clearEncryptBtn: document.getElementById('clearEncryptBtn'),
+&nbsp;&nbsp;encryptStatus: document.getElementById('encryptStatus'),
+&nbsp;&nbsp;encryptMeta: document.getElementById('encryptMeta'),
+&nbsp;&nbsp;encryptedFile: document.getElementById('encryptedFile'),
+&nbsp;&nbsp;decryptPassword: document.getElementById('decryptPassword'),
+&nbsp;&nbsp;decryptBtn: document.getElementById('decryptBtn'),
+&nbsp;&nbsp;clearDecryptBtn: document.getElementById('clearDecryptBtn'),
+&nbsp;&nbsp;decryptedText: document.getElementById('decryptedText'),
+&nbsp;&nbsp;decryptStatus: document.getElementById('decryptStatus'),
+&nbsp;&nbsp;decryptMeta: document.getElementById('decryptMeta'),
+&nbsp;&nbsp;copyPlainBtn: document.getElementById('copyPlainBtn'),
+&nbsp;&nbsp;downloadPlainBtn: document.getElementById('downloadPlainBtn'),
+&nbsp;&nbsp;passwordStrengthBar: document.getElementById('passwordStrengthBar'),
+&nbsp;&nbsp;passwordStrengthText: document.getElementById('passwordStrengthText')
+};
+&nbsp;&nbsp;&nbsp;&nbsp;let currentDecryptedText = '';
+&nbsp;&nbsp;&nbsp;&nbsp;function setStatus(el, message = '', kind = '') {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el.textContent = message;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el.className = 'status' + (kind ? ` ${kind}` : '');
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function showMeta(el, html) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el.innerHTML = html;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el.hidden = false;
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function hideMeta(el) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el.hidden = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;el.innerHTML = '';
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function uint8ToBase64(bytes) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;let binary = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const chunkSize = 0x8000;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (let i = 0; i &lt; bytes.length; i += chunkSize) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return btoa(binary);
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function base64ToUint8(base64) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const binary = atob(base64);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const bytes = new Uint8Array(binary.length);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (let i = 0; i &lt; binary.length; i++) bytes[i] = binary.charCodeAt(i);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return bytes;
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;async function deriveKey(password, salt, usages) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const keyMaterial = await crypto.subtle.importKey(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'raw',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encoder.encode(password),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'PBKDF2',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;['deriveKey']
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return crypto.subtle.deriveKey(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: 'PBKDF2',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;salt,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iterations: PBKDF2_ITERATIONS,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hash: 'SHA-256'
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;keyMaterial,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;name: 'AES-GCM',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;length: 256
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;},
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;false,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;usages
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;async function encryptText(plaintext, password) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const key = await deriveKey(password, salt, ['encrypt']);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const encrypted = await crypto.subtle.encrypt(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ name: 'AES-GCM', iv },
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;encoder.encode(plaintext)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;version: APP_VERSION,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;app: 'Encryption 1',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cipher: 'AES-GCM',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;kdf: 'PBKDF2',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hash: 'SHA-256',
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iterations: PBKDF2_ITERATIONS,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;salt: uint8ToBase64(salt),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;iv: uint8ToBase64(iv),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data: uint8ToBase64(new Uint8Array(encrypted)),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;createdAt: new Date().toISOString()
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;};
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;async function decryptPayload(payload, password) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;validatePayload(payload);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const salt = base64ToUint8(payload.salt);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const iv = base64ToUint8(payload.iv);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const data = base64ToUint8(payload.data);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const key = await deriveKey(password, salt, ['decrypt']);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const decrypted = await crypto.subtle.decrypt(
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{ name: 'AES-GCM', iv },
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;key,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;data
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return decoder.decode(decrypted);
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function validatePayload(payload) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!payload || typeof payload !== 'object') throw new Error('Invalid file format.');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const required = ['version', 'cipher', 'kdf', 'salt', 'iv', 'data'];
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for (const key of required) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!(key in payload)) throw new Error(`Missing field: ${key}`);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (payload.cipher !== 'AES-GCM') throw new Error('Unsupported cipher.');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (payload.kdf !== 'PBKDF2') throw new Error('Unsupported key derivation method.');
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function downloadTextFile(filename, content, mime = 'application/json') {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const blob = new Blob([content], { type: mime });
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const url = URL.createObjectURL(blob);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const a = document.createElement('a');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.href = url;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.download = filename;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;document.body.appendChild(a);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.click();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;a.remove();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;URL.revokeObjectURL(url);
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;function sanitizeFilename(name) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const cleaned = (name || 'private-note.pvault').trim().replace(/[\\/:*?"&lt;&gt;|]+/g, '_');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return cleaned || 'private-note.pvault';
+&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;async function readSelectedFile(file) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const text = await file.text();
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return JSON.parse(text);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} catch {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;throw new Error('This file does not contain valid encrypted JSON.');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;}
+function evaluatePasswordStrength(password) {
+&nbsp;&nbsp;const checks = {
+&nbsp;&nbsp;&nbsp;&nbsp;length8: password.length &gt;= 8,
+&nbsp;&nbsp;&nbsp;&nbsp;uppercase: /[A-Z]/.test(password),
+&nbsp;&nbsp;&nbsp;&nbsp;special: /[^A-Za-z0-9]/.test(password),
+&nbsp;&nbsp;&nbsp;&nbsp;lowercase: /[a-z]/.test(password),
+&nbsp;&nbsp;&nbsp;&nbsp;number: /\d/.test(password),
+&nbsp;&nbsp;&nbsp;&nbsp;length12: password.length &gt;= 12,
+&nbsp;&nbsp;&nbsp;&nbsp;length16: password.length &gt;= 16
+&nbsp;&nbsp;};
+&nbsp;&nbsp;let score = 0;
+&nbsp;&nbsp;if (checks.length8) score += 30;
+&nbsp;&nbsp;if (checks.uppercase) score += 20;
+&nbsp;&nbsp;if (checks.special) score += 20;
+&nbsp;&nbsp;if (checks.lowercase) score += 10;
+&nbsp;&nbsp;if (checks.number) score += 10;
+&nbsp;&nbsp;if (checks.length12) score += 5;
+&nbsp;&nbsp;if (checks.length16) score += 5;
+&nbsp;&nbsp;let label = 'Very weak';
+&nbsp;&nbsp;let color = '#b42318';
+&nbsp;&nbsp;if (!password) {
+&nbsp;&nbsp;&nbsp;&nbsp;label = 'Not entered yet';
+&nbsp;&nbsp;&nbsp;&nbsp;color = '#d0d7e2';
+&nbsp;&nbsp;&nbsp;&nbsp;score = 0;
+&nbsp;&nbsp;} else if (score &gt;= 90) {
+&nbsp;&nbsp;&nbsp;&nbsp;label = 'Very strong';
+&nbsp;&nbsp;&nbsp;&nbsp;color = '#157347';
+&nbsp;&nbsp;} else if (score &gt;= 70) {
+&nbsp;&nbsp;&nbsp;&nbsp;label = 'Strong';
+&nbsp;&nbsp;&nbsp;&nbsp;color = '#2d8a57';
+&nbsp;&nbsp;} else if (score &gt;= 50) {
+&nbsp;&nbsp;&nbsp;&nbsp;label = 'Medium';
+&nbsp;&nbsp;&nbsp;&nbsp;color = '#b7791f';
+&nbsp;&nbsp;} else if (score &gt;= 30) {
+&nbsp;&nbsp;&nbsp;&nbsp;label = 'Weak';
+&nbsp;&nbsp;&nbsp;&nbsp;color = '#c05621';
+&nbsp;&nbsp;}
+&nbsp;&nbsp;const meetsMinimum = checks.length8 && checks.uppercase && checks.special;
+&nbsp;&nbsp;return { score, label, color, checks, meetsMinimum };
+}
+function updatePasswordStrengthUI() {
+&nbsp;&nbsp;const password = els.encryptPassword.value;
+&nbsp;&nbsp;const result = evaluatePasswordStrength(password);
+&nbsp;&nbsp;els.passwordStrengthBar.style.width = result.score + '%';
+&nbsp;&nbsp;els.passwordStrengthBar.style.background = result.color;
+&nbsp;&nbsp;els.passwordStrengthBar.parentElement.setAttribute('aria-valuenow', String(result.score));
+&nbsp;&nbsp;const missing = [];
+&nbsp;&nbsp;if (!result.checks.length8) missing.push('at least 8 characters');
+&nbsp;&nbsp;if (!result.checks.uppercase) missing.push('one capital letter');
+&nbsp;&nbsp;if (!result.checks.special) missing.push('one special character');
+&nbsp;&nbsp;if (!password) {
+&nbsp;&nbsp;&nbsp;&nbsp;els.passwordStrengthText.textContent = 'Password strength: not entered yet';
+&nbsp;&nbsp;} else if (result.meetsMinimum) {
+&nbsp;&nbsp;&nbsp;&nbsp;els.passwordStrengthText.textContent = 'Password strength: ' + result.label + '. Minimum requirement met.';
+&nbsp;&nbsp;} else {
+&nbsp;&nbsp;&nbsp;&nbsp;els.passwordStrengthText.textContent = 'Password strength: ' + result.label + '. Still needed: ' + missing.join(', ') + '.';
+&nbsp;&nbsp;}
+}
+&nbsp;&nbsp;&nbsp;&nbsp;function switchTab(tabName) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.tabs.forEach(btn =&gt; btn.classList.toggle('active', btn.dataset.tab === tabName));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.panels.forEach(panel =&gt; panel.classList.toggle('active', panel.id === tabName));
+&nbsp;&nbsp;&nbsp;&nbsp;}
+function resetEncryptPanel() {
+&nbsp;&nbsp;els.plainText.value = '';
+&nbsp;&nbsp;els.encryptPassword.value = '';
+&nbsp;&nbsp;els.encryptPassword2.value = '';
+&nbsp;&nbsp;updatePasswordStrengthUI();
+&nbsp;&nbsp;setStatus(els.encryptStatus, '');
+&nbsp;&nbsp;hideMeta(els.encryptMeta);
+}
+&nbsp;&nbsp;&nbsp;&nbsp;function resetDecryptPanel() {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.encryptedFile.value = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.decryptPassword.value = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.decryptedText.value = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currentDecryptedText = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.copyPlainBtn.disabled = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.downloadPlainBtn.disabled = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, '');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hideMeta(els.decryptMeta);
+&nbsp;&nbsp;&nbsp;&nbsp;}
+els.tabs.forEach(btn =&gt; {
+&nbsp;&nbsp;btn.addEventListener('click', () =&gt; switchTab(btn.dataset.tab));
+});
+els.encryptPassword.addEventListener('input', updatePasswordStrengthUI);
+&nbsp;&nbsp;&nbsp;&nbsp;els.encryptBtn.addEventListener('click', async () =&gt; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, '');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hideMeta(els.encryptMeta);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const plaintext = els.plainText.value;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const password = els.encryptPassword.value;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const password2 = els.encryptPassword2.value;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const filename = sanitizeFilename(els.downloadName.value);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!window.isSecureContext) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, 'This browser context is not secure enough for Web Crypto. Use HTTPS or a browser that allows local secure contexts.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!plaintext.trim()) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, 'Please enter some text to encrypt.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!password) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, 'Please enter a password.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (password !== password2) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, 'The passwords do not match.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+const passwordCheck = evaluatePasswordStrength(password);
+if (!passwordCheck.meetsMinimum) {
+&nbsp;&nbsp;setStatus(els.encryptStatus, 'Password requirements: at least 8 characters, including at least one capital letter and one special character.', 'error');
+&nbsp;&nbsp;return;
+}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.encryptBtn.disabled = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, 'Encrypting locally...', 'success');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const payload = await encryptText(plaintext, password);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;downloadTextFile(filename, JSON.stringify(payload, null, 2));
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, 'Encryption complete. Your file has been downloaded to this device.', 'success');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;showMeta(els.encryptMeta,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&lt;strong&gt;File details&lt;/strong&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Version: &lt;span class="mono"&gt;${payload.version}&lt;/span&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Cipher: &lt;span class="mono"&gt;${payload.cipher}&lt;/span&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KDF: &lt;span class="mono"&gt;${payload.kdf}&lt;/span&gt; (${payload.iterations.toLocaleString()} iterations)&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Created: &lt;span class="mono"&gt;${payload.createdAt}&lt;/span&gt;`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} catch (err) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.encryptStatus, `Encryption failed: ${err.message || err}`, 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} finally {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.encryptBtn.disabled = false;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;els.decryptBtn.addEventListener('click', async () =&gt; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, '');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hideMeta(els.decryptMeta);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.decryptedText.value = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currentDecryptedText = '';
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.copyPlainBtn.disabled = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.downloadPlainBtn.disabled = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!window.isSecureContext) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'This browser context is not secure enough for Web Crypto. Use HTTPS or a browser that allows local secure contexts.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const file = els.encryptedFile.files[0];
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const password = els.decryptPassword.value;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!file) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Please select an encrypted file.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!password) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Please enter the password.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.decryptBtn.disabled = true;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Decrypting locally...', 'success');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const payload = await readSelectedFile(file);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;const plaintext = await decryptPayload(payload, password);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;currentDecryptedText = plaintext;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.decryptedText.value = plaintext;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.copyPlainBtn.disabled = false;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.downloadPlainBtn.disabled = false;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Decryption successful.', 'success');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;showMeta(els.decryptMeta,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`&lt;strong&gt;File details&lt;/strong&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Version: &lt;span class="mono"&gt;${payload.version}&lt;/span&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Cipher: &lt;span class="mono"&gt;${payload.cipher}&lt;/span&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KDF: &lt;span class="mono"&gt;${payload.kdf}&lt;/span&gt;&lt;br&gt;` +
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`Created: &lt;span class="mono"&gt;${payload.createdAt || 'Unknown'}&lt;/span&gt;`
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} catch (err) {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Decryption failed. The password may be wrong, the file may be corrupted, or the file format may be unsupported.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} finally {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;els.decryptBtn.disabled = false;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;els.copyPlainBtn.addEventListener('click', async () =&gt; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;try {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;await navigator.clipboard.writeText(currentDecryptedText);
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Decrypted text copied to clipboard.', 'success');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;} catch {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Could not copy to clipboard in this browser.', 'error');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}
+&nbsp;&nbsp;&nbsp;&nbsp;});
+&nbsp;&nbsp;&nbsp;&nbsp;els.downloadPlainBtn.addEventListener('click', () =&gt; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if (!currentDecryptedText) return;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;downloadTextFile('decrypted-text.txt', currentDecryptedText, 'text/plain;charset=utf-8');
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setStatus(els.decryptStatus, 'Plain text downloaded as a .txt file.', 'success');
+&nbsp;&nbsp;&nbsp;&nbsp;});
+els.clearEncryptBtn.addEventListener('click', resetEncryptPanel);
+els.clearDecryptBtn.addEventListener('click', resetDecryptPanel);
+updatePasswordStrengthUI();
+if (!window.crypto?.subtle) {
+&nbsp;&nbsp;setStatus(els.encryptStatus, 'This browser does not support the required Web Crypto features.', 'error');
+&nbsp;&nbsp;setStatus(els.decryptStatus, 'This browser does not support the required Web Crypto features.', 'error');
+&nbsp;&nbsp;els.encryptBtn.disabled = true;
+&nbsp;&nbsp;els.decryptBtn.disabled = true;
+}
+&nbsp;&nbsp;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>

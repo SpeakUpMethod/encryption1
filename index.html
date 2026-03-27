@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encryption 1 — Online Version</title>
+  <meta name="description" content="Encryption 1 — Online Version is a portable, browser-based encryption tool that runs locally on your device with no accounts, no tracking, and no server-side storage." />
+  <style>
+	:root {--bg: #f4f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dde6f0;--accent: #0d6efd;--accent-dark: #0a58ca;--accent-soft: #e9f2ff;--success: #157347;--warning-bg: #fff7e6;--warning-border: #f4c96b;--shadow: 0 16px 40px rgba(20, 32, 60, 0.08);--radius: 22px;--max: 1120px;}
+	* { box-sizing: border-box; }
+	.brand {display: flex;align-items: center;gap: 12px;font-weight: 800;color: var(--text);letter-spacing: 0.02em;}
+	.brand-badge {width: 40px;height: 40px;border-radius: 14px;display: inline-flex;align-items: center;justify-content: center;background: linear-gradient(135deg, var(--accent), #6ea8fe);color: white;box-shadow: 0 10px 24px rgba(13, 110, 253, 0.25);font-weight: 900;}
+	.btn {appearance: none;border: 0;border-radius: 16px;padding: 14px 18px;font: inherit;font-weight: 700;cursor: pointer;text-decoration: none;display: inline-flex;align-items: center;justify-content: center;transition: transform .08s ease, background .2s ease, box-shadow .2s ease;}
+	.btn-primary {background: var(--accent);color: white;box-shadow: 0 12px 24px rgba(13, 110, 253, 0.22);}
+	.btn-primary:hover {background: var(--accent-dark);text-decoration: none;}
+	.btn-secondary {background: white;color: var(--text);border: 1px solid var(--border);}
+	.btn-secondary:hover {text-decoration: none;background: #f8fafc;}
+	.btn:active { transform: translateY(1px); }
+	.card h3 {margin: 0 0 8px;font-size: 1.1rem;}
+	.card p, .card li {color: var(--muted);}
+	.card {padding: 22px;}
+	.container {width: min(var(--max), calc(100% - 32px));margin: 0 auto;}
+	.cta p { color: var(--muted); margin: 8px 0 0; }
+	.cta {padding: 24px;display: grid;grid-template-columns: 1.15fr 0.85fr;gap: 20px;align-items: center;}
+	.dot {width: 10px;height: 10px;border-radius: 50%;background: #d5deea;}
+	.eyebrow {display: inline-flex;align-items: center;gap: 8px;padding: 8px 14px;border-radius: 999px;background: var(--accent-soft);color: var(--accent-dark);font-weight: 700;font-size: 0.92rem;margin-bottom: 18px;}
+	.fake-box {min-height: 94px;padding: 14px;color: #8b97a8;}
+	.fake-box, .fake-button, .fake-meter {border: 1px solid var(--border);border-radius: 14px;background: white;}
+	.fake-button {display: inline-flex;justify-content: center;align-items: center;padding: 13px 14px;background: var(--accent);color: white;font-weight: 700;}
+	.fake-input {padding: 12px 14px;border: 1px solid var(--border);border-radius: 14px;background: white;color: #8b97a8;}
+	.fake-label {font-size: 0.86rem;color: var(--muted);font-weight: 700;margin-bottom: 6px;}
+	.fake-meter > span {display: block;width: 78%;height: 100%;background: linear-gradient(90deg, #f4b400, #34a853);}
+	.fake-meter {height: 10px;overflow: hidden;background: #edf2f8;}
+	.faq details + details { margin-top: 12px; }
+	.faq details {border: 1px solid var(--border);background: white;border-radius: 18px;padding: 16px 18px;box-shadow: var(--shadow);}
+	.faq p {margin: 12px 0 0;color: var(--muted);}
+	.faq summary {cursor: pointer;font-weight: 700;list-style: none;}
+	.faq summary::-webkit-details-marker { display: none; }
+	.flow-step .step-num {position: absolute;top: 0;left: 0;width: 36px;height: 36px;border-radius: 12px;background: var(--accent);color: white;font-weight: 800;display: flex;align-items: center;justify-content: center;}
+	.flow-step {position: relative;padding-left: 54px;}
+	.footer-row {display: flex;flex-wrap: wrap;justify-content: space-between;gap: 12px;align-items: center;border-top: 1px solid var(--border);padding-top: 20px;}
+	.grid-2 { grid-template-columns: repeat(2, 1fr); }
+	.grid-3 { grid-template-columns: repeat(3, 1fr); }
+	.grid-3, .grid-2 {display: grid;gap: 18px;}
+	.hero p {margin: 0;color: var(--muted);font-size: 1.08rem;max-width: 62ch;}
+	.hero {padding: 72px 0 40px;}
+	.hero-actions {display: flex;flex-wrap: wrap;gap: 12px;margin-top: 24px;}
+	.hero-card {padding: 24px;}
+	.hero-card, .card {background: var(--card);border: 1px solid var(--border);border-radius: var(--radius);box-shadow: var(--shadow);}
+	.hero-grid {display: grid;grid-template-columns: 1.15fr 0.85fr;gap: 28px;align-items: center;}
+	.icon {width: 46px;height: 46px;border-radius: 14px;display: inline-flex;align-items: center;justify-content: center;background: var(--accent-soft);color: var(--accent-dark);font-weight: 900;margin-bottom: 12px;}
+	.mini-body {padding: 18px;display: grid;gap: 14px;}
+	.mini-top {display: flex;align-items: center;gap: 8px;padding: 12px 14px;border-bottom: 1px solid var(--border);background: #f7faff;}
+	.mini-window {border-radius: 18px;overflow: hidden;border: 1px solid var(--border);background: #fbfdff;}
+	.nav a {color: var(--muted);font-weight: 600;}
+	.nav a:hover { color: var(--accent); text-decoration: none; }
+	.nav {display: flex;flex-wrap: wrap;gap: 16px;align-items: center;}
+	.section h2 {margin: 0 0 8px;font-size: clamp(1.6rem, 3vw, 2.4rem);letter-spacing: -0.02em;}
+	.section {padding: 26px 0;}
+	.section-head p {margin: 0;color: var(--muted);max-width: 68ch;}
+	.section-head {margin-bottom: 18px;}
+	.stat strong {display: block;font-size: 1.4rem;margin-bottom: 4px;}
+	.stat {padding: 18px;text-align: center;}
+	.stats {display: grid;grid-template-columns: repeat(3, 1fr);gap: 16px;margin-top: 28px;}
+	.topbar {position: sticky;top: 0;z-index: 50;backdrop-filter: blur(12px);background: rgba(255,255,255,0.82);border-bottom: 1px solid rgba(221, 230, 240, 0.85);}
+	.topbar-inner {display: flex;align-items: center;justify-content: space-between;gap: 16px;min-height: 72px;}
+	.warning-box {padding: 18px 20px;border: 1px solid var(--warning-border);background: var(--warning-bg);border-radius: 18px;color: #684f00;margin-top: 18px;}
+	a { color: var(--accent); text-decoration: none; }
+	a:hover { text-decoration: underline; }
+	body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #edf4ff 0%, var(--bg) 22%, #f9fbfd 100%);color: var(--text);line-height: 1.6;}
+	footer {padding: 26px 0 42px;color: var(--muted);font-size: 0.95rem;}
+	h1 {margin: 0 0 14px;font-size: clamp(2.2rem, 5vw, 4.25rem);line-height: 1.05;letter-spacing: -0.03em;}
+	html { scroll-behavior: smooth; }
+	
+	@media (max-width: 920px) {.hero-grid, .cta, .grid-3, .grid-2 {  grid-template-columns: 1fr;} .stats {  grid-template-columns: 1fr;} .topbar-inner {  min-height: auto;  padding: 14px 0;  align-items: flex-start;  flex-direction: column;}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="brand-badge">E1</span>
+        <span>Encryption 1 — Online Version</span>
+      </div>
+      <nav class="nav">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#trust">Trust</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="eyebrow">Portable • Local-only • Open source</div>
+          <h1>Private encryption that stays with you.</h1>
+          <p>
+            Encryption 1 — Online Version is a lightweight browser-based encryption tool that runs locally, saves nothing to a server, requires no account, and works across modern browsers on Windows, macOS, Linux, and iPhone.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="encryption1.html">Get started</a>
+            <a class="btn btn-secondary" href="#trust">View trust & transparency</a>
+          </div>
+
+          <div class="stats">
+            <div class="hero-card stat">
+              <strong>No server storage</strong>
+              <span>Encryption and decryption happen in the browser</span>
+            </div>
+            <div class="hero-card stat">
+              <strong>No login required</strong>
+              <span>No account, no user profile, no personal data collection</span>
+            </div>
+            <div class="hero-card stat">
+              <strong>Portable workflow</strong>
+              <span>Carry the HTML file and encrypted files on a USB drive</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="mini-window">
+            <div class="mini-top">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+            <div class="mini-body">
+              <div>
+                <div class="fake-label">Text to encrypt</div>
+                <div class="fake-box">Project draft, personal note, or message goes here…</div>
+              </div>
+              <div>
+                <div class="fake-label">Password</div>
+                <div class="fake-input">••••••••••••••</div>
+              </div>
+              <div>
+                <div class="fake-label">Password strength</div>
+                <div class="fake-meter"><span></span></div>
+              </div>
+              <div class="fake-button">Encrypt &amp; Download</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="container">
+        <div class="section-head">
+          <h2>What makes it different</h2>
+          <p>
+            This is not a cloud service pretending to be private. It is a self-contained encryption tool designed around local processing, portability, and transparency.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <article class="card">
+            <div class="icon">⛁</div>
+            <h3>Local-first by design</h3>
+            <p>Text is encrypted and decrypted directly in the browser. The server does not process, store, or inspect user content.</p>
+          </article>
+          <article class="card">
+            <div class="icon">⇄</div>
+            <h3>Portable across devices</h3>
+            <p>Encrypt on one machine, move the file by USB or email, then decrypt it elsewhere with the same password.</p>
+          </article>
+          <article class="card">
+            <div class="icon">⌘</div>
+            <h3>Zero-install simplicity</h3>
+            <p>A single HTML file can be carried offline and used without installing software or creating an account.</p>
+          </article>
+          <article class="card">
+            <div class="icon">⚑</div>
+            <h3>Open source and auditable</h3>
+            <p>Anyone can inspect the code, verify the workflow, and run the tool offline if they prefer.</p>
+          </article>
+          <article class="card">
+            <div class="icon">🔐</div>
+            <h3>Modern encryption</h3>
+            <p>Uses AES-GCM with a password-derived key for practical, current browser-based encryption.</p>
+          </article>
+          <article class="card">
+            <div class="icon">☍</div>
+            <h3>Broad compatibility</h3>
+            <p>Tested successfully across major browsers on Windows, macOS, iPhone, and multiple Linux environments.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section-head">
+          <h2>How it works</h2>
+          <p>
+            The workflow is intentionally simple so a person can understand what is happening instead of blindly trusting a black box.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card flow-step">
+            <div class="step-num">1</div>
+            <h3>Enter the text</h3>
+            <p>Type or paste the note, message, or content to protect.</p>
+          </article>
+          <article class="card flow-step">
+            <div class="step-num">2</div>
+            <h3>Set a password</h3>
+            <p>Create a strong password or passphrase. The tool checks strength and requires a minimum standard.</p>
+          </article>
+          <article class="card flow-step">
+            <div class="step-num">3</div>
+            <h3>Encrypt and download</h3>
+            <p>The browser encrypts the content locally and saves the result as a portable file, such as <code>private-note.pvault</code>.</p>
+          </article>
+          <article class="card flow-step">
+            <div class="step-num">4</div>
+            <h3>Share the encrypted file</h3>
+            <p>Send the encrypted file by email, cloud storage, chat, or USB. The file can safely travel without exposing the original text.</p>
+          </article>
+        </div>
+
+        <div class="warning-box">
+          <strong>Best practice:</strong> If you share an encrypted file with someone else, send the password through a different channel. For example, email the file and text the password separately.
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="trust">
+      <div class="container">
+        <div class="section-head">
+          <h2>Trust, transparency, and privacy</h2>
+          <p>
+            Encryption tools live or die on trust. This one is designed to keep the trust story simple and verifiable.
+          </p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>No accounts. No tracking. No content storage.</h3>
+            <p>
+              The tool is designed so users do not need to create an account or provide personal information. Content is handled locally in the browser rather than sent to a backend for processing.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Open source for peace of mind</h3>
+            <p>
+              The source code can be published for anyone to inspect, download, and review. That makes the privacy promise easier to verify instead of asking users to accept it on faith.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Portable and offline-friendly</h3>
+            <p>
+              A user can carry the HTML file and encrypted notes on a USB drive, then open the tool on another modern browser without installing software.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Important limits</h3>
+            <p>
+              If a password is forgotten, the text cannot be recovered. And if a person decrypts sensitive content on an untrusted or public computer, the surrounding machine may still pose a risk.
+            </p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="get-started">
+      <div class="container">
+        <div class="card cta">
+          <div>
+            <h2>Get started in under a minute</h2>
+            <p>Open the tool, enter the text, create a strong password, then download the encrypted file. To decrypt later, load the file and enter the same password.</p>
+          </div>
+          <div class="hero-actions" style="justify-content:flex-end;">
+            <a class="btn btn-primary" href="encryption1.html">Launch the tool</a>
+            <a class="btn btn-secondary" href="source.html" target="_blank">View source code</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <h2>Frequently asked questions</h2>
+          <p>Short answers for the questions people are likely to ask first.</p>
+        </div>
+
+        <details>
+          <summary>Can I email an encrypted file to someone else?</summary>
+          <p>Yes. You can encrypt the text, download the <code>.pvault</code> file, and email it to someone anywhere. They can decrypt it using the same tool and the correct password. For better security, send the password through a different channel.</p>
+        </details>
+
+        <details>
+          <summary>Does this work under European privacy expectations?</summary>
+          <p>The privacy model is very simple: the tool is designed to process content locally in the browser without collecting personal data or storing user content on a server. That makes the compliance story much cleaner than a typical web service.</p>
+        </details>
+
+        <details>
+          <summary>Can the password be recovered if it is forgotten?</summary>
+          <p>No. That is part of the privacy promise. The system is designed so the password is not recoverable by the tool operator.</p>
+        </details>
+
+        <details>
+          <summary>Can I use it on a public computer?</summary>
+          <p>Technically yes, but it is not recommended for sensitive material. A public or shared computer may have monitoring software, browser extensions, or other risks outside the encryption tool itself.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-row">
+      <div>Encryption 1 — Online Version</div>
+      <div>Portable browser-based encryption with no account and no server-side content storage.</div>
+    </div>
+  </footer>
+</body>
+</html>
