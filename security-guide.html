@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encryption 1 — Security Guide</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #dbe3ee;
+      --accent: #0d6efd;
+      --accent-2: #0b5ed7;
+      --success: #157347;
+      --warning: #9a6700;
+      --danger: #b42318;
+      --info-bg: #eef4ff;
+      --warn-bg: #fff7e6;
+      --danger-bg: #fff0f0;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 20px;
+      --max: 1080px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .container {
+      width: min(var(--max), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(219, 227, 238, 0.9);
+    }
+
+    .topbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+    }
+
+    .badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--accent), #6ea8fe);
+      color: white;
+      font-weight: 900;
+      box-shadow: 0 12px 26px rgba(13, 110, 253, 0.25);
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .nav a {
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .nav a:hover { color: var(--accent); text-decoration: none; }
+
+    .hero {
+      padding: 64px 0 28px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: var(--info-bg);
+      color: var(--accent-2);
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2.1rem, 5vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 72ch;
+      color: var(--muted);
+      font-size: 1.06rem;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: start;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .quick-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .quick-list li + li { margin-top: 8px; }
+
+    .section {
+      padding: 18px 0;
+    }
+
+    .section h2 {
+      margin: 0 0 8px;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .section-head {
+      margin-bottom: 16px;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 72ch;
+    }
+
+    .grid-2, .grid-3 {
+      display: grid;
+      gap: 18px;
+    }
+
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .card p, .card li {
+      color: var(--muted);
+    }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--info-bg);
+      color: var(--accent-2);
+      font-weight: 900;
+      margin-bottom: 12px;
+    }
+
+    .callout {
+      border-radius: 18px;
+      padding: 16px 18px;
+      border: 1px solid var(--border);
+      margin-top: 16px;
+    }
+
+    .callout.info { background: var(--info-bg); color: #174ea6; }
+    .callout.warn { background: var(--warn-bg); color: var(--warning); }
+    .callout.danger { background: var(--danger-bg); color: var(--danger); }
+
+    .checklist {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .checklist li + li { margin-top: 10px; }
+
+    .faq details {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+    }
+
+    .faq details + details { margin-top: 12px; }
+    .faq summary {
+      cursor: pointer;
+      font-weight: 700;
+      list-style: none;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq p { margin: 12px 0 0; color: var(--muted); }
+
+    .footer {
+      padding: 28px 0 42px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .footer-inner {
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid, .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .topbar-inner { min-height: auto; padding: 14px 0; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <span class="badge">E1</span>
+        <span>Encryption 1 — Security Guide</span>
+      </div>
+      <nav class="nav">
+        <a href="#safe-use">Safe use</a>
+        <a href="#strong-entries">Journal tips</a>
+        <a href="#scams">Scams</a>
+        <a href="#algorithm">Encryption</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="eyebrow">Hints, tips, and plain-English security guidance</div>
+        <h1>Use Encryption 1 wisely, not just confidently.</h1>
+        <p>This guide explains how to protect your files, how to think about passwords and scams, how to write journal entries more safely, and what the encryption in this tool is actually doing. The goal is not fear. The goal is informed use.</p>
+
+        <div class="hero-grid">
+          <div class="card">
+            <h3>Quick safety summary</h3>
+            <ul class="quick-list">
+              <li>Use a strong password or passphrase and do not reuse it from other accounts.</li>
+              <li>Send encrypted files and passwords through different channels.</li>
+              <li>Avoid opening sensitive files on public or shared computers.</li>
+              <li>Keep backup copies of important encrypted files.</li>
+              <li>If you forget the password, the file cannot be recovered.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>What this tool does not do</h3>
+            <ul class="quick-list">
+              <li>It does not store your text on a server.</li>
+              <li>It does not create user accounts.</li>
+              <li>It does not recover forgotten passwords.</li>
+              <li>It does not protect you from malware on an infected device.</li>
+              <li>It does not make unsafe behavior magically safe.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="safe-use">
+      <div class="container">
+        <div class="section-head">
+          <h2>Basic cyber security tips for daily use</h2>
+          <p>Good encryption matters, but security is also about behavior. A strong lock helps, but it does not help much if the key is left lying around.</p>
+        </div>
+
+        <div class="grid-3">
+          <article class="card">
+            <div class="icon">🔑</div>
+            <h3>Use strong, unique passwords</h3>
+            <p>Do not reuse a password from email, social media, or banking. A long passphrase is usually better than a short clever password. Think in terms of memorable phrases, not just symbols.</p>
+          </article>
+          <article class="card">
+            <div class="icon">💻</div>
+            <h3>Trust the device, not just the tool</h3>
+            <p>If the device has malware, spyware, or a keylogger, local encryption alone cannot save you. Use updated, trusted devices whenever possible.</p>
+          </article>
+          <article class="card">
+            <div class="icon">📁</div>
+            <h3>Back up important files</h3>
+            <p>Encryption protects privacy, but it does not protect against accidental deletion, disk failure, or lost USB drives. Keep secure backups of files you truly need.</p>
+          </article>
+          <article class="card">
+            <div class="icon">📨</div>
+            <h3>Separate file and password</h3>
+            <p>If you send an encrypted file by email, send the password through a different channel such as a text message, Signal, or a phone call.</p>
+          </article>
+          <article class="card">
+            <div class="icon">🧹</div>
+            <h3>Clear sensitive text after use</h3>
+            <p>Once you finish working with sensitive material, clear it from the screen and be mindful of clipboard history, downloaded plain-text copies, and browser autofill behavior.</p>
+          </article>
+          <article class="card">
+            <div class="icon">🌍</div>
+            <h3>Be cautious on public networks</h3>
+            <p>The encrypted file itself may still be safe, but public computers and public Wi-Fi can introduce other risks. Shared machines are often the bigger danger than the file transfer itself.</p>
+          </article>
+        </div>
+
+        <div class="callout warn"><strong>Important:</strong> Encryption 1 helps protect the contents of a file. It does not protect a person from phishing, social engineering, malware, or careless password handling.</div>
+      </div>
+    </section>
+
+    <section class="section" id="strong-entries">
+      <div class="container">
+        <div class="section-head">
+          <h2>Tips for creating a journal entry more safely</h2>
+          <p>For many people, the biggest risk is not the encryption itself. It is accidentally revealing too much information inside the entry or around it.</p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Practical writing habits</h3>
+            <ul class="checklist">
+              <li>Avoid putting a full legal name, address, passwords, or payment details into an entry unless absolutely necessary.</li>
+              <li>If an entry mentions other people, think carefully before including information they would expect to remain private.</li>
+              <li>Use titles that help you later without revealing too much if someone sees the filename.</li>
+              <li>If the topic is especially sensitive, keep filenames neutral rather than descriptive.</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Examples of better file naming</h3>
+            <ul class="checklist">
+              <li>Better: <code>entry-2026-03-28.pvault</code></li>
+              <li>Better: <code>notes-a1.pvault</code></li>
+              <li>Riskier: <code>medical-diagnosis-john-smith.pvault</code></li>
+              <li>Riskier: <code>bank-account-passwords.pvault</code></li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout info"><strong>Good habit:</strong> treat the filename like an envelope label. Even if the file contents are encrypted, the name of the file may still reveal more than you intend.</div>
+      </div>
+    </section>
+
+    <section class="section" id="scams">
+      <div class="container">
+        <div class="section-head">
+          <h2>Scams, tricks, and social engineering to watch for</h2>
+          <p>Sometimes the real attack is not technical at all. It is a person trying to pressure, trick, or rush you into doing something unsafe.</p>
+        </div>
+
+        <div class="grid-2">
+          <article class="card">
+            <h3>Common scam patterns</h3>
+            <ul class="checklist">
+              <li>Someone asks you to send both the encrypted file and the password in the same message.</li>
+              <li>Someone claims to be “tech support” and asks you to decrypt a file and upload the plain text.</li>
+              <li>You receive a message saying your file is “damaged” and must be opened on a strange website.</li>
+              <li>A person pressures you with urgency: “Do it now or you will lose access.”</li>
+            </ul>
+          </article>
+
+          <article class="card">
+            <h3>Safer responses</h3>
+            <ul class="checklist">
+              <li>Slow down. Urgency is one of the oldest manipulation tools.</li>
+              <li>Verify the person through another channel if the request feels unusual.</li>
+              <li>Do not upload encrypted files or decrypted text to random third-party websites.</li>
+              <li>Do not trust file-opening instructions that come from unexpected emails or chat messages.</li>
+            </ul>
+          </article>
+        </div>
+
+        <div class="callout danger"><strong>Red flag:</strong> if someone wants the file, the password, and immediate action all at once, assume the request is unsafe until proven otherwise.</div>
+      </div>
+    </section>
+
+    <section class="section" id="algorithm">
+      <div class="container">
+        <div class="section-head">
+          <h2>How secure is the encryption in this tool?</h2>
+          <p>Here is the plain-English answer: the tool uses modern browser cryptography correctly for its intended purpose, but the overall security still depends heavily on password quality and device safety.</p>
+        </div>
+
+        <div class="grid-3">
+          <article class="card">
+            <div class="icon">AES</div>
+            <h3>AES-GCM encryption</h3>
+            <p>The tool uses AES-GCM, a modern authenticated encryption mode. That means it is designed not only to hide the contents, but also to detect tampering with the encrypted data.</p>
+          </article>
+          <article class="card">
+            <div class="icon">KDF</div>
+            <h3>Password-derived key</h3>
+            <p>The password is not used directly. A key is derived from it using PBKDF2 with SHA-256. This helps make password guessing more expensive than using the raw password alone.</p>
+          </article>
+          <article class="card">
+            <div class="icon">IV</div>
+            <h3>Random values each time</h3>
+            <p>The tool generates a fresh salt and IV for every encryption. That matters because encrypting the same text twice should not produce the same result.</p>
+          </article>
+        </div>
+
+        <div class="grid-2" style="margin-top:18px;">
+          <article class="card">
+            <h3>What this means in practice</h3>
+            <p>If someone intercepts a <code>.pvault</code> file, they should not be able to read it without the correct password. The cryptography is strong enough for practical use, provided the password is also strong and the device is not compromised.</p>
+          </article>
+          <article class="card">
+            <h3>What weakens security</h3>
+            <p>The biggest weak points are usually weak passwords, reused passwords, infected devices, and people being tricked into revealing the password or plain text. In other words, human factors often matter more than the algorithm itself.</p>
+          </article>
+        </div>
+
+        <div class="callout info"><strong>Balanced claim:</strong> it is fair to say the tool uses modern, strong browser-based encryption. It is not wise to claim that it is “unbreakable” or that it protects against every possible threat.</div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq">
+      <div class="container">
+        <div class="section-head">
+          <h2>Frequently asked questions</h2>
+          <p>Clear answers to the questions users are likely to ask.</p>
+        </div>
+
+        <details>
+          <summary>Can I email a .pvault file to someone else?</summary>
+          <p>Yes. The encrypted file can be sent by email or other services. For better security, send the password through a different channel.</p>
+        </details>
+
+        <details>
+          <summary>If the file is encrypted, why should I still care about scams?</summary>
+          <p>Because many attacks try to bypass the encryption entirely by tricking the person. A scammer may not need to break the algorithm if they can persuade someone to reveal the password or decrypt the file for them.</p>
+        </details>
+
+        <details>
+          <summary>Can the tool recover a forgotten password?</summary>
+          <p>No. That is part of the privacy model. The operator does not keep a copy of user passwords.</p>
+        </details>
+
+        <details>
+          <summary>Is this safe for highly sensitive personal writing?</summary>
+          <p>It can be a strong option for private writing, especially compared with ordinary plain-text notes. Still, the security of the device, the strength of the password, and the user’s handling habits all matter.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div>Encryption 1 — Security Guide</div>
+      <div>Practical privacy guidance for secure, local-only browser encryption.</div>
+    </div>
+  </footer>
+</body>
+</html>

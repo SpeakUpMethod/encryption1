@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryption 1 — Advanced</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--muted:#6b7280;--border:#dbe3ee;--accent:#0d6efd;--accent2:#0b5ed7;--danger:#b42318;--success:#157347;--warning-bg:#fff8e1;--warning-border:#f4d03f;--shadow:0 10px 30px rgba(0,0,0,.08)}
+*{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,var(--bg) 100%);color:var(--text);min-height:100vh}.container{max-width:1000px;margin:auto;padding:24px}.hero{text-align:center;margin-bottom:20px}.hero h1{margin:0 0 8px;font-size:clamp(1.8rem,3vw,2.5rem)}.hero p{margin:0;color:var(--muted);line-height:1.55}.badge{display:inline-block;background:#e9f2ff;color:#0a58ca;border-radius:999px;padding:6px 12px;font-size:.85rem;font-weight:700;margin-bottom:10px}.warning{margin:20px 0;padding:14px 16px;border:1px solid var(--warning-border);background:var(--warning-bg);border-radius:14px;color:#5f4b00;line-height:1.5}.card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}.tabs{display:flex;border-bottom:1px solid var(--border);background:#fbfcff;flex-wrap:wrap}.tab-btn{border:0;background:transparent;padding:16px 20px;cursor:pointer;font:inherit;color:var(--muted);border-bottom:3px solid transparent}.tab-btn:hover,.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(13,110,253,.04)}.panel{display:none;padding:24px}.panel.active{display:block}.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}@media(max-width:820px){.grid{grid-template-columns:1fr}}label{display:block;font-weight:600;margin-bottom:8px}textarea,input[type=password],input[type=text],input[type=file]{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:14px;font:inherit;background:#fff;color:var(--text)}textarea{resize:vertical;line-height:1.5}.field{margin-bottom:16px}.help{margin-top:6px;font-size:.92rem;color:var(--muted);line-height:1.45}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}button{border:0;cursor:pointer;padding:12px 16px;border-radius:14px;font:inherit;font-weight:600}button:disabled{opacity:.55;cursor:not-allowed}.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover:not(:disabled){background:var(--accent2)}.btn-secondary{background:#eef2f7;color:var(--text)}.btn-danger{background:#fbeaea;color:var(--danger)}.status{margin-top:16px;min-height:24px;font-weight:600}.status.error{color:var(--danger)}.status.success{color:var(--success)}.meta{margin-top:16px;padding:14px 16px;border-radius:14px;background:#f8fafc;border:1px solid var(--border);color:var(--muted);line-height:1.5;font-size:.95rem}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;word-break:break-word}.footer{margin-top:18px;color:var(--muted);font-size:.9rem;line-height:1.5}.strength-wrap{margin-top:10px}.strength-bar{width:100%;height:10px;border-radius:999px;background:#e9eef5;border:1px solid var(--border);overflow:hidden}.strength-fill{height:100%;width:0;border-radius:999px;background:#d0d7e2}.strength-text{margin-top:8px;font-size:.92rem;color:var(--muted)}.dropzone{border:2px dashed #b9c9dc;border-radius:18px;padding:28px 18px;text-align:center;background:#f8fbff;cursor:pointer;transition:.15s}.dropzone:hover,.dropzone.dragover{border-color:var(--accent);background:#eef6ff}.dropzone strong{display:block;font-size:1.05rem;margin-bottom:5px}.file-info{margin-top:12px;padding:12px 14px;background:#f8fafc;border:1px solid var(--border);border-radius:12px;font-size:.92rem}.limit{font-weight:700;color:#0a58ca}.mode-note{padding:12px 14px;border-radius:12px;background:#eef6ff;color:#0a58ca;margin-bottom:18px;font-size:.92rem}.hidden{display:none}
+</style>
+
+
+
+
+  <style>
+	:root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--warning-bg: #fff8e1;--warning-border: #f4d03f;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+	* { box-sizing: border-box; }
+	body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+	.nolines {text-decoration:none;font-size:small;}
+	.container {max-width: 980px;margin: 0 auto;padding: 24px;}
+	.hero {text-align: center;margin-bottom: 20px;}
+	.hero h1 {margin: 0 0 8px;font-size: clamp(1.8rem, 3vw, 2.4rem);}
+	.hero p {margin: 0;color: var(--muted);line-height: 1.55;}
+	.warning {margin: 20px 0;padding: 5px 5px;border: 1px solid var(--warning-border);background: var(--warning-bg);border-radius: 14px;color: #5f4b00;line-height: 1.5;font-size:small;text-align:center;}
+	.card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;}
+	.tabs {display: flex;border-bottom: 1px solid var(--border);background: #fbfcff;flex-wrap: wrap;}
+	.tab-btn {appearance: none;border: 0;background: transparent;padding: 16px 20px;cursor: pointer;font-size: 1rem;color: var(--muted);border-bottom: 3px solid transparent;transition: .2s ease;}
+	.tab-btn:hover,
+	.tab-btn.active {color: var(--accent);border-bottom-color: var(--accent);background: rgba(13, 110, 253, 0.04);}
+	.panel {display: none;padding: 24px;}
+	.panel.active { display: block; }
+	.grid {display: grid;grid-template-columns: 1fr 1fr;gap: 20px;}
+	@media (max-width: 820px) {.grid { grid-template-columns: 1fr; }
+	}
+	label {display: block;font-weight: 600;margin-bottom: 8px;}
+	textarea,
+	input[type="password"],
+	input[type="text"],
+	input[type="file"] {width: 100%;padding: 12px 14px;border: 1px solid var(--border);border-radius: 14px;font: inherit;background: #fff;color: var(--text);}
+	textarea {/*min-height: 240px;*/ resize: vertical;line-height: 1.5;}
+	.field { margin-bottom: 16px; }
+	.help {margin-top: 6px;font-size: .92rem;color: var(--muted);line-height: 1.45;}
+	.actions {display: flex;gap: 10px;flex-wrap: wrap;margin-top: 18px;}
+	button {appearance: none;border: 0;cursor: pointer;padding: 12px 16px;border-radius: 14px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+	button:active { transform: translateY(1px); }
+	button:disabled { opacity: .55; cursor: not-allowed; }
+	.btn-primary { background: var(--accent); color: white; }
+	.btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+	.btn-secondary { background: #eef2f7; color: var(--text); }
+	.btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+	.btn-danger { background: #fbeaea; color: var(--danger); }
+	.btn-danger:hover:not(:disabled) { background: #f7dede; }
+	.status {margin-top: 16px;min-height: 24px;font-weight: 600;}
+	.status.error { color: var(--danger); }
+	.status.success { color: var(--success); }
+	.meta {margin-top: 16px;padding: 14px 16px;border-radius: 14px;background: #f8fafc;border: 1px solid var(--border);color: var(--muted);line-height: 1.5;font-size: .95rem;}
+	.mono {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;word-break: break-word;}
+	.footer-note {margin-top: 18px;color: var(--muted);font-size: .92rem;line-height: 1.5;}
+.strength-wrap {margin-top: 10px;}
+.strength-bar {width: 100%;height: 10px;border-radius: 999px;background: #e9eef5;border: 1px solid var(--border);overflow: hidden;}
+.strength-fill {height: 100%;width: 0%;border-radius: 999px;background: #d0d7e2;transition: width .2s ease, background .2s ease;}
+.strength-text {margin-top: 8px;font-size: .92rem;color: var(--muted);line-height: 1.4;}	
+  </style>
+
+
+
+
+</head>
+<body>
+<div class="container">
+    <div class="hero">
+      <h1>Encryption 1 <em>Advanced</em></h1>
+      <p><a class="nolines" href="encryption1.html">Original Edition</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+	  <a class="nolines" href="journal.html">EC-1 Journal</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+	  <a class="nolines" href="faq.html">F.A.Q.</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+	  <a class="nolines" href="security-guide.html">Security Guide</a></p>
+    </div>
+    <div class="warning">
+      <strong>Important:</strong> If you forget your password, your text cannot be recovered.
+    </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="encryptText">Encrypt Text</button>
+      <button class="tab-btn" data-tab="encryptFile">Encrypt File</button>
+      <button class="tab-btn" data-tab="decrypt">Decrypt</button>
+    </div>
+
+    <div id="encryptText" class="panel active">
+      <div class="mode-note">The original Encryption 1 text workflow is preserved here.</div>
+      <div class="grid">
+        <div class="field"><label for="plainText">Text to encrypt</label><textarea id="plainText" rows="13" placeholder="Type or paste text here..."></textarea></div>
+        <div>
+          <div class="field"><label for="textPassword">Password / passphrase</label><input id="textPassword" type="password" placeholder="Enter a strong password" autocomplete="new-password"><div class="strength-wrap"><div class="strength-bar"><div id="textStrengthBar" class="strength-fill"></div></div><div id="textStrengthText" class="strength-text">Password strength: not entered yet</div></div></div>
+          <div class="field"><label for="textPassword2">Confirm password</label><input id="textPassword2" type="password" placeholder="Re-enter the password" autocomplete="new-password"></div>
+          <div class="field"><label for="textFilename">Download filename</label><input id="textFilename" type="text" value="private-note.pvault"></div>
+          <div class="actions"><button id="encryptTextBtn" class="btn-primary">Encrypt &amp; Download</button><button id="clearTextBtn" class="btn-danger">Clear</button></div>
+          <div id="textStatus" class="status" aria-live="polite"></div><div id="textMeta" class="meta hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="encryptFile" class="panel">
+      <div class="mode-note"><strong>File limit: 10 MB.</strong> Images, PDFs, Word documents, spreadsheets, ZIP files, and other files can be encrypted as raw bytes.</div>
+      <div class="grid">
+        <div>
+          <label>Select a file</label>
+          <div id="dropzone" class="dropzone" tabindex="0" role="button"><strong>Drop a file here</strong><span>or click to choose one</span><div class="help">Maximum file size: <span class="limit">10 MB</span></div></div>
+          <input id="fileInput" type="file" class="hidden">
+          <div id="fileInfo" class="file-info hidden"></div>
+        </div>
+        <div>
+          <div class="field"><label for="filePassword">Password / passphrase</label><input id="filePassword" type="password" placeholder="Enter a strong password" autocomplete="new-password"><div class="strength-wrap"><div class="strength-bar"><div id="fileStrengthBar" class="strength-fill"></div></div><div id="fileStrengthText" class="strength-text">Password strength: not entered yet</div></div></div>
+          <div class="field"><label for="filePassword2">Confirm password</label><input id="filePassword2" type="password" placeholder="Re-enter the password" autocomplete="new-password"></div>
+          <div class="actions"><button id="encryptFileBtn" class="btn-primary">Encrypt File &amp; Download</button><button id="clearFileBtn" class="btn-danger">Clear</button></div>
+          <div id="fileStatus" class="status" aria-live="polite"></div><div id="fileMeta" class="meta hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="decrypt" class="panel">
+      <div class="grid">
+        <div>
+          <div class="field"><label for="encryptedFile">Encrypted file</label><input id="encryptedFile" type="file" accept=".pvault,.json,application/json,text/plain"><div class="help">Works with Encryption 1 text files and Encryption 1 Advanced file packages.</div></div>
+          <div class="field"><label for="decryptPassword">Password / passphrase</label><input id="decryptPassword" type="password" placeholder="Enter the same password used to encrypt" autocomplete="current-password"></div>
+          <div class="actions"><button id="decryptBtn" class="btn-primary">Decrypt</button><button id="clearDecryptBtn" class="btn-danger">Clear</button></div>
+          <div id="decryptStatus" class="status" aria-live="polite"></div><div id="decryptMeta" class="meta hidden"></div>
+        </div>
+        <div>
+          <div id="textDecryptArea" class="field"><label for="decryptedText">Decrypted text</label><textarea id="decryptedText" placeholder="Decrypted text will appear here..." spellcheck="false" rows="13"></textarea></div>
+          <div id="textDecryptActions" class="actions"><button id="copyPlainBtn" class="btn-secondary" disabled>Copy text</button><button id="downloadPlainBtn" class="btn-secondary" disabled>Download as .txt</button></div>
+          <div id="fileDecryptArea" class="meta hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><strong>Encryption 1 Advanced</strong> &copy; 1996-2026 by Sean L. Young<br>Uses AES-GCM with a password-derived key. Processing is performed locally in your browser. The tool can be hosted online and can also be used offline when served from a local/secure context. No account or server-side file storage is required.</div>
+</div>
+<script>
+'use strict';
+const APP_VERSION = 2.0;
+const PBKDF2_ITERATIONS = 250000;
+const SALT_LENGTH = 16, IV_LENGTH = 12, MAX_FILE_SIZE = 10 * 1024 * 1024;
+const encoder = new TextEncoder(), decoder = new TextDecoder();
+const $ = id => document.getElementById(id);
+const els = {
+ tabs: document.querySelectorAll('.tab-btn'), panels: document.querySelectorAll('.panel'),
+ plainText:$('plainText'), textPassword:$('textPassword'), textPassword2:$('textPassword2'), textFilename:$('textFilename'), encryptTextBtn:$('encryptTextBtn'), clearTextBtn:$('clearTextBtn'), textStatus:$('textStatus'), textMeta:$('textMeta'), textStrengthBar:$('textStrengthBar'), textStrengthText:$('textStrengthText'),
+ dropzone:$('dropzone'), fileInput:$('fileInput'), fileInfo:$('fileInfo'), filePassword:$('filePassword'), filePassword2:$('filePassword2'), encryptFileBtn:$('encryptFileBtn'), clearFileBtn:$('clearFileBtn'), fileStatus:$('fileStatus'), fileMeta:$('fileMeta'), fileStrengthBar:$('fileStrengthBar'), fileStrengthText:$('fileStrengthText'),
+ encryptedFile:$('encryptedFile'), decryptPassword:$('decryptPassword'), decryptBtn:$('decryptBtn'), clearDecryptBtn:$('clearDecryptBtn'), decryptStatus:$('decryptStatus'), decryptMeta:$('decryptMeta'), decryptedText:$('decryptedText'), copyPlainBtn:$('copyPlainBtn'), downloadPlainBtn:$('downloadPlainBtn'), textDecryptArea:$('textDecryptArea'), textDecryptActions:$('textDecryptActions'), fileDecryptArea:$('fileDecryptArea')
+};
+let selectedFile = null, currentDecryptedText = '';
+function setStatus(el,msg,type=''){el.textContent=msg;el.className='status'+(type?' '+type:'')}
+function showMeta(el,html){el.innerHTML=html;el.classList.remove('hidden')}
+function hide(el){el.classList.add('hidden')}
+function uint8ToBase64(bytes){let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary)}
+function base64ToUint8(base64){const binary=atob(base64);const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return bytes}
+function sanitizeFilename(name){const cleaned=(name||'private-note.pvault').trim().replace(/[\\/:*?"<>|]+/g,'_');return cleaned||'private-note.pvault'}
+function formatBytes(n){if(n<1024)return n+' B';if(n<1024*1024)return (n/1024).toFixed(1)+' KB';return (n/(1024*1024)).toFixed(2)+' MB'}
+async function deriveKey(password,salt,usages){const material=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:PBKDF2_ITERATIONS,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,usages)}
+async function encryptBytes(bytes,password,kind,extra={}){const salt=crypto.getRandomValues(new Uint8Array(SALT_LENGTH)),iv=crypto.getRandomValues(new Uint8Array(IV_LENGTH));const key=await deriveKey(password,salt,['encrypt']);const encrypted=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,bytes);return {version:APP_VERSION,app:'Encryption 1 Advanced',format:kind==='file'?'E1A-FILE-1':'E1-TEXT-1',cipher:'AES-GCM',kdf:'PBKDF2',hash:'SHA-256',iterations:PBKDF2_ITERATIONS,salt:uint8ToBase64(salt),iv:uint8ToBase64(iv),data:uint8ToBase64(new Uint8Array(encrypted)),createdAt:new Date().toISOString(),...extra}}
+async function decryptBytes(payload,password){validatePayload(payload);const salt=base64ToUint8(payload.salt),iv=base64ToUint8(payload.iv),data=base64ToUint8(payload.data);const key=await deriveKey(password,salt,['decrypt']);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,data))}
+function validatePayload(p){if(!p||typeof p!=='object')throw Error('Invalid encrypted file format.');for(const k of ['version','cipher','kdf','salt','iv','data'])if(!(k in p))throw Error('Missing encrypted file field: '+k);if(p.cipher!=='AES-GCM'||p.kdf!=='PBKDF2')throw Error('Unsupported encryption format.');if(p.iterations!==PBKDF2_ITERATIONS)throw Error('Unsupported PBKDF2 iteration count.');}
+function evaluatePasswordStrength(password){const c={length8:password.length>=8,uppercase:/[A-Z]/.test(password),special:/[^A-Za-z0-9]/.test(password),lowercase:/[a-z]/.test(password),number:/\d/.test(password),length12:password.length>=12,length16:password.length>=16};let score=0;if(c.length8)score+=30;if(c.uppercase)score+=20;if(c.special)score+=20;if(c.lowercase)score+=10;if(c.number)score+=10;if(c.length12)score+=5;if(c.length16)score+=5;let label='Very weak',color='#b42318';if(!password){label='Not entered yet';color='#d0d7e2';score=0}else if(score>=90){label='Very strong';color='#157347'}else if(score>=70){label='Strong';color='#2d8a57'}else if(score>=50){label='Medium';color='#b7791f'}else if(score>=30){label='Weak';color='#c05621'}return{score,label,color,checks:c,meetsMinimum:c.length8&&c.uppercase&&c.special}}
+function updateStrength(input,bar,text){const r=evaluatePasswordStrength(input.value);bar.style.width=r.score+'%';bar.style.background=r.color;const missing=[];if(!r.checks.length8)missing.push('at least 8 characters');if(!r.checks.uppercase)missing.push('one capital letter');if(!r.checks.special)missing.push('one special character');text.textContent=!input.value?'Password strength: not entered yet':r.meetsMinimum?'Password strength: '+r.label+'. Minimum requirement met.':'Password strength: '+r.label+'. Still needed: '+missing.join(', ')+'.';return r}
+function downloadBlob(filename,blob){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function downloadPayload(filename,payload){downloadBlob(filename,new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}))}
+function checkSecure(){return !!window.crypto?.subtle}
+function switchTab(name){els.tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));els.panels.forEach(p=>p.classList.toggle('active',p.id===name))}
+function validPassword(p1,p2){if(!p1)return 'Please enter a password.';if(p1!==p2)return 'The passwords do not match.';if(!evaluatePasswordStrength(p1).meetsMinimum)return 'Password requirements: at least 8 characters, including at least one capital letter and one special character.';return ''}
+
+els.tabs.forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+els.textPassword.addEventListener('input',()=>updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText));
+els.filePassword.addEventListener('input',()=>updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText));
+
+els.encryptTextBtn.addEventListener('click',async()=>{hide(els.textMeta);setStatus(els.textStatus,'');if(!checkSecure()){setStatus(els.textStatus,'This browser context does not provide the required Web Crypto API.','error');return}const text=els.plainText.value,p=els.textPassword.value,p2=els.textPassword2.value,err=validPassword(p,p2);if(!text.trim())return setStatus(els.textStatus,'Please enter some text to encrypt.','error');if(err)return setStatus(els.textStatus,err,'error');try{els.encryptTextBtn.disabled=true;setStatus(els.textStatus,'Encrypting locally...','success');const payload=await encryptBytes(encoder.encode(text),p,'text');downloadPayload(sanitizeFilename(els.textFilename.value),payload);showMeta(els.textMeta,'<strong>Encryption complete.</strong><br>Text was encrypted locally and the encrypted file was downloaded.');setStatus(els.textStatus,'Encryption complete.','success')}catch(e){setStatus(els.textStatus,'Encryption failed: '+(e.message||e),'error')}finally{els.encryptTextBtn.disabled=false}});
+
+function selectFile(file){if(!file)return;if(file.size>MAX_FILE_SIZE){selectedFile=null;hide(els.fileInfo);setStatus(els.fileStatus,'That file is '+formatBytes(file.size)+'. Encryption 1 Advanced supports files up to 10 MB.','error');return}selectedFile=file;els.fileInfo.innerHTML='<strong>'+escapeHtml(file.name)+'</strong><br>'+formatBytes(file.size)+(file.type?' • '+escapeHtml(file.type):'');els.fileInfo.classList.remove('hidden');setStatus(els.fileStatus,'File ready to encrypt.','success')}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+els.fileInput.addEventListener('change',()=>selectFile(els.fileInput.files[0]));els.dropzone.addEventListener('click',()=>els.fileInput.click());els.dropzone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')els.fileInput.click()});['dragenter','dragover'].forEach(ev=>els.dropzone.addEventListener(ev,e=>{e.preventDefault();els.dropzone.classList.add('dragover')}));['dragleave','drop'].forEach(ev=>els.dropzone.addEventListener(ev,e=>{e.preventDefault();els.dropzone.classList.remove('dragover')}));els.dropzone.addEventListener('drop',e=>selectFile(e.dataTransfer.files[0]));
+
+els.encryptFileBtn.addEventListener('click',async()=>{hide(els.fileMeta);if(!checkSecure()){setStatus(els.fileStatus,'This browser context does not provide the required Web Crypto API.','error');return}if(!selectedFile)return setStatus(els.fileStatus,'Please choose a file first.','error');const p=els.filePassword.value,p2=els.filePassword2.value,err=validPassword(p,p2);if(err)return setStatus(els.fileStatus,err,'error');try{els.encryptFileBtn.disabled=true;setStatus(els.fileStatus,'Reading and encrypting locally...','success');const bytes=new Uint8Array(await selectedFile.arrayBuffer());const container=encoder.encode(JSON.stringify({filename:selectedFile.name,mimeType:selectedFile.type||'application/octet-stream',size:selectedFile.size,data:uint8ToBase64(bytes)}));const payload=await encryptBytes(container,p,'file');downloadPayload(sanitizeFilename(selectedFile.name)+'.pvault',payload);showMeta(els.fileMeta,'<strong>Encryption complete.</strong><br>Original file: <span class="mono">'+escapeHtml(selectedFile.name)+'</span><br>Size: '+formatBytes(selectedFile.size)+'<br>The encrypted package was downloaded locally.');setStatus(els.fileStatus,'File encrypted successfully.','success')}catch(e){setStatus(els.fileStatus,'Encryption failed: '+(e.message||e),'error')}finally{els.encryptFileBtn.disabled=false}});
+
+els.decryptBtn.addEventListener('click',async()=>{hide(els.decryptMeta);hide(els.fileDecryptArea);els.decryptedText.value='';els.textDecryptArea.classList.remove('hidden');els.textDecryptActions.classList.remove('hidden');els.copyPlainBtn.disabled=true;els.downloadPlainBtn.disabled=true;currentDecryptedText='';if(!checkSecure()){setStatus(els.decryptStatus,'This browser context does not provide the required Web Crypto API.','error');return}const file=els.encryptedFile.files[0],p=els.decryptPassword.value;if(!file)return setStatus(els.decryptStatus,'Please select an encrypted .pvault file.','error');if(!p)return setStatus(els.decryptStatus,'Please enter the password.','error');try{els.decryptBtn.disabled=true;setStatus(els.decryptStatus,'Decrypting locally...','success');const payload=JSON.parse(await file.text()),bytes=await decryptBytes(payload,p);if(payload.format==='E1A-FILE-1'){const container=JSON.parse(decoder.decode(bytes));if(!container.filename||!container.data)throw Error('The encrypted file package is invalid.');const original=base64ToUint8(container.data);const blob=new Blob([original],{type:container.mimeType||'application/octet-stream'});downloadBlob(sanitizeFilename(container.filename),blob);els.textDecryptArea.classList.add('hidden');els.textDecryptActions.classList.add('hidden');els.fileDecryptArea.innerHTML='<strong>File decrypted successfully.</strong><br>Restored: <span class="mono">'+escapeHtml(container.filename)+'</span><br>Size: '+formatBytes(original.byteLength)+'<br><button id="downloadRestored" class="btn-primary" style="margin-top:12px">Download restored file again</button>';els.fileDecryptArea.classList.remove('hidden');$('downloadRestored').addEventListener('click',()=>downloadBlob(sanitizeFilename(container.filename),new Blob([original],{type:container.mimeType||'application/octet-stream'})));showMeta(els.decryptMeta,'<strong>File package decrypted.</strong><br>The original file was restored locally and downloaded.');setStatus(els.decryptStatus,'Decryption successful.','success')}else{const text=decoder.decode(bytes);currentDecryptedText=text;els.decryptedText.value=text;els.copyPlainBtn.disabled=false;els.downloadPlainBtn.disabled=false;showMeta(els.decryptMeta,'<strong>Text decrypted successfully.</strong><br>This may be a legacy Encryption 1 text package or an Advanced text package.');setStatus(els.decryptStatus,'Decryption successful.','success')}}catch(e){setStatus(els.decryptStatus,'Decryption failed. The password may be wrong, the file may be corrupted, or the file format may be unsupported.','error')}finally{els.decryptBtn.disabled=false}});
+els.copyPlainBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(currentDecryptedText);setStatus(els.decryptStatus,'Decrypted text copied to clipboard.','success')}catch{setStatus(els.decryptStatus,'Could not copy text to the clipboard in this browser.','error')}});
+els.downloadPlainBtn.addEventListener('click',()=>{if(currentDecryptedText)downloadBlob('decrypted-text.txt',new Blob([currentDecryptedText],{type:'text/plain;charset=utf-8'}))});
+function clearText(){els.plainText.value='';els.textPassword.value='';els.textPassword2.value='';els.textFilename.value='private-note.pvault';updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText);hide(els.textMeta);setStatus(els.textStatus,'')}
+function clearFile(){selectedFile=null;els.fileInput.value='';els.filePassword.value='';els.filePassword2.value='';hide(els.fileInfo);hide(els.fileMeta);updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText);setStatus(els.fileStatus,'')}
+function clearDecrypt(){els.encryptedFile.value='';els.decryptPassword.value='';els.decryptedText.value='';currentDecryptedText='';els.copyPlainBtn.disabled=true;els.downloadPlainBtn.disabled=true;hide(els.decryptMeta);hide(els.fileDecryptArea);els.textDecryptArea.classList.remove('hidden');els.textDecryptActions.classList.remove('hidden');setStatus(els.decryptStatus,'')}
+els.clearTextBtn.addEventListener('click',clearText);els.clearFileBtn.addEventListener('click',clearFile);els.clearDecryptBtn.addEventListener('click',clearDecrypt);
+updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText);updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText);
+if(!checkSecure()){setStatus(els.textStatus,'Web Crypto is not available in this browser context.','error');setStatus(els.fileStatus,'Web Crypto is not available in this browser context.','error');setStatus(els.decryptStatus,'Web Crypto is not available in this browser context.','error');[els.encryptTextBtn,els.encryptFileBtn,els.decryptBtn].forEach(b=>b.disabled=true)}
+</script>
+
+
+
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+<script>
+  kofiWidgetOverlay.draw('youngslanguageconsulting', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support EC-1',
+    'floating-chat.donateButton.background-color': '#5bc0de',
+    'floating-chat.donateButton.text-color': '#323842'
+  });
+</script>
+
+</body>
+</html>
