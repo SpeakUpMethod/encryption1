@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Redact - Encryption 1™</title>
+  <meta name="description" content="Free browser-based redaction for photos and text. Black out faces, names or numbers in an image with solid boxes that are checked after saving, or hide names, emails, phone numbers, card and ID numbers in text with consistent placeholders. Works offline; nothing is uploaded." />
+
+<style>
+/* Layout: EC1 Suite card system; image editor in one wide card, the check results below it */
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --border:#dbe3ee;
+  --accent:#0d6efd; --accent-2:#0b5ed7; --accent-soft:#e7f0ff;
+  --danger:#b42318; --danger-bg:#fdecea; --warn:#a15c07; --warn-bg:#fff4e0;
+  --success:#157347; --success-bg:#e6f4ec; --note-bg:#eef1f6; --field:#fbfcfe; --stage:#e9edf3;
+  --font: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131c; --card:#161d2a; --text:#e6eaf1; --muted:#9aa5b6; --border:#2a3446;
+  --accent:#5b9bff; --accent-2:#7aaeff; --accent-soft:#1b2a45;
+  --danger:#ff8a7a; --danger-bg:#3a1a17; --warn:#f5b545; --warn-bg:#352812;
+  --success:#5fd39a; --success-bg:#132f22; --note-bg:#222b3a; --field:#111824; --stage:#0b0f16; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131c; --card:#161d2a; --text:#e6eaf1; --muted:#9aa5b6; --border:#2a3446;
+  --accent:#5b9bff; --accent-2:#7aaeff; --accent-soft:#1b2a45;
+  --danger:#ff8a7a; --danger-bg:#3a1a17; --warn:#f5b545; --warn-bg:#352812;
+  --success:#5fd39a; --success-bg:#132f22; --note-bg:#222b3a; --field:#111824; --stage:#0b0f16; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55}
+.wrap{max-width:1100px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:clamp(28px,4vw,38px);line-height:1.1;margin:0;letter-spacing:-.01em}
+h1 .tag{font-size:12px;vertical-align:middle;margin-inline-start:8px;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);letter-spacing:.04em;font-weight:700}
+.lede{margin:0;color:var(--muted);max-width:72ch}
+h2{font-size:16px;margin:0}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.drop{border:2px dashed var(--border);border-radius:16px;padding:34px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;background:var(--field);transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0}
+button{font:inherit;font-size:14px;cursor:pointer;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 16px}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:10px 22px}
+button.primary:hover{background:var(--accent-2);color:#fff}
+button:disabled{opacity:.45;cursor:not-allowed}
+button[aria-pressed="true"]{background:var(--text);color:var(--card);border-color:var(--text)}
+button:focus-visible,select:focus-visible,canvas:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:2px}
+select{font:inherit;font-size:14px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:10px;padding:7px 10px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.toolbar .sep{width:1px;height:24px;background:var(--border);margin:0 4px}
+.toolbar .label{font-size:13px;color:var(--muted)}
+.spacer{flex:1}
+.stage{background:var(--stage);border-radius:14px;padding:10px;display:flex;justify-content:center;overflow:hidden}
+#view{display:block;max-width:100%;touch-action:none;cursor:crosshair;border-radius:4px;box-shadow:0 1px 6px rgba(0,0,0,.18)}
+.found{display:flex;flex-direction:column;gap:6px;background:var(--warn-bg);color:var(--text);border-radius:12px;padding:12px 14px;font-size:14px}
+.found.clean{background:var(--note-bg)}
+.found ul{margin:0;padding-inline-start:20px}
+.found strong{color:var(--warn)}
+.found.clean strong{color:var(--text)}
+.checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px}
+.checks li::before{flex:none;width:20px;height:20px;border-radius:50%;margin-top:1px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1}
+.checks li.ok::before{content:"\2713";background:var(--success-bg);color:var(--success)}
+.checks li.info{color:var(--muted);font-size:13px}
+.checks li.info::before{content:"i";background:var(--note-bg);color:var(--muted);font-style:italic;font-family:Georgia,serif}
+.checks li.bad::before{content:"\2715";background:var(--danger-bg);color:var(--danger)}
+.checks li.ok{color:var(--text)}
+.checks li.bad{color:var(--danger);font-weight:600}
+.status{border-radius:12px;padding:10px 14px;font-size:14.5px;margin:0}
+.status.ok{background:var(--success-bg);color:var(--success)}
+.status.bad{background:var(--danger-bg);color:var(--danger)}
+.status.info{background:var(--note-bg);color:var(--text)}
+.next-step{margin:0;font-size:14px}
+.next-step a,footer a{color:var(--accent)}
+details.how{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 18px}
+details.how summary{cursor:pointer;font-weight:650}
+details.how .body{display:flex;flex-direction:column;gap:10px;margin-top:10px;max-width:74ch}
+details.how p,details.how li{font-size:14px;margin:0}
+details.how ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
+footer{font-size:13px;color:var(--muted);max-width:78ch;display:flex;flex-direction:column;gap:6px}
+footer p{margin:0}
+input[type=file]{display:none}
+.tabs{display:flex;gap:6px;background:var(--note-bg);padding:5px;border-radius:999px;align-self:flex-start;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;border-radius:999px;padding:8px 18px;font-weight:600;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.tabs button:hover{color:var(--text)}
+.panel{display:flex;flex-direction:column;gap:18px}
+textarea,input[type=text]{width:100%;font:inherit;font-size:15px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:0}
+textarea{resize:vertical;line-height:1.5}
+textarea[readonly]{background:var(--note-bg)}
+.lbl{font-weight:650;font-size:15px}
+.row{display:flex;gap:8px}
+.row input{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);border-radius:999px;padding:3px 4px 3px 12px;font-size:13.5px;background:var(--field)}
+.chip small{color:var(--muted)}
+.chip button{padding:1px 8px;font-size:13px;line-height:1.3}
+.grp{border:1px solid var(--border);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.grp>label{font-weight:650;display:flex;gap:8px;align-items:center}
+.vals{display:flex;flex-direction:column;gap:4px;padding-inline-start:26px}
+.vals label{display:flex;gap:8px;align-items:baseline;font-size:14px;overflow-wrap:anywhere}
+.vals .cnt{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.vals code{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:13px}
+.opts{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;font-size:14px}
+.opts label{display:flex;gap:6px;align-items:center}
+.js-required{display:none;max-width:640px;margin:24px auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));text-align:center}
+.no-js .js-required{display:block}
+.no-js .wrap{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html" aria-current="page"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+
+<div class="js-required">
+  <img src="img/ec1-logo-med.png" height="119" alt="" />
+  <h2>This page needs JavaScript to work</h2>
+  <p>JavaScript couldn’t run in this view, or it is turned off in your browser’s settings. Redact needs JavaScript to edit and check images.</p>
+</div>
+
+<div class="wrap">
+
+
+
+  <header>
+    <div class="eyebrow"><bdi>Encryption 1™</bdi></div>
+    <h1><img src="img/ec1-logo-med.png" height="45" alt="" style="vertical-align:middle" onerror="this.style.display='none'"> <bdi>Redact</bdi> <span class="tag">BETA</span></h1>
+    <p class="lede">Hide personal details before you share. In a photo or screenshot, black out faces, names, account numbers or license plates with solid boxes that are checked after saving. In text, find and replace names, emails, phone numbers, card and ID numbers. Everything happens on your own device.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabPhoto" aria-selected="true" aria-controls="panelPhoto">Photo</button>
+    <button type="button" role="tab" id="tabText" aria-selected="false" aria-controls="panelText">Text</button>
+  </div>
+
+  <div class="panel" id="panelPhoto" role="tabpanel" aria-labelledby="tabPhoto">
+  <section class="card" id="pickCard">
+    <div class="drop" id="drop">
+      <p><strong>Choose a photo or screenshot</strong></p>
+      <p class="hint">JPEG, PNG, WebP or GIF. You can also drag it here or paste a screenshot.</p>
+      <button type="button" class="primary" id="chooseBtn">Choose image</button>
+      <input type="file" id="fileIn" accept="image/jpeg,image/png,image/webp,image/gif">
+    </div>
+    <p class="status bad" id="loadError" hidden></p>
+  </section>
+
+  <section class="card" id="editCard" hidden>
+    <div class="toolbar" role="toolbar" aria-label="Redaction tools">
+      <span class="label">Box color:</span>
+      <button type="button" id="fillBlack" aria-pressed="true">Black</button>
+      <button type="button" id="fillWhite" aria-pressed="false">White</button>
+      <span class="sep"></span>
+      <button type="button" id="undoBtn" disabled>Undo</button>
+      <button type="button" id="delBtn" disabled>Delete box</button>
+      <button type="button" id="clearBtn" disabled>Clear all boxes</button>
+      <span class="spacer"></span>
+      <button type="button" id="otherBtn">Choose another image</button>
+    </div>
+    <p class="hint" id="drawHint">Drag across anything you want hidden. Click a box to select it, drag it to move it, or drag a corner to resize it.</p>
+    <div class="stage"><canvas id="view" tabindex="0" aria-label="Image. Drag to draw a redaction box; arrow keys move the selected box, Delete removes it."></canvas></div>
+    <p class="hint" id="sizeNote"></p>
+    <div class="found" id="found"></div>
+  </section>
+
+  <section class="card" id="saveCard" hidden>
+    <div class="toolbar">
+      <label class="label" for="format">Save as</label>
+      <select id="format">
+        <option value="png">PNG — exact, best for screenshots</option>
+        <option value="jpeg">JPEG — smaller, good for photos</option>
+      </select>
+      <span class="spacer"></span>
+      <button type="button" class="primary" id="saveBtn">Check and save redacted copy</button>
+    </div>
+    <p class="hint">Redact saves a new file and reads it back before you get it. If any check fails, nothing is saved.</p>
+    <p class="status" id="saveStatus" hidden></p>
+    <ul class="checks" id="checks" hidden></ul>
+    <p class="next-step" id="nextStep" hidden>Next: send it so it can only be opened once with <a href="burn.php"><bdi>Burn</bdi></a>.</p>  </section>
+  </div>
+
+  <!-- ============ TEXT ============ -->
+  <div class="panel" id="panelText" role="tabpanel" aria-labelledby="tabText" hidden>
+    <section class="card">
+      <div class="toolbar">
+        <label class="lbl" for="txIn">Text to clean up</label>
+        <span class="spacer"></span>
+        <button type="button" id="txOpen">Open a text file</button>
+        <button type="button" id="txClear">Clear</button>
+        <input type="file" id="txFile" accept=".txt,.md,.csv,.log,.eml,text/plain">
+      </div>
+      <textarea id="txIn" rows="10" dir="auto" spellcheck="false" placeholder="Paste an email, message, notes or a document&amp;#039;s text here…"></textarea>
+      <p class="status bad" id="txErr" hidden></p>
+      <p class="hint">Your text stays as it is. Redact makes a cleaned copy further down, and you choose what goes into it.</p>
+    </section>
+
+    <section class="card">
+      <label class="lbl" for="txTerm">Names and words to hide</label>
+      <div class="row"><input type="text" id="txTerm" dir="auto" autocomplete="off" placeholder="Add a name, company, street or any word"><button type="button" id="txAdd">Add</button></div>
+      <div class="chips" id="txChips"></div>
+      <p class="hint">Redact suggests names it finds after greetings, titles and sign-offs (Dear…, Mr…, Best regards…). It can&#039;t recognize every name, so add any others. Each name also hides its parts: “Maria Lopez” hides “Maria” and “Lopez” too.</p>
+    </section>
+
+    <section class="card" id="txFoundCard" hidden>
+      <h2 id="txFoundTitle" aria-live="polite"></h2>
+      <div class="opts">
+        <label>Replace with:          <select id="txStyle"><option value="label">Labels like [Email 1]</option><option value="block">Black bars █████</option></select>
+        </label>
+        <label><input type="checkbox" id="txLast4"> Keep the last 4 digits of card and bank numbers</label>
+      </div>
+      <div id="txGroups" class="panel" style="gap:10px"></div>
+    </section>
+
+    <section class="card" id="txOutCard" hidden>
+      <label class="lbl" for="txOut">Cleaned copy</label>
+      <textarea id="txOut" rows="10" dir="auto" readonly></textarea>
+      <div class="toolbar">
+        <button type="button" class="primary" id="txCopy">Copy</button>
+        <button type="button" id="txSave">Save as .txt</button>
+        <button type="button" id="txKey">Save the key</button>
+        <span class="hint" id="txStatus" aria-live="polite"></span>
+      </div>
+      <p class="hint" id="txKeyNote">The key lists what each label stands for, so you can match replies later. It contains the original details: keep it private and don&#039;t send it with the text.</p>
+      <p class="hint">Read the cleaned copy before you send it. Redact finds patterns, not meaning.</p>
+      <p class="next-step">To send the original privately instead, encrypt it with <a href="ec1.php"><bdi>Encryption 1</bdi></a> or send it once with <a href="burn.php"><bdi>Burn</bdi></a>.</p>    </section>
+
+    <details class="how">
+      <summary>How the Text tab works, and what to watch for</summary>
+      <div class="body">
+        <p>The Text tab looks for details that follow a known pattern and checks them where the format allows, so ordinary numbers aren&#039;t mistaken for private ones.</p>
+        <ul>
+          <li><b>What it finds.</b> Email addresses; phone numbers (US, Mexico, Spain and international); card numbers (checked with the card checksum); bank accounts (IBAN and Mexican CLABE, checked); US Social Security numbers and ZIP codes; Mexican CURP and RFC; Spanish DNI and NIE (check letter verified); and IP addresses.</li>
+          <li><b>Same detail, same label.</b> The same email or phone number gets the same label everywhere, so the text still makes sense: “[Name 1] will call [Name 2]”.</li>
+          <li><b>You decide.</b> Untick anything that should stay. Nothing is hidden or kept without showing you first.</li>
+        </ul>
+        <p><b>What it can&#039;t do:</b> It can&#039;t understand meaning, so it misses details written in words (“my birthday is the fifth of May”), addresses without a ZIP code, and names it wasn&#039;t given. It works on plain text; for Word or PDF files, copy the text in, or use Scrub to remove the file&#039;s hidden data.</p>
+      </div>
+    </details>
+  </div>
+
+  <details class="how" id="photoHow">
+    <summary>How Redact works, and what to watch for</summary>
+    <div class="body">
+      <p>Redact never edits your original file. It draws the picture onto a blank canvas, paints solid boxes over it, and saves only those pixels as a new image. Then it opens the new file the way anyone receiving it would and checks it.</p>
+      <ul>
+        <li><b>Solid boxes only.</b> Blurring and pixelating can sometimes be reversed or guessed, especially for text and numbers, so Redact doesn’t offer them.</li>
+        <li><b>Cover generously.</b> Include the whole word or number and a little margin; parts of letters at the edge can be enough to guess what was there. Check names in reflections, badges, screens and documents in the background too.</li>
+        <li><b>Hidden data is left out.</b> Location, camera details, dates, author notes, preview images and extra pictures that phones sometimes attach are not copied into the new file. Redact lists what the original contained so you know what was removed.</li>
+        <li><b>Every save is checked.</b> Redact confirms that every pixel inside every box is the box color in the saved file, that the rest of the picture is unchanged (PNG), that no hidden data or preview image is inside, and that the size is right.</li>
+      </ul>
+      <p><b>Limits.</b> Redact works on images, not PDFs or documents: take a screenshot of the page first. Very large pictures are scaled down to about 16 megapixels, because some browsers can’t handle bigger ones; the page tells you when that happens. Anyone who already has the original still has everything in it.</p>
+    </div>
+  </details>
+
+<footer>
+  <div class="footer-note"><strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</div>
+
+<script>
+/* Interface text for this language, from /lang/redact/en.json */
+var I18N = {"pastedName":"pasted-image","errType":"Redact can open JPEG, PNG, WebP and GIF images. For a PDF or document, take a screenshot and open that.","errBig":"That file is larger than 60 MB. Please use a smaller copy.","errDecode":"This browser couldn’t open that image. Try saving it as JPEG or PNG first.","sizeNote":"Working size: {w} × {h} pixels, the same as the original.","scaledNote":"The original is {ow} × {oh} pixels, more than this browser can safely handle, so Redact works at {w} × {h}.","foundTitle":"This file carries more than the picture:","foundLeftOut":"None of this will be in the redacted copy.","foundNone":"No hidden data was found in the original file.","fGps":"the location where it was taken (GPS)","fCamera":"camera or phone details and the date","fThumb":"a small preview image, which can still show what you cover","fExtra":"an extra picture or data hidden after the image","fText":"author names, comments or other text notes","fOther":"other technical data","boxCount":{"one":"{n} box. Drag to add more, or click a box to move, resize or delete it.","other":"{n} boxes. Drag to add more, or click a box to move, resize or delete it."},"checking":"Saving and checking…","black":"black","white":"white","chkSize":"The saved image is {w} × {h} pixels.","chkBoxesExact":{"one":"Inside the box, every pixel is solid {colour} in the saved file ({px} pixels checked).","other":"Inside all {n} boxes, every pixel is solid {colour} in the saved file ({px} pixels checked)."},"chkBoxesLossy":{"one":"Inside the box, the saved file is solid {colour} apart from normal JPEG noise ({px} pixels checked).","other":"Inside all {n} boxes, the saved file is solid {colour} apart from normal JPEG noise ({px} pixels checked)."},"chkNoBoxes":"No boxes were drawn: this is a clean copy of the picture.","chkOutside":"Everything outside the boxes is unchanged.","chkMeta":"No location, camera details, dates, notes or other hidden data.","chkHidden":"No preview image, extra picture or hidden data after the image.","chkFormat":"The file is a genuine {fmt} image.","notSaved":"A check failed, so the image was not saved. Try again, or try the other format.","saveFailed":"Saving didn’t work in this browser. Please try again.","saved":"All checks passed. Saved as {name}.","drawHint":"Drag across anything you want hidden. Click a box to select it, drag it to move it, or drag a corner to resize it.","chkFound":"(Found: {list})","browserExtras":"While saving, this browser added technical data of its own ({list}). Redact removed it before checking.","fileWord":"photo","txLabels":{"name":"Name","email":"Email","phone":"Phone","card":"Card","iban":"IBAN","clabe":"CLABE","ssn":"SSN","zip":"ZIP","curp":"CURP","rfc":"RFC","dni":"DNI","nie":"NIE","ip":"IP"},"txGroups":{"name":"Names and words","email":"Email addresses","phone":"Phone numbers","card":"Card numbers","iban":"Bank accounts (IBAN)","clabe":"Bank accounts (CLABE, Mexico)","ssn":"Social Security numbers (US)","zip":"ZIP codes (US)","curp":"CURP (Mexico)","rfc":"RFC (Mexico)","dni":"DNI (Spain)","nie":"NIE (Spain)","ip":"IP addresses"},"txFound":{"one":"Found 1 detail to hide","other":"Found {n} details to hide"},"txFoundNone":"Nothing found. Add names or words above if something should be hidden.","txTimes":{"one":"once","other":"{n} times"},"txSuggested":"suggested","txRemoveName":"Stop hiding {name}","txKeepName":"Don't hide {name}","txTooBig":"That file is over 5 MB. Open a smaller text file, or paste the part you need.","txNotText":"That doesn't look like a plain text file. For Word or PDF files, copy the text and paste it here.","txCopied":"Copied.","txCopyManual":"Selected: press Ctrl+C (or ⌘C) to copy.","txFileWord":"text","txSuffix":"redacted","txKeySuffix":"key","txKeyTitle":"Redact: what each label stands for","txKeyWarn":"PRIVATE: this key contains the original details. Don't send it with the cleaned text."};
+</script>
+<script>
+/* ================================================================
+   Redact - checking engine (shared by every language)
+   Encryption 1(TM) -- released under the MIT License.
+
+   Two jobs, both pure functions so the test suite can run them:
+
+   1. inspect(bytes): read an image file's structure (JPEG, PNG, WebP)
+      and list what travels with the pixels: Exif (camera, date,
+      location), embedded preview images, XMP/IPTC, comments, text
+      chunks, extra pictures (MPF / "motion photo" style), and any
+      bytes hidden after the end of the image.
+
+   2. verifyBoxes(pixels, boxes, fill, mode): after export, the saved
+      file is decoded again and every pixel inside every box must be
+      the fill colour. 'exact' for PNG (lossless); 'lossy' for JPEG,
+      which checks the inside of each box with a small tolerance,
+      because JPEG compression adds faint noise near edges. The noise
+      comes from the fill and the edge, never from the original
+      picture: the encoder is only ever given the redacted pixels.
+   ================================================================ */
+var REDACT = (function(){
+"use strict";
+
+function u16be(b, i){ return (b[i] << 8) | b[i + 1]; }
+function u32be(b, i){ return ((b[i] << 24) >>> 0) + (b[i + 1] << 16) + (b[i + 2] << 8) + b[i + 3]; }
+function u32le(b, i){ return (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16)) + ((b[i + 3] << 24) >>> 0); }
+function ascii(b, i, n){ var s = ''; for (var k = 0; k < n && i + k < b.length; k++) s += String.fromCharCode(b[i + k]); return s; }
+function startsWith(b, i, str){ for (var k = 0; k < str.length; k++) if (b[i + k] !== str.charCodeAt(k)) return false; return true; }
+
+// ---- Exif (TIFF structure) ----
+// Returns {gps, camera, date, thumbnail, tags}
+function readTiff(b, start, end){
+  var out = {gps:false, camera:false, date:false, thumbnail:false, tags:0};
+  if (end - start < 8) return out;
+  var le = b[start] === 0x49 && b[start + 1] === 0x49;
+  var be = b[start] === 0x4D && b[start + 1] === 0x4D;
+  if (!le && !be) return out;
+  var r16 = function(o){ var i = start + o; if (i + 2 > end) return 0; return le ? (b[i] | (b[i + 1] << 8)) : ((b[i] << 8) | b[i + 1]); };
+  var r32 = function(o){ var i = start + o; if (i + 4 > end) return 0; return le ? u32le(b, i) : u32be(b, i); };
+  var seen = {};
+  function ifd(off, depth, kind){
+    if (!off || off + 2 > end - start || seen[off] || depth > 4) return 0;
+    seen[off] = true;
+    var n = r16(off); if (n > 1000) return 0;
+    for (var e = 0; e < n; e++){
+      var p = off + 2 + e * 12, tag = r16(p);
+      out.tags++;
+      if (kind === 'ifd0' || kind === 'ifd1'){
+        if (tag === 0x010F || tag === 0x0110 || tag === 0xA434 || tag === 0xA431) out.camera = true;          // make, model, lens, serial
+        if (tag === 0x0132) out.date = true;
+        if (tag === 0x8825){ out.gps = gpsHasData(r32(p + 8)) || out.gps; }
+        if (tag === 0x8769) ifd(r32(p + 8), depth + 1, 'exif');
+        if (kind === 'ifd1' && (tag === 0x0201 || tag === 0x0111)) out.thumbnail = true;
+      } else if (kind === 'exif'){
+        if (tag === 0x9003 || tag === 0x9004) out.date = true;
+        if (tag === 0xA431 || tag === 0xA434 || tag === 0x927C) out.camera = true;                              // serial, lens, maker note
+      }
+    }
+    return r32(off + 2 + n * 12);
+  }
+  function gpsHasData(off){
+    if (!off || off + 2 > end - start) return false;
+    var n = r16(off); return n > 0 && n < 200;
+  }
+  var next = ifd(r32(4), 0, 'ifd0');
+  if (next) { var before = out.thumbnail; ifd(next, 0, 'ifd1'); if (!out.thumbnail && before === false){ /* IFD1 without image data */ } }
+  return out;
+}
+
+// ---- file inspection ----
+// Returns {format, width, height, items:[{kind, note}], gps, camera, date, thumbnail, extraImages, trailing, clean}
+// "clean" = nothing beyond the picture itself and an optional colour profile.
+var ALLOWED_PNG = {IHDR:1, PLTE:1, IDAT:1, IEND:1, tRNS:1, gAMA:1, cHRM:1, sRGB:1, iCCP:1, sBIT:1, pHYs:1, bKGD:1, cICP:1};
+function inspect(b){
+  var r = {format:'unknown', width:0, height:0, items:[], gps:false, camera:false, date:false, thumbnail:false, extraImages:false, trailing:0};
+  var add = function(kind, note){ r.items.push({kind:kind, note:note || ''}); };
+  var mergeExif = function(t){ r.gps = r.gps || t.gps; r.camera = r.camera || t.camera; r.date = r.date || t.date; r.thumbnail = r.thumbnail || t.thumbnail; };
+  if (b.length > 3 && b[0] === 0xFF && b[1] === 0xD8){
+    r.format = 'jpeg';
+    var i = 2, eoi = -1;
+    while (i < b.length){
+      if (b[i] !== 0xFF){ add('broken'); break; }
+      while (b[i] === 0xFF && i < b.length) i++;
+      var m = b[i]; i++;
+      if (m === 0xD9){ eoi = i; break; }
+      if (m === 0x01 || (m >= 0xD0 && m <= 0xD7)) continue;
+      if (i + 2 > b.length){ add('broken'); break; }
+      var len = u16be(b, i), s = i + 2, e = i + len;
+      if (len < 2 || e > b.length){ add('broken'); break; }
+      if (m >= 0xC0 && m <= 0xCF && m !== 0xC4 && m !== 0xC8 && m !== 0xCC && !r.width){ r.height = u16be(b, s + 1); r.width = u16be(b, s + 3); }
+      if (m === 0xE1){
+        if (startsWith(b, s, 'Exif\0\0')){ add('exif'); mergeExif(readTiff(b, s + 6, e)); }
+        else if (startsWith(b, s, 'http://ns.adobe.com/xap/1.0/') || startsWith(b, s, 'http://ns.adobe.com/xmp/extension/')) add('xmp');
+        else add('app', 'APP1');
+      } else if (m === 0xE2){
+        if (startsWith(b, s, 'ICC_PROFILE')) { /* colour profile: allowed */ }
+        else if (startsWith(b, s, 'MPF')){ add('extraImages', 'MPF'); r.extraImages = true; }
+        else add('app', 'APP2');
+      } else if (m === 0xED) add('iptc');
+      else if (m === 0xFE) add('comment');
+      else if (m === 0xE0 && (startsWith(b, s, 'JFIF') || startsWith(b, s, 'JFXX'))){ if (startsWith(b, s, 'JFXX')) { add('thumbnailJfif'); r.thumbnail = true; } }
+      else if (m === 0xEE && startsWith(b, s, 'Adobe')) { /* colour transform flag: allowed */ }
+      else if (m >= 0xE0 && m <= 0xEF) add('app', 'APP' + (m - 0xE0));
+      i = e;
+      if (m === 0xDA){
+        // entropy-coded data: run to the next real marker
+        while (i < b.length - 1){
+          if (b[i] === 0xFF && b[i + 1] !== 0x00 && !(b[i + 1] >= 0xD0 && b[i + 1] <= 0xD7)) break;
+          i++;
+        }
+      }
+    }
+    if (eoi > 0 && eoi < b.length){
+      var rest = b.length - eoi, zeros = true;
+      for (var z = eoi; z < b.length; z++) if (b[z] !== 0){ zeros = false; break; }
+      if (!zeros){ r.trailing = rest; add('trailing'); if (findSoi(b, eoi)) { r.extraImages = true; add('extraImages', 'appended'); } }
+    }
+  } else if (b.length > 8 && b[0] === 0x89 && startsWith(b, 1, 'PNG')){
+    r.format = 'png';
+    var p = 8, ended = false;
+    while (p + 8 <= b.length){
+      var clen = u32be(b, p), type = ascii(b, p + 4, 4), ds = p + 8, de = ds + clen;
+      if (de + 4 > b.length){ add('broken'); break; }
+      if (type === 'IHDR'){ r.width = u32be(b, ds); r.height = u32be(b, ds + 4); }
+      if (type === 'eXIf'){ add('exif'); mergeExif(readTiff(b, ds, de)); }
+      else if (type === 'tEXt' || type === 'zTXt' || type === 'iTXt'){
+        var kw = ''; for (var q = ds; q < de && b[q] !== 0 && q - ds < 80; q++) kw += String.fromCharCode(b[q]);
+        add(kw === 'XML:com.adobe.xmp' ? 'xmp' : 'text', kw);
+        if (/^Raw profile type (exif|APP1)$/i.test(kw)){ add('exif'); }
+      }
+      else if (type === 'tIME') { add('time'); r.date = true; }
+      else if (type === 'acTL' || type === 'fcTL' || type === 'fdAT'){ if (type === 'acTL') add('animation'); }
+      else if (!ALLOWED_PNG[type]) add('chunk', type);
+      p = de + 4;
+      if (type === 'IEND'){ ended = true; break; }
+    }
+    if (ended && p < b.length){ r.trailing = b.length - p; add('trailing'); if (findSoi(b, p)) { r.extraImages = true; add('extraImages', 'appended'); } }
+  } else if (b.length > 12 && startsWith(b, 0, 'RIFF') && startsWith(b, 8, 'WEBP')){
+    r.format = 'webp';
+    var riffEnd = Math.min(b.length, 8 + u32le(b, 4)), w = 12;
+    while (w + 8 <= riffEnd){
+      var id = ascii(b, w, 4), sz = u32le(b, w + 4), cs = w + 8, ce = cs + sz;
+      if (ce > b.length){ add('broken'); break; }
+      if (id === 'EXIF'){ add('exif'); var off = startsWith(b, cs, 'Exif\0\0') ? 6 : 0; mergeExif(readTiff(b, cs + off, ce)); }
+      else if (id === 'XMP ') add('xmp');
+      else if (id === 'VP8X'){ r.width = 1 + (b[cs + 4] | (b[cs + 5] << 8) | (b[cs + 6] << 16)); r.height = 1 + (b[cs + 7] | (b[cs + 8] << 8) | (b[cs + 9] << 16)); }
+      else if (id === 'ANIM') add('animation');
+      w = ce + (sz & 1);
+    }
+    if (riffEnd < b.length){ r.trailing = b.length - riffEnd; add('trailing'); }
+  } else if (b.length > 6 && startsWith(b, 0, 'GIF8')){
+    r.format = 'gif'; r.width = b[6] | (b[7] << 8); r.height = b[8] | (b[9] << 8);
+  }
+  if (r.gps) add('gps');
+  if (r.camera) add('camera');
+  if (r.thumbnail && !r.items.some(function(x){ return x.kind === 'thumbnailJfif'; })) add('thumbnail');
+  r.clean = r.items.length === 0;
+  return r;
+}
+function findSoi(b, from){
+  for (var i = from; i < b.length - 2; i++) if (b[i] === 0xFF && b[i + 1] === 0xD8 && b[i + 2] === 0xFF) return true;
+  return false;
+}
+
+// ---- pixel check ----
+// px: {data (RGBA bytes), width, height}; boxes: [{x,y,w,h}] in image pixels; fill: [r,g,b]
+// mode 'exact': every pixel inside every box must equal the fill exactly, alpha 255.
+// mode 'lossy': skip a margin of up to 8 px at each edge (JPEG blocks), then allow +-tol per channel.
+function verifyBoxes(px, boxes, fill, mode, tol){
+  tol = mode === 'lossy' ? (tol == null ? 16 : tol) : 0;
+  var res = {ok:true, checked:0, boxes:[]};
+  boxes.forEach(function(bx, n){
+    var x0 = Math.max(0, Math.floor(bx.x)), y0 = Math.max(0, Math.floor(bx.y));
+    var x1 = Math.min(px.width, Math.ceil(bx.x + bx.w)), y1 = Math.min(px.height, Math.ceil(bx.y + bx.h));
+    if (mode === 'lossy'){
+      var mx = Math.min(8, Math.floor((x1 - x0) / 4)), my = Math.min(8, Math.floor((y1 - y0) / 4));
+      x0 += mx; x1 -= mx; y0 += my; y1 -= my;
+    }
+    var bad = 0, count = 0, worst = 0;
+    for (var y = y0; y < y1; y++){
+      var row = y * px.width * 4;
+      for (var x = x0; x < x1; x++){
+        var i = row + x * 4, d = Math.max(Math.abs(px.data[i] - fill[0]), Math.abs(px.data[i + 1] - fill[1]), Math.abs(px.data[i + 2] - fill[2]));
+        count++;
+        if (d > tol || px.data[i + 3] !== 255){ bad++; if (d > worst) worst = d; }
+      }
+    }
+    res.checked += count;
+    res.boxes.push({n:n, checked:count, bad:bad, worst:worst});
+    if (bad || count === 0) res.ok = false;
+  });
+  return res;
+}
+// Everything outside the boxes should be the original picture, unchanged (PNG only).
+function verifyOutside(px, orig, boxes){
+  if (px.width !== orig.width || px.height !== orig.height) return {ok:false, changed:-1};
+  var inBox = new Uint8Array(px.width * px.height);
+  boxes.forEach(function(bx){
+    var x0 = Math.max(0, Math.floor(bx.x)), y0 = Math.max(0, Math.floor(bx.y));
+    var x1 = Math.min(px.width, Math.ceil(bx.x + bx.w)), y1 = Math.min(px.height, Math.ceil(bx.y + bx.h));
+    for (var y = y0; y < y1; y++) inBox.fill(1, y * px.width + x0, y * px.width + x1);
+  });
+  var changed = 0;
+  for (var p = 0; p < inBox.length; p++){
+    if (inBox[p]) continue;
+    var i = p * 4, a = orig.data[i + 3];
+    if (px.data[i + 3] !== a){ changed++; continue; }
+    if (a === 0) continue;                                    // fully transparent: colour isn't stored
+    var tol = a === 255 ? 0 : 3;                              // part-transparent pixels can round by a step or two
+    if (Math.abs(px.data[i] - orig.data[i]) > tol || Math.abs(px.data[i + 1] - orig.data[i + 1]) > tol || Math.abs(px.data[i + 2] - orig.data[i + 2]) > tol) changed++;
+  }
+  return {ok: changed === 0, changed: changed};
+}
+// Box geometry in image pixels, always whole pixels and inside the picture, rounded outward.
+function normBox(b, W, H){
+  var x0 = Math.max(0, Math.floor(Math.min(b.x, b.x + b.w))), y0 = Math.max(0, Math.floor(Math.min(b.y, b.y + b.h)));
+  var x1 = Math.min(W, Math.ceil(Math.max(b.x, b.x + b.w))), y1 = Math.min(H, Math.ceil(Math.max(b.y, b.y + b.h)));
+  return {x:x0, y:y0, w:Math.max(0, x1 - x0), h:Math.max(0, y1 - y0)};
+}
+// ---- strip a freshly encoded file down to the picture ----
+// Browsers add their own technical extras when they save a canvas (Safari and other Apple
+// encoders add an "iDOT" chunk to PNG and a small Exif block to JPEG, for example).
+// None of it comes from the original photo, but Redact removes everything that isn't
+// needed to show the picture, so the saved file is the same on every browser.
+// Kept: JPEG SOI, APP0 JFIF, APP2 colour profile, APP14 Adobe, tables, frame, scans, EOI.
+//       PNG IHDR, PLTE, IDAT, IEND, transparency, colour and pixel-size chunks.
+// Returns {bytes, removed:[names]} or null if the file isn't a JPEG or PNG it can read.
+var KEEP_PNG = {IHDR:1, PLTE:1, IDAT:1, IEND:1, tRNS:1, gAMA:1, cHRM:1, sRGB:1, iCCP:1, sBIT:1, pHYs:1, cICP:1};
+function sanitize(b){
+  var parts = [], removed = [], i, total = 0;
+  var keep = function(s, e){ parts.push(b.subarray(s, e)); total += e - s; };
+  if (b.length > 3 && b[0] === 0xFF && b[1] === 0xD8){
+    keep(0, 2); i = 2;
+    while (i < b.length){
+      if (b[i] !== 0xFF) return null;
+      var ms = i; while (b[i] === 0xFF && i < b.length) i++;
+      var m = b[i]; i++;
+      if (m === 0xD9){ keep(ms, i); break; }
+      if (m === 0x01 || (m >= 0xD0 && m <= 0xD7)){ keep(ms, i); continue; }
+      if (i + 2 > b.length) return null;
+      var len = u16be(b, i), s = i + 2, e = i + len;
+      if (len < 2 || e > b.length) return null;
+      var name = null;
+      if (m === 0xE0) name = (startsWith(b, s, 'JFIF\0')) ? null : 'APP0';
+      else if (m === 0xE2) name = startsWith(b, s, 'ICC_PROFILE\0') ? null : 'APP2';
+      else if (m === 0xEE) name = startsWith(b, s, 'Adobe') ? null : 'APP14';
+      else if (m >= 0xE1 && m <= 0xEF) name = 'APP' + (m - 0xE0) + (startsWith(b, s, 'Exif\0\0') ? ' (Exif)' : startsWith(b, s, 'http://ns.adobe.com/') ? ' (XMP)' : '');
+      else if (m === 0xFE) name = 'COM';
+      if (name){ removed.push(name); i = e; continue; }
+      if (m === 0xDA){
+        i = e;
+        while (i < b.length - 1){
+          if (b[i] === 0xFF && b[i + 1] !== 0x00 && !(b[i + 1] >= 0xD0 && b[i + 1] <= 0xD7)) break;
+          i++;
+        }
+        keep(ms, i);
+        continue;
+      }
+      keep(ms, e); i = e;
+    }
+    if (i < b.length) removed.push('trailing data');
+  } else if (b.length > 8 && b[0] === 0x89 && startsWith(b, 1, 'PNG')){
+    keep(0, 8); var p = 8;
+    while (p + 8 <= b.length){
+      var clen = u32be(b, p), type = ascii(b, p + 4, 4), end = p + 12 + clen;
+      if (end > b.length) return null;
+      if (KEEP_PNG[type]) keep(p, end); else removed.push(type);
+      p = end;
+      if (type === 'IEND') break;
+    }
+    if (p < b.length) removed.push('trailing data');
+  } else return null;
+  var out = new Uint8Array(total), o = 0;
+  parts.forEach(function(x){ out.set(x, o); o += x.length; });
+  return {bytes: out, removed: removed};
+}
+
+return {inspect:inspect, verifyBoxes:verifyBoxes, verifyOutside:verifyOutside, normBox:normBox, sanitize:sanitize, _tiff:readTiff};
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = REDACT;
+</script>
+<script>
+/* ================================================================
+   Redact - text engine. Encryption 1 Suite, MIT License.
+   Finds personal details in text and replaces them with placeholders.
+   Runs in the browser only; nothing is sent anywhere.
+
+   Found automatically (each checked as far as the format allows):
+     email, phone (US, Mexico, Spain, international "+"),
+     card (13-19 digits, Luhn checksum), iban (mod-97 checksum),
+     clabe (Mexican bank account, check digit), ssn (US),
+     zip (US, after a state code, or ZIP+4), curp and rfc (Mexico),
+     dni and nie (Spain, check letter), ip (IPv4 and IPv6),
+     possible names (after Mr/Sra/Dear/Hola..., in sign-offs,
+     after "my name is" / "me llamo").
+   Plus any names or words the person adds. Every name also hides
+   its parts ("Maria" and "Lopez" from "Maria Lopez").
+   The same value always gets the same placeholder: [Email 1] ...
+   ================================================================ */
+(function (root) {
+'use strict';
+
+var WORD = /[\p{L}\p{N}_]/u;
+function isWord(ch) { return !!ch && WORD.test(ch); }
+function isDigit(ch) { return ch >= '0' && ch <= '9'; }
+// Runs a global regex and keeps matches that stand alone (no letter or digit glued on either side).
+function scan(text, re, fn, opts) {
+  opts = opts || {};
+  re.lastIndex = 0;
+  var m;
+  while ((m = re.exec(text))) {
+    var s = m.index, e = s + m[0].length;
+    if (m[0].length === 0) { re.lastIndex++; continue; }
+    var before = text[s - 1], after = text[e];
+    var okB = opts.loose ? !isDigit(before) : !isWord(before);
+    var okA = opts.loose ? !isDigit(after) : !isWord(after);
+    // a digit group continuing after a separator ("555-1234-99") is not a clean end
+    if (okA && /[\-.]/.test(after || '') && isDigit(text[e + 1])) okA = false;
+    if (okB && /[\-.]/.test(before || '') && isDigit(text[s - 2])) okB = false;
+    if (okB && okA) fn(m, s, e);
+    re.lastIndex = s + 1;
+  }
+}
+function digits(s) { return s.replace(/\D/g, ''); }
+
+/* ---------- checksums ---------- */
+function luhn(d) {
+  var sum = 0, alt = false;
+  for (var i = d.length - 1; i >= 0; i--) { var n = +d[i]; if (alt) { n *= 2; if (n > 9) n -= 9; } sum += n; alt = !alt; }
+  return sum % 10 === 0;
+}
+var IBAN_LEN = { AD:24, AT:20, BE:16, CH:21, CZ:24, DE:22, DK:18, ES:24, FI:18, FR:27, GB:22, GR:27, HR:21, HU:28, IE:22, IT:27, LU:20, NL:18, NO:15, PL:28, PT:25, RO:24, SE:24, SI:19, SK:24, BR:29, TR:26, SA:24, AE:23, IL:23 };
+function ibanOk(c) {
+  if (!/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/.test(c)) return false;
+  if (IBAN_LEN[c.slice(0, 2)] && IBAN_LEN[c.slice(0, 2)] !== c.length) return false;
+  var r = c.slice(4) + c.slice(0, 4), mod = 0;
+  for (var i = 0; i < r.length; i++) {
+    var ch = r.charCodeAt(i), v = ch >= 65 ? String(ch - 55) : r[i];
+    for (var j = 0; j < v.length; j++) mod = (mod * 10 + (+v[j])) % 97;
+  }
+  return mod === 1;
+}
+function clabeOk(d) {
+  if (!/^\d{18}$/.test(d)) return false;
+  var w = [3, 7, 1], sum = 0;
+  for (var i = 0; i < 17; i++) sum += (+d[i] * w[i % 3]) % 10;
+  return (10 - sum % 10) % 10 === +d[17];
+}
+var CURP_CHARS = '0123456789ABCDEFGHIJKLMN\u00d1OPQRSTUVWXYZ';
+function curpCheck(c) {
+  var sum = 0;
+  for (var i = 0; i < 17; i++) sum += CURP_CHARS.indexOf(c[i]) * (18 - i);
+  return (10 - sum % 10) % 10 === +c[17];
+}
+var DNI_LETTERS = 'TRWAGMYFPDXBNJZSQVHLCKE';
+function dniOk(numStr, letter) { return DNI_LETTERS[parseInt(numStr, 10) % 23] === letter.toUpperCase(); }
+function dateOk(yy, mm, dd) { mm = +mm; dd = +dd; return mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31; }
+
+/* ---------- detectors: each adds {start, end, type, key} ---------- */
+var STATES = 'AL|AK|AZ|AR|CA|CO|CT|DE|DC|FL|GA|HI|ID|IL|IN|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|PR';
+var CURP_STATES = 'AS|BC|BS|CC|CL|CM|CS|CH|DF|DG|GT|GR|HG|JC|MC|MN|MS|NT|NL|OC|PL|QT|QR|SP|SL|SR|TC|TS|TL|VZ|YN|ZS|NE';
+var PHONE_WORDS = /(tel|tel\u00e9fono|telefono|phone|cel|cell|celular|m\u00f3vil|movil|mobile|whats ?app|fax|ll[a\u00e1]ma(me|nos)?|call|text|n[u\u00fa]mero|number|no\.|#)\W{0,12}$/i;
+var SSN_WORDS = /(ssn|ss#|social security( number| no\.?)?|seguro social|n[u\u00fa]mero de seguro social)\W{0,12}$/i;
+
+function findAll(text) {
+  var out = [];
+  function add(s, e, type, key, extra) { var o = { start: s, end: e, type: type, key: key }; if (extra) for (var k in extra) o[k] = extra[k]; out.push(o); }
+
+  // email
+  scan(text, /[A-Za-z0-9][A-Za-z0-9._%+\-]*@[A-Za-z0-9](?:[A-Za-z0-9\-]*[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9\-]*[A-Za-z0-9])?)*\.[A-Za-z]{2,24}/g, function (m, s, e) {
+    add(s, e, 'email', m[0].toLowerCase());
+  });
+
+  // IBAN: try shorter endings when the match ran into the next word
+  scan(text, /[A-Z]{2}\d{2}(?:[ ]?[A-Z0-9]){11,30}/g, function (m, s) {
+    var raw = m[0], pos = [], c = '';
+    for (var i = 0; i < raw.length; i++) if (raw[i] !== ' ') { c += raw[i]; pos.push(i); }
+    for (var n = c.length; n >= 15; n--) if (ibanOk(c.slice(0, n))) { add(s, s + pos[n - 1] + 1, 'iban', c.slice(0, n)); return; }
+  }, { loose: true });
+
+  // Runs of digits (single spaces or dashes allowed): cards, CLABE
+  scan(text, /\d(?:[ \-]?\d){12,22}/g, function (m, s) {
+    var raw = m[0], groups = [], re = /\d+/g, g;
+    while ((g = re.exec(raw))) groups.push({ s: g.index, e: g.index + g[0].length, d: g[0] });
+    for (var a = 0; a < groups.length; a++) {
+      var d = '';
+      for (var b = a; b < groups.length; b++) {
+        d += groups[b].d;
+        var st = s + groups[a].s, en = s + groups[b].e;
+        if (a > 0 && !/\s/.test(raw[groups[a].s - 1])) continue;
+        if (b < groups.length - 1 && !/\s/.test(raw[groups[b].e])) continue;
+        if (d.length === 18 && clabeOk(d)) { add(st, en, 'clabe', d); return; }
+        if (d.length >= 13 && d.length <= 19 && /^(4|5[1-5]|2[2-7]|3[47]|6)/.test(d) && luhn(d) && !/^(\d)\1+$/.test(d)) { add(st, en, 'card', d); return; }
+      }
+    }
+  });
+
+  // Mexico: CURP and RFC
+  scan(text, new RegExp('[A-Z][AEIOUX][A-Z]{2}\\d{2}(0[1-9]|1[0-2])(0[1-9]|[12]\\d|3[01])[HMX](' + CURP_STATES + ')[B-DF-HJ-NP-TV-Z]{3}[A-Z\\d]\\d', 'g'), function (m, s, e) {
+    add(s, e, 'curp', m[0], { checked: curpCheck(m[0]) });
+  });
+  scan(text, /[A-Z\u00d1&]{3,4}\d{2}(\d{2})(\d{2})[A-Z\d]{2}[A\d]/g, function (m, s, e) {
+    if (dateOk(0, m[1], m[2]) && /\d/.test(m[0].slice(-3)) && !/^[A-Z]{2}\d{2}/.test(m[0])) add(s, e, 'rfc', m[0]);
+  });
+
+  // US Social Security numbers
+  scan(text, /(\d{3})([- ])(\d{2})\2(\d{4})/g, function (m, s, e) {
+    if (/^(000|666|9)/.test(m[1]) || m[3] === '00' || m[4] === '0000') return;
+    add(s, e, 'ssn', m[1] + m[3] + m[4]);
+  });
+  scan(text, /\d{9}/g, function (m, s, e) {
+    if (SSN_WORDS.test(text.slice(Math.max(0, s - 40), s)) && !/^(000|666|9)/.test(m[0])) add(s, e, 'ssn', m[0]);
+  });
+
+  // Spain: DNI and NIE (check letter must be right)
+  scan(text, /(\d{8})[ \-]?([A-Za-z])/g, function (m, s, e) {
+    if (dniOk(m[1], m[2])) add(s, e, 'dni', m[1] + m[2].toUpperCase());
+  });
+  scan(text, /([XYZxyz])[ \-]?(\d{7})[ \-]?([A-Za-z])/g, function (m, s, e) {
+    var n = 'XYZ'.indexOf(m[1].toUpperCase()) + m[2];
+    if (dniOk(n, m[3])) add(s, e, 'nie', m[1].toUpperCase() + m[2] + m[3].toUpperCase());
+  });
+
+  // IP addresses
+  var oct = '(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)';
+  var VERSION_WORDS = /(?:^|[^\p{L}])(version|versi\u00f3n|release|section|secci\u00f3n|chapter|cap\u00edtulo|clause|cl\u00e1usula|rule|step|item|build|ver\.?|v)\W{0,3}$/iu;
+  scan(text, new RegExp(oct + '(?:\\.' + oct + '){3}', 'g'), function (m, s, e) {
+    if (text[s - 1] === '-' || VERSION_WORDS.test(text.slice(Math.max(0, s - 20), s))) return;   // "process-1.6.3.0", "section 13.2.5.6"
+    add(s, e, 'ip', m[0]);
+  });
+  scan(text, /(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}|(?:[0-9A-Fa-f]{1,4}:){1,6}:(?:[0-9A-Fa-f]{1,4}(?::[0-9A-Fa-f]{1,4}){0,5})?|::(?:[0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4}/g, function (m, s, e) {
+    var v = m[0];
+    if ((v.match(/:/g) || []).length < 2) return;
+    if (v.indexOf('::') < 0 && (v.match(/:/g) || []).length < 7) return;
+    if (!/[A-Fa-f]/.test(v) && v.replace(/[^:]/g, '').length < 3) return;     // times like 10::30 are not addresses
+    if (v.split(':').filter(Boolean).length < 3) return;                        // "f::" and "::1" are too short to matter
+    add(s, e, 'ip', v.toLowerCase());
+  }, { loose: false });
+
+  // Phone numbers
+  function phone(s, e, raw) {
+    var d = digits(raw);
+    if (/^\+|^00/.test(raw)) { d = d.replace(/^00/, ''); }
+    if (d.length === 11 && d[0] === '1') d = d.slice(1);
+    else if (d.length === 12 && d.slice(0, 2) === '52') d = d.slice(2);
+    else if (d.length === 13 && d.slice(0, 3) === '521') d = d.slice(3);
+    else if (d.length === 11 && d.slice(0, 2) === '34') d = d.slice(2);
+    add(s, e, 'phone', d);
+  }
+  // Real phone numbers don't mix dots and dashes ("DFARS 252.227-7013" is a clause, not a phone)
+  function mixed(raw) { var r = raw.replace(/^\(\d+\)\s?/, ''); return /\./.test(r) && /-/.test(r); }
+  // international: + or 00 then country code, 8-15 digits in all
+  scan(text, /(?:\+|00)[1-9]\d{0,2}(?:[ .\-]?\(?\d{1,5}\)?){1,6}/g, function (m, s, e) {
+    var n = digits(m[0]).replace(/^00/, '').length;
+    if (isWord(text[s - 1]) || mixed(m[0]) || /[ .\-]\d$/.test(m[0])) return;   // "1.2E+12345", "+35236450.6"
+    if (n >= 8 && n <= 15) phone(s, e, m[0]);
+  }, { loose: true });
+  // US / Mexico style: (214) 555-0199, 214-555-0199, 214.555.0199, 55 1234 5678
+  scan(text, /\(?[2-9]\d{2}\)?[ .\-]?[2-9]\d{2}[ .\-]\d{4}|\([2-9]\d{2}\)[2-9]\d{2}\d{4}/g, function (m, s, e) {
+    if (/^\(/.test(m[0]) !== /\)/.test(m[0]) || mixed(m[0])) return;
+    phone(s, e, m[0]);
+  }, { loose: true });
+  scan(text, /[1-9]\d[ .\-]\d{4}[ .\-]\d{4}/g, function (m, s, e) { if (!mixed(m[0])) phone(s, e, m[0]); }, { loose: true });
+  // Spain: 612 345 678, 91 123 45 67, 612 34 56 78
+  scan(text, /[6789]\d{2}[ .\-]\d{3}[ .\-]\d{3}|[89]\d[ .\-]\d{3}[ .\-]\d{2}[ .\-]\d{2}|[6789]\d{2}[ .\-]\d{2}[ .\-]\d{2}[ .\-]\d{2}/g, function (m, s, e) { if (!mixed(m[0])) phone(s, e, m[0]); }, { loose: true });
+  // numbers written together, but only right after a word like "phone" or "cel"
+  scan(text, /\d{9,10}/g, function (m, s, e) {
+    if (PHONE_WORDS.test(text.slice(Math.max(0, s - 30), s))) phone(s, e, m[0]);
+  });
+
+  // US ZIP codes: after a state code ("TX 75040"), or ZIP+4
+  scan(text, new RegExp('(?:' + STATES + '),?\\s+(\\d{5}(?:-\\d{4})?)', 'g'), function (m, s, e) {
+    add(e - m[1].length, e, 'zip', m[1].slice(0, 5));
+  });
+  scan(text, /\d{5}-\d{4}/g, function (m, s, e) { add(s, e, 'zip', m[0].slice(0, 5)); });
+  return out;
+}
+
+/* ---------- names ---------- */
+// Folds case and accents without changing the length, so positions stay the same.
+function fold(str) {
+  var out = '';
+  for (var i = 0; i < str.length; i++) {
+    var c = str[i], f = c.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    out += f.length === 1 ? f : (c.toLowerCase().length === 1 ? c.toLowerCase() : c);
+  }
+  return out;
+}
+var TITLES = 'Mr|Mrs|Ms|Miss|Mx|Dr|Dra|Prof|Profa|Sr|Sra|Srta|Don|Do\u00f1a|D\u00f1a|Lic|Licda|Ing|Mtro|Mtra';
+var GREET = 'Dear|Hi|Hello|Hey|Hola|Estimado|Estimada|Estimados|Querido|Querida|Buenos d\u00edas|Buenas tardes|Buenas noches|Good morning|Good afternoon';
+var CLOSE = 'Best regards|Kind regards|Regards|Best|Thanks|Thank you|Sincerely|Cheers|Saludos cordiales|Saludos|Atentamente|Un saludo|Cordialmente|Gracias|Abrazos|Un abrazo';
+var NOT_NAMES = /^(all|team|sir|madam|madame|customer|client|friend|friends|everyone|everybody|there|valued|member|members|colleagues|guys|folks|cliente|clientes|equipo|todos|todas|amigo|amiga|amigos|amigas|se\u00f1or|se\u00f1ora|se\u00f1ores|usuario|usuaria|colegas|compa\u00f1eros|familia|the|a|an|el|la|los|las|un|una|and|y|from|de|this|that|i|yo|we|you|to|for|on|in|with|at|by|it|is|my|your|our|mr|mrs|ms|dr|sr|sra|soy|me|thanks|thank|gracias|monday|tuesday|wednesday|thursday|friday|saturday|sunday|lunes|martes|mi\u00e9rcoles|jueves|viernes|s\u00e1bado|domingo|january|february|march|april|may|june|july|august|september|october|november|december|enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre|sent|enviado|support|soporte|admin|hr|ceo|manager|google|apple|microsoft|amazon)$/i;
+var CONNECT = /^(de|del|la|las|los|y|van|von|der|da|dos|das|di|le|du|bin|al|el)$/i;
+var NAME_WORD = '\\p{Lu}[\\p{Ll}\\p{Lu}\'\u2019\\-]*';
+var NAME_SEQ = NAME_WORD + '(?:[ \\t]+(?:(?:de|del|la|las|los|van|von|da|dos|y)[ \\t]+)*' + NAME_WORD + '){0,3}';
+function cleanName(n) {
+  var ws = n.split(/\s+/);
+  while (ws.length && (NOT_NAMES.test(ws[ws.length - 1]) || CONNECT.test(ws[ws.length - 1]))) ws.pop();
+  while (ws.length && (NOT_NAMES.test(ws[0]) || CONNECT.test(ws[0]))) ws.shift();
+  var real = ws.filter(function (w) { return !CONNECT.test(w); });
+  if (!real.length || real.some(function (w) { return NOT_NAMES.test(w) || w.length < 2; })) return '';
+  if (real.every(function (w) { return w === w.toUpperCase() && w.length > 1; }) && real.length === 1 && real[0].length <= 4) return '';  // "USA", "ID"
+  return ws.join(' ');
+}
+function suggestNames(text) {
+  var found = [], seen = Object.create(null);
+  function push(n) { n = cleanName(n.trim()); var k = fold(n); if (n && !seen[k]) { seen[k] = true; found.push(n); } }
+  var pats = [
+    new RegExp('(?:^|[^\\p{L}])(?:' + TITLES + ')\\.?[ \\t]+(' + NAME_SEQ + ')', 'gu'),
+    new RegExp('(?:^|[^\\p{L}])(?:' + GREET + ')[ \\t]+(' + NAME_SEQ + ')', 'gu'),
+    new RegExp('(?:^|\\n)[ \\t]*(?:' + CLOSE + ')[ \\t]*[,.!]?[ \\t]*\\r?\\n[ \\t]*(' + NAME_SEQ + ')[ \\t]*(?=\\r?\\n|$)', 'gu'),
+    new RegExp('(?:my name is|this is|me llamo|mi nombre es|les saluda|le saluda)[ \\t]+(' + NAME_SEQ + ')', 'giu')
+  ];
+  pats.forEach(function (re) { var m; while ((m = re.exec(text))) push(m[1]); });
+  return found;
+}
+// Every place a name (or one of its parts) appears as a whole word.
+function findTerms(text, terms) {
+  var out = [], ft = fold(text);
+  function occ(word, fn) {
+    var fw = fold(word); if (!fw) return;
+    var i = 0;
+    while ((i = ft.indexOf(fw, i)) >= 0) {
+      var e = i + fw.length;
+      if (!isWord(text[i - 1]) && !isWord(text[e])) fn(i, e);
+      i = i + 1;
+    }
+  }
+  terms.forEach(function (t, ti) {
+    var term = String(t.text || t).trim(); if (!term) return;
+    var key = fold(term).replace(/\s+/g, ' ');
+    occ(term, function (s, e) { out.push({ start: s, end: e, type: 'name', key: key, src: t.src || 'user', whole: true }); });
+    var parts = term.split(/\s+/).filter(function (w) { return w.length >= 3 && !CONNECT.test(w) && !NOT_NAMES.test(w); });
+    if (parts.length > 1) parts.forEach(function (p, pi) {
+      occ(p, function (s, e) { if (/\p{Lu}/u.test(text[s])) out.push({ start: s, end: e, type: 'name', key: key, src: t.src || 'user', part: true, first: pi === 0, order: ti }); });
+    });
+  });
+  return out;
+}
+
+/* ---------- putting it together ---------- */
+var ORDER = ['email', 'nameWhole', 'iban', 'clabe', 'card', 'curp', 'rfc', 'ssn', 'nie', 'dni', 'ip', 'phone', 'zip', 'namePart'];
+// opts: { terms: [{text, src}], ignore: [folded names to leave alone], suggest: true }
+function detect(text, opts) {
+  opts = opts || {};
+  text = String(text || '');
+  var ignore = Object.create(null);
+  (opts.ignore || []).forEach(function (n) { ignore[fold(String(n)).replace(/\s+/g, ' ')] = true; });
+  var terms = (opts.terms || []).map(function (t) { return typeof t === 'string' ? { text: t, src: 'user' } : t; });
+  var have = Object.create(null); terms.forEach(function (t) { have[fold(t.text).replace(/\s+/g, ' ')] = true; });
+  var suggested = [];
+  if (opts.suggest !== false) suggestNames(text).forEach(function (n) {
+    var k = fold(n).replace(/\s+/g, ' ');
+    if (!have[k] && !ignore[k]) { have[k] = true; suggested.push(n); terms.push({ text: n, src: 'suggested' }); }
+  });
+  // A known name (or part of one) followed straight away by another capitalised word ("Maria Lopez") is
+  // most likely a full name too, even with no greeting or title in front of it.
+  if (opts.suggest !== false) {
+    var firsts = Object.create(null);
+    terms.forEach(function (t) { String(t.text).trim().split(/\s+/).forEach(function (w) { if (w.length >= 3 && !CONNECT.test(w) && !NOT_NAMES.test(w)) firsts[fold(w)] = true; }); });
+    var re = new RegExp('(' + NAME_WORD + ')[ \\t]+(' + NAME_WORD + '(?:[ \\t]+' + NAME_WORD + ')?)', 'gu'), m;
+    while ((m = re.exec(text))) {
+      if (!firsts[fold(m[1])] || isWord(text[m.index - 1])) { re.lastIndex = m.index + m[1].length; continue; }
+      var full = cleanName(m[1] + ' ' + m[2]);
+      var kf = fold(full).replace(/\s+/g, ' ');
+      if (full && full.split(' ').length > 1 && !have[kf] && !ignore[kf] &&
+          !terms.some(function (t) { return (' ' + fold(t.text) + ' ').indexOf(' ' + kf + ' ') >= 0; })) {
+        have[kf] = true; suggested.push(full); terms.push({ text: full, src: 'suggested' });
+      }
+      re.lastIndex = m.index + m[1].length;
+    }
+  }
+  var cands = findAll(text).concat(findTerms(text, terms));
+  function rank(c) { return ORDER.indexOf(c.type === 'name' ? (c.part ? 'namePart' : 'nameWhole') : c.type); }
+  // A name part shared by two names goes to the one where it is the first name, then to the one listed first.
+  cands.sort(function (a, b) { return rank(a) - rank(b) || (b.end - b.start) - (a.end - a.start) || a.start - b.start || (b.first ? 1 : 0) - (a.first ? 1 : 0) || (a.order || 0) - (b.order || 0); });
+  var taken = [], items = [];
+  cands.forEach(function (c) {
+    for (var i = 0; i < taken.length; i++) if (c.start < taken[i].end && taken[i].start < c.end) return;
+    taken.push(c); items.push(c);
+  });
+  items.sort(function (a, b) { return a.start - b.start; });
+  items.forEach(function (it, i) { it.id = i; it.value = text.slice(it.start, it.end); if (!it.src) it.src = 'auto'; });
+  return { items: items, suggested: suggested };
+}
+
+// items: the ones to hide. opts: { style: 'label'|'block', labels: {email:'Email',...}, keepLast4: bool }
+function apply(text, items, opts) {
+  opts = opts || {};
+  var labels = opts.labels || {}, counters = {}, numFor = {}, key = [], seenKey = Object.create(null);
+  var list = items.slice().sort(function (a, b) { return a.start - b.start; });
+  var out = '', at = 0;
+  list.forEach(function (it) {
+    var id = it.type + '|' + it.key, rep;
+    if (numFor[id] == null) { counters[it.type] = (counters[it.type] || 0) + 1; numFor[id] = counters[it.type]; }
+    var label = (labels[it.type] || it.type) + ' ' + numFor[id];
+    if (opts.style === 'block') rep = '\u2588\u2588\u2588\u2588\u2588';
+    else if (opts.keepLast4 && /^(card|iban|clabe)$/.test(it.type)) rep = '[' + label + ' \u2026' + it.key.slice(-4) + ']';
+    else rep = '[' + label + ']';
+    out += text.slice(at, it.start) + rep; at = it.end;
+    var kk = rep + '\u0000' + it.value;
+    if (opts.style !== 'block' && !seenKey[kk]) { seenKey[kk] = true; key.push({ placeholder: rep, value: it.value, type: it.type }); }
+  });
+  return { text: out + text.slice(at), key: key };
+}
+
+root.REDACT_TEXT = { detect: detect, apply: apply, suggestNames: suggestNames, fold: fold, luhn: luhn, ibanOk: ibanOk, clabeOk: clabeOk, curpCheck: curpCheck, dniOk: dniOk };
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Redact - Text tab and the Photo/Text tabs. Encryption 1 Suite, MIT License.
+   The text is checked in this browser tab. Nothing is sent anywhere. */
+(function () {
+'use strict';
+var UI_LANG = document.documentElement.lang || 'en';
+function T(key, vars) {
+  var s = I18N[key];
+  if (s == null) return key;
+  if (typeof s === 'object' && !Array.isArray(s)) {
+    if (s.other == null) return s;
+    var form = 'other';
+    try { form = new Intl.PluralRules(UI_LANG).select(vars && vars.n); } catch (e) {}
+    s = (s[form] != null) ? s[form] : s.other;
+  }
+  if (vars) for (var k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+
+/* ---------- tabs (#text in the address opens the Text tab) ---------- */
+function tab(which, push) {
+  var text = which === 'text';
+  $('tabPhoto').setAttribute('aria-selected', String(!text)); $('tabText').setAttribute('aria-selected', String(text));
+  $('panelPhoto').hidden = text; $('panelText').hidden = !text;
+  if ($('photoHow')) $('photoHow').hidden = text;
+  if (push) { try { history.replaceState(null, '', text ? '#text' : location.pathname + location.search); } catch (e) {} }
+}
+$('tabPhoto').addEventListener('click', function () { tab('photo', true); });
+$('tabText').addEventListener('click', function () { tab('text', true); });
+if (/^#text$/i.test(location.hash)) tab('text', false);
+window.addEventListener('hashchange', function () { tab(/^#text$/i.test(location.hash) ? 'text' : 'photo', false); });
+
+/* ---------- state ---------- */
+var terms = [], ignored = [], off = Object.create(null), result = null, srcName = '', timer = null;
+var labels = T('txLabels'), groupNames = T('txGroups');
+var GROUP_ORDER = ['name', 'email', 'phone', 'card', 'iban', 'clabe', 'ssn', 'zip', 'curp', 'rfc', 'dni', 'nie', 'ip'];
+function k(it) { return it.type + '|' + it.key; }
+
+$('txIn').addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(run, 250); });
+$('txClear').addEventListener('click', function () {
+  $('txIn').value = ''; srcName = ''; off = Object.create(null); ignored = []; $('txErr').hidden = true; run(); $('txIn').focus();
+});
+$('txOpen').addEventListener('click', function () { $('txFile').click(); });
+$('txFile').addEventListener('change', function (e) {
+  var f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (!f) return;
+  $('txErr').hidden = true;
+  if (f.size > 5 * 1024 * 1024) { $('txErr').textContent = T('txTooBig'); $('txErr').hidden = false; return; }
+  f.text().then(function (t) {
+    if (/\u0000/.test(t.slice(0, 4096))) { $('txErr').textContent = T('txNotText'); $('txErr').hidden = false; return; }
+    $('txIn').value = t.replace(/^\ufeff/, ''); srcName = f.name; off = Object.create(null); run();
+  }, function () { $('txErr').textContent = T('txNotText'); $('txErr').hidden = false; });
+});
+
+/* ---------- names and words ---------- */
+function addTerm(v) {
+  v = String(v || '').replace(/\s+/g, ' ').trim();
+  if (!v) return;
+  var f = REDACT_TEXT.fold(v);
+  ignored = ignored.filter(function (x) { return REDACT_TEXT.fold(x) !== f; });
+  if (!terms.some(function (t) { return REDACT_TEXT.fold(t) === f; })) terms.push(v);
+  run();
+}
+$('txAdd').addEventListener('click', function () { addTerm($('txTerm').value); $('txTerm').value = ''; $('txTerm').focus(); });
+$('txTerm').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('txAdd').click(); } });
+$('txChips').addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('button'); if (!b) return;
+  var v = b.getAttribute('data-term'), kind = b.getAttribute('data-kind');
+  if (kind === 'user') terms = terms.filter(function (t) { return t !== v; });
+  else ignored.push(v);                         // a suggestion they don't want
+  run();
+});
+function renderChips(suggested) {
+  var html = terms.map(function (t) {
+    return '<span class="chip"><bdi>' + esc(t) + '</bdi><button type="button" data-kind="user" data-term="' + esc(t) + '" aria-label="' + esc(T('txRemoveName', { name: t })) + '">\u00d7</button></span>';
+  }).concat(suggested.map(function (t) {
+    return '<span class="chip"><bdi>' + esc(t) + '</bdi> <small>' + esc(T('txSuggested')) + '</small><button type="button" data-kind="sug" data-term="' + esc(t) + '" aria-label="' + esc(T('txKeepName', { name: t })) + '">\u00d7</button></span>';
+  }));
+  $('txChips').innerHTML = html.join('');
+}
+
+/* ---------- find, review, build the copy ---------- */
+function run() {
+  var text = $('txIn').value;
+  result = REDACT_TEXT.detect(text, { terms: terms.slice(), ignore: ignored.slice() });
+  renderChips(result.suggested);
+  var has = text.trim().length > 0;
+  $('txFoundCard').hidden = !has; $('txOutCard').hidden = !has;
+  if (!has) { $('txOut').value = ''; return; }
+  renderGroups();
+  build();
+}
+function renderGroups() {
+  var byType = {}, n = 0;
+  result.items.forEach(function (it) {
+    var g = byType[it.type] = byType[it.type] || { vals: {}, order: [] };
+    var key = k(it);
+    if (!g.vals[key]) { g.vals[key] = { key: key, shown: it.type === 'name' ? (it.whole ? it.value : '') : it.value, count: 0, all: [] }; g.order.push(key); }
+    var v = g.vals[key]; v.count++; if (it.whole && !v.shown) v.shown = it.value; if (v.all.indexOf(it.value) < 0) v.all.push(it.value);
+    n++;
+  });
+  $('txFoundTitle').textContent = n ? T('txFound', { n: n }) : T('txFoundNone');
+  var html = '';
+  GROUP_ORDER.forEach(function (type) {
+    var g = byType[type]; if (!g) return;
+    var allOn = g.order.every(function (key) { return !off[key]; });
+    html += '<div class="grp"><label><input type="checkbox" data-group="' + type + '"' + (allOn ? ' checked' : '') + '> ' + esc(groupNames[type] || type) + ' <span class="hint">(' + g.order.length + ')</span></label><div class="vals">';
+    g.order.forEach(function (key) {
+      var v = g.vals[key], shown = v.shown || v.all[0];
+      var also = v.all.filter(function (x) { return x !== shown; });
+      html += '<label><input type="checkbox" data-key="' + esc(key) + '"' + (off[key] ? '' : ' checked') + '> <code dir="auto">' + esc(shown) + '</code>' +
+        (also.length ? ' <span class="cnt">+ ' + esc(also.slice(0, 4).join(', ')) + (also.length > 4 ? '\u2026' : '') + '</span>' : '') +
+        (v.count > 1 ? ' <span class="cnt">' + esc(T('txTimes', { n: v.count })) + '</span>' : '') + '</label>';
+    });
+    html += '</div></div>';
+  });
+  $('txGroups').innerHTML = html;
+}
+$('txGroups').addEventListener('change', function (e) {
+  var t = e.target, key = t.getAttribute('data-key'), group = t.getAttribute('data-group');
+  if (key) { if (t.checked) delete off[key]; else off[key] = true; }
+  if (group) result.items.forEach(function (it) { if (it.type === group) { if (t.checked) delete off[k(it)]; else off[k(it)] = true; } });
+  renderGroups(); build();
+});
+$('txStyle').addEventListener('change', build);
+$('txLast4').addEventListener('change', build);
+var lastKey = [];
+function build() {
+  if (!result) return;
+  var style = $('txStyle').value;
+  $('txLast4').disabled = style === 'block';
+  var use = result.items.filter(function (it) { return !off[k(it)]; });
+  var r = REDACT_TEXT.apply($('txIn').value, use, { style: style, labels: labels, keepLast4: $('txLast4').checked });
+  $('txOut').value = r.text; lastKey = r.key;
+  $('txKey').hidden = style === 'block' || !r.key.length; $('txKeyNote').hidden = $('txKey').hidden;
+  $('txStatus').textContent = '';
+}
+
+/* ---------- copy and save ---------- */
+function download(text, name) {
+  var url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' })), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+}
+function base() {
+  var b = (srcName || '').replace(/\.[^.]+$/, '');
+  return b || T('txFileWord') + '-' + new Date().toISOString().slice(0, 10);
+}
+$('txCopy').addEventListener('click', function () {
+  var v = $('txOut').value;
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(function () { $('txStatus').textContent = T('txCopied'); }, fallback);
+  else fallback();
+  function fallback() { $('txOut').focus(); $('txOut').select(); $('txStatus').textContent = T('txCopyManual'); }
+});
+$('txSave').addEventListener('click', function () { download($('txOut').value, base() + '-' + T('txSuffix') + '.txt'); });
+$('txKey').addEventListener('click', function () {
+  var lines = [T('txKeyTitle'), T('txKeyWarn'), ''];
+  lastKey.forEach(function (x) { lines.push(x.placeholder + '  =  ' + x.value); });
+  download(lines.join('\r\n') + '\r\n', base() + '-' + T('txKeySuffix') + '.txt');
+});
+run();
+})();
+</script>
+<script>
+/* Redact - page logic. Everything runs in this browser tab. Nothing is sent anywhere. */
+(function(){
+"use strict";
+var UI_LANG = document.documentElement.lang || 'en';
+function T(key, vars){
+  var s = I18N[key];
+  if (s == null) return key;
+  if (typeof s === 'object'){
+    var form = 'other';
+    try { form = new Intl.PluralRules(UI_LANG).select(vars && vars.n); } catch(e){}
+    s = (s[form] != null) ? s[form] : s.other;
+  }
+  if (vars) for (var k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+var $ = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var num = function(n){ return Number(n).toLocaleString(UI_LANG); };
+
+// Canvases above about 16.7 million pixels fail on Safari, so larger pictures are scaled down to fit.
+var MAX_PIXELS = 16000000;
+var src = null;            // the picture as the browser shows it (orientation applied), at working size
+var W = 0, H = 0;          // working size in pixels
+var origSize = null;       // size before any scaling
+var fileName = 'image';
+var boxes = [];            // {x,y,w,h} in image pixels
+var history = [];
+var selected = -1;
+var fill = [0, 0, 0];
+var view = $('view'), vctx = view.getContext('2d');
+var scale = 1;             // screen pixels per image pixel
+
+// ---------- loading ----------
+$('chooseBtn').addEventListener('click', function(){ $('fileIn').click(); });
+$('otherBtn').addEventListener('click', function(){ $('fileIn').click(); });
+$('fileIn').addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; e.target.value = ''; if (f) load(f); });
+var drop = $('drop');
+['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+['dragleave','drop'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+drop.addEventListener('drop', function(e){ var f = e.dataTransfer && e.dataTransfer.files[0]; if (f) load(f); });
+document.addEventListener('paste', function(e){
+  if ($('panelPhoto') && $('panelPhoto').hidden) return;   // pasting into the Text tab is ordinary text
+  var items = (e.clipboardData && e.clipboardData.items) || [];
+  for (var i = 0; i < items.length; i++){ if (items[i].type && items[i].type.indexOf('image/') === 0){ var f = items[i].getAsFile(); if (f){ load(f, T('pastedName')); e.preventDefault(); return; } } }
+});
+
+async function decode(blob){
+  if (window.createImageBitmap){
+    try { return await createImageBitmap(blob, {imageOrientation: 'from-image'}); } catch(e){}
+    try { return await createImageBitmap(blob); } catch(e){}
+  }
+  return await new Promise(function(res, rej){
+    var url = URL.createObjectURL(blob), img = new Image();
+    img.onload = function(){ URL.revokeObjectURL(url); res(img); };
+    img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error('decode')); };
+    img.src = url;
+  });
+}
+function dims(im){ return {w: im.naturalWidth || im.width, h: im.naturalHeight || im.height}; }
+
+async function load(file, nameOverride){
+  $('loadError').hidden = true;
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type || '') && !/\.(jpe?g|png|webp|gif)$/i.test(file.name || '')){
+    showLoadError(T('errType')); return;
+  }
+  if (file.size > 60 * 1024 * 1024){ showLoadError(T('errBig')); return; }
+  var bytes = new Uint8Array(await file.arrayBuffer());
+  var info = REDACT.inspect(bytes);
+  var im;
+  try { im = await decode(file); } catch(e){ showLoadError(T('errDecode')); return; }
+  var d = dims(im); origSize = d;
+  var k = Math.min(1, Math.sqrt(MAX_PIXELS / (d.w * d.h)));
+  W = Math.max(1, Math.floor(d.w * k)); H = Math.max(1, Math.floor(d.h * k));
+  src = document.createElement('canvas'); src.width = W; src.height = H;
+  var sctx = src.getContext('2d');
+  sctx.imageSmoothingQuality = 'high';
+  sctx.drawImage(im, 0, 0, W, H);
+  if (im.close) im.close();
+  fileName = niceName(nameOverride || file.name || '');
+  boxes = []; history = []; selected = -1;
+  $('sizeNote').textContent = k < 1 ? T('scaledNote', {w: num(W), h: num(H), ow: num(d.w), oh: num(d.h)}) : T('sizeNote', {w: num(W), h: num(H)});
+  showFound(info);
+  $('pickCard').hidden = true; $('editCard').hidden = false; $('saveCard').hidden = false;
+  resetResults(); layout(); updateButtons();
+  view.focus({preventScroll: true});
+}
+// iPhone and iPad hand over photos from the Photos library with a random ID instead of their
+// real name (for example 5BF3DDA5-EA8C-4D62-AA4F-71BAD820C3A2.png), or just "image". Those get
+// a readable name with the date and time instead; real names like IMG_1234 are kept.
+function niceName(name){
+  var base = String(name).replace(/\.[^.]+$/, '').trim();
+  var generic = !base || /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(base) || /^(image|photo|picture|img|untitled|blob)$/i.test(base);
+  if (!generic) return base;
+  var d = new Date(), p = function(n){ return (n < 10 ? '0' : '') + n; };
+  return T('fileWord') + '-' + d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes());
+}
+function showLoadError(msg){ var el = $('loadError'); el.textContent = msg; el.hidden = false; }
+function foundList(info){
+  var out = [];
+  if (info.gps) out.push(T('fGps'));
+  if (info.camera || info.date) out.push(T('fCamera'));
+  if (info.thumbnail) out.push(T('fThumb'));
+  if (info.extraImages || info.trailing) out.push(T('fExtra'));
+  var k = info.items.map(function(i){ return i.kind; });
+  if (k.indexOf('xmp') >= 0 || k.indexOf('iptc') >= 0 || k.indexOf('text') >= 0 || k.indexOf('comment') >= 0) out.push(T('fText'));
+  if (!out.length && !info.clean) out.push(T('fOther'));
+  return out;
+}
+function showFound(info){
+  var el = $('found'), list = foundList(info);
+  if (!list.length){ el.className = 'found clean'; el.innerHTML = '<strong>' + esc(T('foundNone')) + '</strong>'; return; }
+  el.className = 'found';
+  el.innerHTML = '<strong>' + esc(T('foundTitle')) + '</strong><ul>' + list.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul><span>' + esc(T('foundLeftOut')) + '</span>';
+}
+
+// ---------- drawing ----------
+function layout(){
+  if (!src) return;
+  var stageW = view.parentNode.clientWidth - 20;
+  var maxH = Math.max(320, window.innerHeight * 0.72);
+  scale = Math.min(stageW / W, maxH / H, 4);
+  var dpr = window.devicePixelRatio || 1;
+  view.style.width = Math.round(W * scale) + 'px'; view.style.height = Math.round(H * scale) + 'px';
+  view.width = Math.round(W * scale * dpr); view.height = Math.round(H * scale * dpr);
+  vctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+  draw();
+}
+window.addEventListener('resize', function(){ clearTimeout(layout._t); layout._t = setTimeout(layout, 100); });
+function fillCss(){ return 'rgb(' + fill.join(',') + ')'; }
+function draw(){
+  if (!src) return;
+  vctx.imageSmoothingEnabled = true;
+  vctx.drawImage(src, 0, 0);
+  vctx.fillStyle = fillCss();
+  boxes.forEach(function(b){ vctx.fillRect(b.x, b.y, b.w, b.h); });
+  if (selected >= 0 && boxes[selected]){
+    var b = boxes[selected], lw = 2 / scale;
+    vctx.save();
+    vctx.lineWidth = lw; vctx.setLineDash([6 / scale, 4 / scale]);
+    vctx.strokeStyle = fill[0] === 0 ? '#ffcc00' : '#0d6efd';
+    vctx.strokeRect(b.x + lw / 2, b.y + lw / 2, b.w - lw, b.h - lw);
+    vctx.setLineDash([]); vctx.fillStyle = vctx.strokeStyle;
+    handles(b).forEach(function(h){ vctx.fillRect(h.x - 5 / scale, h.y - 5 / scale, 10 / scale, 10 / scale); });
+    vctx.restore();
+  }
+}
+function handles(b){ return [{k:'nw', x:b.x, y:b.y}, {k:'ne', x:b.x + b.w, y:b.y}, {k:'sw', x:b.x, y:b.y + b.h}, {k:'se', x:b.x + b.w, y:b.y + b.h}]; }
+function toImg(e){ var r = view.getBoundingClientRect(); return {x: (e.clientX - r.left) / scale, y: (e.clientY - r.top) / scale}; }
+function snapshot(){ history.push(JSON.stringify(boxes)); if (history.length > 100) history.shift(); }
+function changed(){ resetResults(); updateButtons(); draw(); }
+
+var drag = null;
+view.addEventListener('pointerdown', function(e){
+  if (!src || e.button > 0) return;
+  view.setPointerCapture(e.pointerId);
+  var p = toImg(e), tol = 10 / scale;
+  if (selected >= 0){
+    var hs = handles(boxes[selected]);
+    for (var i = 0; i < hs.length; i++){
+      if (Math.abs(p.x - hs[i].x) <= tol && Math.abs(p.y - hs[i].y) <= tol){ snapshot(); drag = {mode:'resize', k:hs[i].k, start:p, box:Object.assign({}, boxes[selected])}; return; }
+    }
+  }
+  for (var j = boxes.length - 1; j >= 0; j--){
+    var b = boxes[j];
+    if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h){ selected = j; snapshot(); drag = {mode:'move', start:p, box:Object.assign({}, b), moved:false}; updateButtons(); draw(); return; }
+  }
+  snapshot(); selected = boxes.length; boxes.push({x:p.x, y:p.y, w:0, h:0});
+  drag = {mode:'new', start:p};
+  updateButtons(); draw();
+});
+view.addEventListener('pointermove', function(e){
+  if (!drag) return;
+  var p = toImg(e), b = boxes[selected], dx = p.x - drag.start.x, dy = p.y - drag.start.y;
+  if (drag.mode === 'new'){ b.x = drag.start.x; b.y = drag.start.y; b.w = dx; b.h = dy; }
+  else if (drag.mode === 'move'){
+    b.x = Math.min(Math.max(0, drag.box.x + dx), W - b.w); b.y = Math.min(Math.max(0, drag.box.y + dy), H - b.h);
+    if (Math.abs(dx) + Math.abs(dy) > 1 / scale) drag.moved = true;
+  } else {
+    var o = drag.box, x0 = o.x, y0 = o.y, x1 = o.x + o.w, y1 = o.y + o.h;
+    if (drag.k.indexOf('w') >= 0) x0 = o.x + dx; if (drag.k.indexOf('e') >= 0) x1 = o.x + o.w + dx;
+    if (drag.k.indexOf('n') >= 0) y0 = o.y + dy; if (drag.k.indexOf('s') >= 0) y1 = o.y + o.h + dy;
+    b.x = x0; b.y = y0; b.w = x1 - x0; b.h = y1 - y0;
+  }
+  draw();
+});
+function endDrag(){
+  if (!drag) return;
+  var b = boxes[selected];
+  if (b){
+    var n = REDACT.normBox(b, W, H);
+    if (drag.mode === 'new' && (n.w * scale < 4 || n.h * scale < 4)){ boxes.splice(selected, 1); selected = -1; history.pop(); }
+    else { boxes[selected] = n; if (drag.mode === 'move' && !drag.moved) history.pop(); }
+  }
+  drag = null; changed();
+}
+view.addEventListener('pointerup', endDrag);
+view.addEventListener('pointercancel', endDrag);
+view.addEventListener('keydown', function(e){
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); undo(); return; }
+  if (selected < 0) return;
+  if (e.key === 'Delete' || e.key === 'Backspace'){ e.preventDefault(); del(); return; }
+  var step = e.shiftKey ? 10 : 1, b = boxes[selected], mv = {ArrowLeft:[-step,0], ArrowRight:[step,0], ArrowUp:[0,-step], ArrowDown:[0,step]}[e.key];
+  if (mv){ e.preventDefault(); snapshot(); b.x = Math.min(Math.max(0, b.x + mv[0]), W - b.w); b.y = Math.min(Math.max(0, b.y + mv[1]), H - b.h); changed(); }
+  if (e.key === 'Escape'){ selected = -1; draw(); updateButtons(); }
+});
+function undo(){ if (!history.length) return; boxes = JSON.parse(history.pop()); selected = -1; changed(); }
+function del(){ if (selected < 0) return; snapshot(); boxes.splice(selected, 1); selected = -1; changed(); }
+$('undoBtn').addEventListener('click', undo);
+$('delBtn').addEventListener('click', del);
+$('clearBtn').addEventListener('click', function(){ if (!boxes.length) return; snapshot(); boxes = []; selected = -1; changed(); });
+function setFill(c){ fill = c; $('fillBlack').setAttribute('aria-pressed', c[0] === 0); $('fillWhite').setAttribute('aria-pressed', c[0] === 255); changed(); }
+$('fillBlack').addEventListener('click', function(){ setFill([0, 0, 0]); });
+$('fillWhite').addEventListener('click', function(){ setFill([255, 255, 255]); });
+function updateButtons(){
+  $('undoBtn').disabled = !history.length;
+  $('delBtn').disabled = selected < 0;
+  $('clearBtn').disabled = !boxes.length;
+  $('drawHint').textContent = boxes.length ? T('boxCount', {n: boxes.length}) : T('drawHint');
+}
+
+// ---------- saving, with checks on the saved file ----------
+function resetResults(){ $('saveStatus').hidden = true; $('checks').hidden = true; if ($('nextStep')) $('nextStep').hidden = true; }
+function setStatus(cls, text){ var el = $('saveStatus'); el.className = 'status ' + cls; el.textContent = text; el.hidden = false; }
+function toBlob(canvas, type, q){ return new Promise(function(res){ canvas.toBlob(res, type, q); }); }
+async function pixelsOf(blob){
+  var bmp;
+  try { bmp = await createImageBitmap(blob, {colorSpaceConversion:'none', premultiplyAlpha:'none', imageOrientation:'none'}); }
+  catch(e){ bmp = await decode(blob); }
+  var c = document.createElement('canvas'), d = dims(bmp); c.width = d.w; c.height = d.h;
+  var x = c.getContext('2d', {willReadFrequently: true}); x.drawImage(bmp, 0, 0);
+  if (bmp.close) bmp.close();
+  return x.getImageData(0, 0, d.w, d.h);
+}
+$('saveBtn').addEventListener('click', async function(){
+  if (!src) return;
+  var btn = $('saveBtn'); btn.disabled = true;
+  setStatus('info', T('checking')); $('checks').hidden = true;
+  try {
+    var fmt = $('format').value, type = fmt === 'png' ? 'image/png' : 'image/jpeg';
+    // A brand-new canvas: the picture, then solid boxes. Only these pixels are encoded.
+    var out = document.createElement('canvas'); out.width = W; out.height = H;
+    var octx = out.getContext('2d', {willReadFrequently: true});
+    if (fmt === 'jpeg'){ octx.fillStyle = '#fff'; octx.fillRect(0, 0, W, H); }   // JPEG has no transparency
+    octx.drawImage(src, 0, 0);
+    var before = octx.getImageData(0, 0, W, H);
+    octx.fillStyle = fillCss();
+    var bx = boxes.map(function(b){ return REDACT.normBox(b, W, H); }).filter(function(b){ return b.w > 0 && b.h > 0; });
+    bx.forEach(function(b){ octx.fillRect(b.x, b.y, b.w, b.h); });
+    var encoded = await toBlob(out, type, fmt === 'jpeg' ? 0.92 : undefined);
+    if (!encoded) throw new Error('encode');
+    // Strip whatever this browser's encoder added (Apple encoders add technical extras),
+    // so only the picture is left. Then read that file back exactly as anyone receiving it would.
+    var stripped = REDACT.sanitize(new Uint8Array(await encoded.arrayBuffer()));
+    if (!stripped) throw new Error('encode');
+    var bytes = stripped.bytes, blob = new Blob([bytes], {type: type});
+    var info = REDACT.inspect(bytes);
+    var px = await pixelsOf(blob);
+    var results = [], allOk = true;
+    var add = function(ok, text){ results.push({ok:ok, text:text}); if (!ok) allOk = false; };
+    var sizeOk = px.width === W && px.height === H && info.width === W && info.height === H;
+    add(sizeOk, T('chkSize', {w: num(W), h: num(H)}));
+    if (bx.length){
+      var v = REDACT.verifyBoxes(px, bx, fill, fmt === 'png' ? 'exact' : 'lossy');
+      add(v.ok, T(fmt === 'png' ? 'chkBoxesExact' : 'chkBoxesLossy', {n: bx.length, px: num(v.checked), colour: T(fill[0] === 0 ? 'black' : 'white')}));
+    } else add(true, T('chkNoBoxes'));
+    if (fmt === 'png'){
+      var o = REDACT.verifyOutside(px, before, bx);
+      add(o.ok, T('chkOutside'));
+    }
+    var metaOk = !info.gps && !info.camera && !info.date && !info.items.some(function(i){ return /exif|xmp|iptc|text|comment|chunk|app|time/.test(i.kind); });
+    add(metaOk, T('chkMeta') + (metaOk ? '' : ' ' + T('chkFound', {list: info.items.map(function(i){ return i.kind + (i.note ? ' ' + i.note : ''); }).join(', ')})));
+    add(!info.thumbnail && !info.extraImages && !info.trailing, T('chkHidden'));
+    add(info.format === fmt, T('chkFormat', {fmt: fmt.toUpperCase()}));
+    $('checks').innerHTML = results.map(function(r){ return '<li class="' + (r.ok ? 'ok' : 'bad') + '">' + esc(r.text) + '</li>'; }).join('') +
+      (stripped.removed.length ? '<li class="info">' + esc(T('browserExtras', {list: stripped.removed.join(', ')})) + '</li>' : '');
+    $('checks').hidden = false;
+    if (!allOk){ setStatus('bad', T('notSaved')); return; }
+    var a = document.createElement('a'), url = URL.createObjectURL(blob);
+    a.href = url; a.download = fileName + '-redacted.' + (fmt === 'png' ? 'png' : 'jpg');
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 2000);
+    setStatus('ok', T('saved', {name: a.download}));
+    if ($('nextStep')) $('nextStep').hidden = false;
+  } catch(e){
+    setStatus('bad', T('saveFailed'));
+  } finally { btn.disabled = false; }
+});
+
+// tests and power users: expose a tiny read-only hook
+window.__redact = {get boxes(){ return boxes.slice(); }, get size(){ return {w: W, h: H}; }};
+})();
+</script>
+</body>
+</html>

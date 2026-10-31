@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vault — Encryption 1™ Suite</title>
+<meta name="description" content="Free browser-based password vault. Generate, store, and search passwords in a single encrypted file that lives on your own device — no upload, no account, no server." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+  .nolines { text-decoration: none; font-size: small; }
+  .container { max-width: 760px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; margin-bottom: 20px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .card {background: #fff;border: 1px solid var(--border);border-radius: 20px;box-shadow: 0 10px 30px rgba(0,0,0,.08);padding: 28px;}
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: .92rem; }
+  input[type="password"], input[type="text"] {width: 100%;padding: 11px 13px;border: 1px solid var(--border);border-radius: 12px;font: inherit;background: #fff;color: var(--text);}
+  input:focus { outline: none; border-color: var(--accent); }
+  button {appearance: none;border: 0;cursor: pointer;padding: 11px 18px;border-radius: 12px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-secondary { background: #eef2f7; color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+  .btn-danger { background: #fbeaea; color: var(--danger); }
+  .btn-danger:hover:not(:disabled) { background: #f6d7d5; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .btn-row button { flex: 1; }
+  .help { font-size: .82rem; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .status { font-size: .85rem; margin-top: 10px; min-height: 18px; }
+  .status.error { color: var(--danger); }
+  .status.success { color: var(--success); }
+  /* ---- Gate screen ---- */
+  #gate-screen .mode-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  #gate-screen .mode-tab {appearance: none;border: 0;background: transparent;padding: 12px 16px;cursor: pointer;font: inherit;font-size: .95rem;color: var(--muted);border-bottom: 3px solid transparent;flex: 1;}
+  #gate-screen .mode-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  #gate-screen .mode-panel { display: none; }
+  #gate-screen .mode-panel.active { display: block; }
+  /* ---- Vault screen ---- */
+  #vault-screen { display: none; }
+  .dirty-indicator { color: #b45309; font-size: .85rem; font-weight: 600; white-space: nowrap; }
+  #save-vault-btn.dirty { border-color: #b45309; box-shadow: 0 0 0 2px rgba(180,83,9,.25); }
+  .vault-top-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; flex-wrap: wrap; }
+  .vault-top-bar input[type="text"] { flex: 1; min-width: 180px; }
+  .vault-top-bar button { white-space: nowrap; }
+  .entry-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .entry-row {border: 1px solid var(--border);border-radius: 14px;padding: 14px 16px;background: #f8fafc;}
+  .entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+  .entry-site { font-weight: 700; font-size: 1rem; }
+  .entry-username { color: var(--muted); font-size: .85rem; }
+  .entry-field-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+  .entry-field-row .mono {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size: .88rem;background: #fff;border: 1px solid var(--border);border-radius: 8px;padding: 7px 10px;flex: 1;word-break: break-all;}
+  .entry-actions { display: flex; gap: 6px; margin-top: 10px; }
+  .entry-actions button { padding: 7px 11px; font-size: .8rem; }
+  .empty-state { text-align: center; color: var(--muted); padding: 30px 10px; font-size: .92rem; }
+  /* ---- Add/edit entry panel ---- */
+  #entry-form-panel { display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+  #entry-form-panel.show { display: block; }
+  .field { margin-bottom: 14px; }
+  .pw-row { display: flex; gap: 8px; }
+  .pw-row input { flex: 1; }
+  .gen-row { display: flex; gap: 8px; margin-top: 8px; }
+  .gen-row select, .gen-row input[type="range"] { flex: 1; }
+  .gen-row .small-label { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+  .footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; text-align: center; }
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html" aria-current="page"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div> <!-- closes navbar.php's sticky-nav wrapper div, which it opens but doesn't close itself -->
+<div class="container">
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" height="45" align="absmiddle" onerror="this.style.display='none'"> Vault</h1>
+    <p>A password vault that lives in one encrypted file on your own device. No autofill, no cloud — but generate, store, search, and copy, all local.</p>
+  </div>
+  <!-- ===== GATE SCREEN ===== -->
+  <div id="gate-screen" class="card">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="open">Open Vault</button>
+      <button class="mode-tab" data-mode="new">Create New Vault</button>
+    </div>
+    <div class="mode-panel active" id="panel-open">
+      <div class="field">
+        <label>Vault file</label>
+        <button class="btn-secondary" id="choose-file-btn" style="width:100%;">📂 Choose vault file...</button>
+        <div class="help" id="chosen-file-name"></div>
+      </div>
+      <div class="field">
+        <label for="open-password">Master password</label>
+        <input type="password" id="open-password" placeholder="Enter your master password" autocomplete="off">
+      </div>
+      <button class="btn-primary" id="unlock-btn" style="width:100%;" disabled>Unlock Vault</button>
+      <div class="status" id="open-status"></div>
+    </div>
+    <div class="mode-panel" id="panel-new">
+      <div class="field">
+        <label for="new-password">Master password</label>
+        <input type="password" id="new-password" placeholder="Choose a strong master password" autocomplete="off">
+        <p class="help">This password protects everything in the vault. If you lose it, there is no way to recover the vault's contents — nothing is sent anywhere that could reset it.</p>
+      </div>
+      <div class="field">
+        <label for="new-password2">Confirm master password</label>
+        <input type="password" id="new-password2" placeholder="Enter it again" autocomplete="off">
+      </div>
+      <button class="btn-primary" id="create-btn" style="width:100%;">Create Vault</button>
+      <div class="status" id="new-status"></div>
+    </div>
+  </div>
+  <!-- ===== VAULT SCREEN ===== -->
+  <div id="vault-screen" class="card">
+    <div class="vault-top-bar">
+      <input type="text" id="search-input" placeholder="Search by site or username...">
+      <button class="btn-primary" id="add-entry-btn">+ Add Entry</button>
+      <button class="btn-secondary" id="save-vault-btn">💾 Save</button>
+      <span id="dirty-indicator" class="dirty-indicator" role="status" aria-live="polite" hidden>● Unsaved changes</span>
+      <button class="btn-secondary" id="lock-btn">🔒 Lock</button>
+    </div>
+    <div class="vault-top-bar" style="margin-top:-8px;">
+      <label for="auto-lock-select" style="margin:0;font-weight:600;font-size:.85rem;white-space:nowrap;">Auto-lock:</label>
+      <select id="auto-lock-select" style="padding:7px 10px;border:1px solid var(--border);border-radius:8px;font:inherit;font-size:.85rem;">
+        <option value="0">Never</option>
+        <option value="5" selected>5 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="30">30 minutes</option>
+      </select>
+      <span class="help" style="margin:0;flex-basis:100%;">Vault tries to clear copied passwords from the clipboard after 30 seconds. Browsers may block this once you've switched tabs, so on a shared computer, copy something else when you're done.</span>
+    </div>
+    <div class="entry-list" id="entry-list"></div>
+    <div id="entry-form-panel">
+      <h3 id="entry-form-title" style="margin-top:0;">Add Entry</h3>
+      <div class="field">
+        <label for="entry-site">Site or service</label>
+        <input type="text" id="entry-site" placeholder="e.g. github.com">
+      </div>
+      <div class="field">
+        <label for="entry-username">Username / email</label>
+        <input type="text" id="entry-username" placeholder="e.g. jane@example.com">
+      </div>
+      <div class="field">
+        <label for="entry-password">Password</label>
+        <div class="pw-row">
+          <input type="text" id="entry-password" placeholder="Enter or generate a password" autocomplete="off">
+          <button class="btn-secondary" id="toggle-entry-pw-visible" type="button">Hide</button>
+        </div>
+        <div class="gen-row">
+          <select id="gen-type">
+            <option value="password">Password</option>
+            <option value="passphrase">Passphrase</option>
+          </select>
+          <button class="btn-secondary" id="generate-for-entry-btn" type="button" style="flex:0 0 auto;">Generate</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="entry-notes">Notes (optional)</label>
+        <input type="text" id="entry-notes" placeholder="Anything else worth remembering">
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="save-entry-btn">Save Entry</button>
+        <button class="btn-secondary" id="cancel-entry-btn">Cancel</button>
+      </div>
+    </div>
+    <p class="help" id="vault-status"></p>
+  </div>
+  <p class="footer">Your vault is one encrypted file — nothing is ever uploaded. Save it somewhere you'll remember (your own cloud folder, a USB drive) since there's no account to recover it from.</p>
+</div>
+<script src="scripts/eff-wordlist.js"></script>
+<script>
+  // ==================== Crypto (same pattern as EC1/Burn) ====================
+  function toBase64(buf) {
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(binary);
+  }
+  function fromBase64(str) { return Uint8Array.from(atob(str), c => c.charCodeAt(0)).buffer; }
+  async function deriveKey(password, salt) {
+    const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 250000, hash: 'SHA-256' },
+      baseKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
+    );
+  }
+  async function encryptVault(entries, password) {
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKey(password, salt);
+    const plaintext = new TextEncoder().encode(JSON.stringify(entries));
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext);
+    return JSON.stringify({ format: 'EC1-VAULT-1', salt: toBase64(salt), iv: toBase64(iv), ciphertext: toBase64(ciphertext) });
+  }
+  async function decryptVault(fileText, password) {
+    const packet = JSON.parse(fileText);
+    if (packet.format !== 'EC1-VAULT-1') throw new Error('Unrecognized vault file format.');
+    const salt = new Uint8Array(fromBase64(packet.salt));
+    const iv = new Uint8Array(fromBase64(packet.iv));
+    const key = await deriveKey(password, salt);
+    const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, fromBase64(packet.ciphertext));
+    return JSON.parse(new TextDecoder().decode(plaintext));
+  }
+  // ==================== Password/passphrase generation (reused verbatim from Forge) ====================
+  // Unbiased random index in [0, n). A plain `value % n` over a 32-bit random
+  // number favours the first (2^32 mod n) results very slightly, so any value in
+  // the uneven tail at the top of the range is thrown away and redrawn.
+  function randomIndex(n) {
+    const limit = Math.floor(0x100000000 / n) * n;
+    const buf = new Uint32Array(1);
+    let v;
+    do { crypto.getRandomValues(buf); v = buf[0]; } while (v >= limit);
+    return v % n;
+  }
+  function generateStrongPassword(length = 24) {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*-_=+';
+    let result = '';
+    for (let i = 0; i < length; i++) result += alphabet[randomIndex(alphabet.length)];
+    return result;
+  }
+  function generatePassphrase(wordCount, separator, capitalize, includeNumber) {
+    let words = [];
+    for (let i = 0; i < wordCount; i++) {
+      let w = WORDLIST[randomIndex(WORDLIST.length)];
+      if (capitalize) w = w[0].toUpperCase() + w.slice(1);
+      words.push(w);
+    }
+    if (includeNumber) {
+      words[randomIndex(words.length)] += randomIndex(100);
+    }
+    return words.join(separator);
+  }
+  // ==================== File handling: File System Access API with universal fallback ====================
+  let currentFileHandle = null; // set only when the File System Access API is used
+  let usingFallback = false;
+  const supportsFileSystemAccess = 'showOpenFilePicker' in window;
+  async function pickVaultFileToOpen() {
+    if (supportsFileSystemAccess) {
+      const [handle] = await window.showOpenFilePicker({
+        types: [{ description: 'Vault file', accept: { 'application/json': ['.vault', '.json'] } }]
+      });
+      currentFileHandle = handle;
+      usingFallback = false;
+      const file = await handle.getFile();
+      return { name: file.name, text: await file.text() };
+    } else {
+      // Fallback: plain <input type="file">
+      return new Promise((resolve, reject) => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.vault,.json,application/json';
+        input.onchange = async () => {
+          if (!input.files[0]) return reject(new Error('No file selected.'));
+          usingFallback = true;
+          const text = await input.files[0].text();
+          resolve({ name: input.files[0].name, text });
+        };
+        input.click();
+      });
+    }
+  }
+  async function writeVaultFile(content) {
+    if (supportsFileSystemAccess && currentFileHandle && !usingFallback) {
+      const writable = await currentFileHandle.createWritable();
+      await writable.write(content);
+      await writable.close();
+      return { method: 'direct' };
+    }
+    if (supportsFileSystemAccess && !currentFileHandle) {
+      // New vault being created, and the browser supports picking a save location
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: 'my-vault.vault',
+          types: [{ description: 'Vault file', accept: { 'application/json': ['.vault'] } }]
+        });
+        currentFileHandle = handle;
+        usingFallback = false;
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        return { method: 'direct' };
+      } catch (e) {
+        // User cancelled the save picker — fall through to download
+      }
+    }
+    // Universal fallback: trigger a download
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'my-vault.vault';
+    a.click();
+    URL.revokeObjectURL(url);
+    return { method: 'download' };
+  }
+  // ==================== App state ====================
+  let vaultEntries = [];
+  let vaultPassword = null;
+  let editingEntryId = null;
+  function uid() { return crypto.randomUUID ? crypto.randomUUID() : 'id-' + Math.random().toString(36).slice(2); }
+  // ---- Gate screen wiring ----
+  document.querySelectorAll('.mode-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.mode).classList.add('active');
+    });
+  });
+  let pickedFile = null;
+  document.getElementById('choose-file-btn').addEventListener('click', async () => {
+    try {
+      pickedFile = await pickVaultFileToOpen();
+      document.getElementById('chosen-file-name').textContent = 'Selected: ' + pickedFile.name;
+      updateUnlockBtnState();
+    } catch (e) {
+      // user cancelled picker — not an error worth surfacing
+    }
+  });
+  function updateUnlockBtnState() {
+    document.getElementById('unlock-btn').disabled = !(pickedFile && document.getElementById('open-password').value.length > 0);
+  }
+  document.getElementById('open-password').addEventListener('input', updateUnlockBtnState);
+  document.getElementById('unlock-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('open-status');
+    statusEl.textContent = 'Unlocking…';
+    statusEl.className = 'status';
+    try {
+      const password = document.getElementById('open-password').value;
+      vaultEntries = await decryptVault(pickedFile.text, password);
+      vaultPassword = password;
+      showVaultScreen();
+    } catch (e) {
+      statusEl.textContent = 'Could not unlock this vault — check your master password and that this is a genuine vault file.';
+      statusEl.className = 'status error';
+    }
+  });
+  document.getElementById('create-btn').addEventListener('click', async () => {
+    const statusEl = document.getElementById('new-status');
+    const p1 = document.getElementById('new-password').value;
+    const p2 = document.getElementById('new-password2').value;
+    if (p1.length < 8) { statusEl.textContent = 'Choose a master password of at least 8 characters.'; statusEl.className = 'status error'; return; }
+    if (p1 !== p2) { statusEl.textContent = 'Passwords do not match.'; statusEl.className = 'status error'; return; }
+    vaultEntries = [];
+    vaultPassword = p1;
+    currentFileHandle = null;
+    usingFallback = false;
+    statusEl.textContent = 'Creating vault — choose where to save it...';
+    statusEl.className = 'status';
+    try {
+      const content = await encryptVault(vaultEntries, vaultPassword);
+      const result = await writeVaultFile(content);
+      showVaultScreen();
+      setVaultStatus(result.method === 'direct' ? 'New vault created and saved.' : 'New vault downloaded — keep this file somewhere safe.', 'success');
+    } catch (e) {
+      statusEl.textContent = 'Could not create the vault file: ' + e.message;
+      statusEl.className = 'status error';
+    }
+  });
+  // ---- Vault screen ----
+  function showVaultScreen() {
+    setDirty(false);
+    document.getElementById('gate-screen').style.display = 'none';
+    document.getElementById('vault-screen').style.display = 'block';
+    renderEntries();
+    startAutoLockTimer();
+  }
+  // "Changed in memory" vs "written to the vault file". Nothing is saved automatically;
+  // this just makes the difference visible. Set by add/edit/delete, cleared by a
+  // successful save, a lock, or a fresh unlock.
+  let vaultDirty = false;
+  let changeRev = 0; // bumps on every change so a save that finishes late can't mask newer edits
+  function setDirty(d) {
+    if (d) changeRev++;
+    vaultDirty = d;
+    document.getElementById('dirty-indicator').hidden = !d;
+    document.getElementById('save-vault-btn').classList.toggle('dirty', d);
+  }
+  window.addEventListener('beforeunload', (ev) => {
+    if (vaultDirty) { ev.preventDefault(); ev.returnValue = ''; }
+  });
+  function setVaultStatus(msg, type) {
+    const el = document.getElementById('vault-status');
+    el.textContent = msg;
+    el.className = 'help' + (type === 'success' ? '' : '');
+  }
+  // Single source of truth for locking, used by both the manual Lock button
+  // and the auto-lock inactivity timer — nothing about "what locking means"
+  // is duplicated between the two triggers.
+  function lockVault(reason) {
+    const discarded = vaultDirty;
+    setDirty(false);
+    vaultEntries = [];
+    vaultPassword = null;
+    currentFileHandle = null;
+    pickedFile = null;
+    stopAutoLockTimer();
+    if (clipboardClearTimer) { clearTimeout(clipboardClearTimer); clipboardClearTimer = null; }
+    activeCopyBtn = null;
+    // Only touch the clipboard if Vault actually put a password there — otherwise
+    // locking would wipe something unrelated the user copied from elsewhere.
+    // If the browser refuses (e.g. an auto-lock firing while the tab is in the
+    // background), the clear stays pending and is retried at the next opportunity.
+    if (clipboardHoldsVaultPassword) {
+      const gen = clipboardGeneration;
+      tryClearClipboard().then(result => {
+        if (result === 'blocked' && gen === clipboardGeneration) clipboardClearOverdue = true;
+      });
+    }
+    document.getElementById('open-password').value = '';
+    document.getElementById('new-password').value = '';
+    document.getElementById('new-password2').value = '';
+    document.getElementById('chosen-file-name').textContent = '';
+    document.getElementById('vault-screen').style.display = 'none';
+    document.getElementById('gate-screen').style.display = 'block';
+    const gateStatus = document.getElementById('open-status');
+    if (reason === 'auto') {
+      gateStatus.textContent = discarded
+        ? 'Vault locked after inactivity. Changes you had not saved were not written to your vault file.'
+        : 'Vault locked after inactivity.';
+      gateStatus.className = discarded ? 'status error' : 'status';
+    } else {
+      gateStatus.textContent = '';
+      gateStatus.className = 'status';
+    }
+  }
+  document.getElementById('lock-btn').addEventListener('click', () => {
+    if (vaultDirty && !confirm('You have unsaved changes. Locking will discard them.\n\nPress Cancel to go back and click Save first.')) return;
+    lockVault('manual');
+  });
+  // ---- Auto-lock after inactivity ----
+  let autoLockTimer = null;
+  let autoLockMinutes = 5; // matches the <select>'s default selection
+  const AUTO_LOCK_PREF_KEY = 'ec1-vault-autolock-minutes';
+  try {
+    const saved = localStorage.getItem(AUTO_LOCK_PREF_KEY);
+    if (saved !== null) {
+      autoLockMinutes = Number(saved);
+      document.getElementById('auto-lock-select').value = String(autoLockMinutes);
+    }
+  } catch (e) { /* localStorage unavailable — just use the default */ }
+  // Time of the last real activity. The setTimeout below is the normal path,
+  // but timers can fall behind while a computer is asleep or a tab is in the
+  // background, so the wall clock is checked as a backstop too (see below).
+  let lastActivityAt = Date.now();
+  function startAutoLockTimer() {
+    stopAutoLockTimer();
+    lastActivityAt = Date.now();
+    if (autoLockMinutes <= 0) return; // "Never"
+    autoLockTimer = setTimeout(() => lockVault('auto'), autoLockMinutes * 60 * 1000);
+  }
+  function stopAutoLockTimer() {
+    if (autoLockTimer) { clearTimeout(autoLockTimer); autoLockTimer = null; }
+  }
+  // Resets the timer on real interaction with the vault screen. Mouse movement
+  // is throttled — without that, a stationary mouse being nudged every frame
+  // would otherwise clear/reset the timer constantly for no reason.
+  let lastActivityReset = 0;
+  function registerActivity() {
+    if (vaultPassword === null) return; // vault isn't unlocked — nothing to protect yet
+    const now = Date.now();
+    if (now - lastActivityReset < 1000) return;
+    lastActivityReset = now;
+    startAutoLockTimer();
+  }
+  ['mousemove', 'mousedown', 'keydown', 'input', 'click'].forEach(evt => {
+    document.getElementById('vault-screen').addEventListener(evt, registerActivity);
+  });
+  // Backstop for sleep/wake: compare against the wall clock (which keeps
+  // running while the computer sleeps) every few seconds, and immediately
+  // whenever the tab becomes visible or focused again.
+  function checkInactivityAgainstClock() {
+    if (vaultPassword === null || autoLockMinutes <= 0) return;
+    if (Date.now() - lastActivityAt >= autoLockMinutes * 60 * 1000) lockVault('auto');
+  }
+  setInterval(checkInactivityAgainstClock, 10000);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkInactivityAgainstClock(); });
+  window.addEventListener('focus', checkInactivityAgainstClock);
+  document.getElementById('auto-lock-select').addEventListener('change', (e) => {
+    autoLockMinutes = Number(e.target.value);
+    try { localStorage.setItem(AUTO_LOCK_PREF_KEY, String(autoLockMinutes)); } catch (err) { /* ignore */ }
+    startAutoLockTimer(); // apply the new duration immediately
+  });
+  // ---- Clipboard auto-clear ----
+  // Browsers only let a page write to the clipboard while it is focused (Chrome)
+  // or right after a click or keypress (Firefox, Safari). A timer firing 30
+  // seconds later, typically after the user has switched tabs to paste the
+  // password, often has neither, so the clear can be refused. When that happens
+  // it stays pending and is retried the next time the browser will allow it:
+  // when the tab regains focus, on the next click or keypress, or when the
+  // vault locks.
+  //
+  //   clipboardHoldsVaultPassword  Vault put a password on the clipboard and it hasn't been cleared yet
+  //   clipboardClearOverdue        the 30 seconds are up but the browser refused the clear
+  //   clipboardGeneration          bumps on every copy, so a late-finishing clear for an older
+  //                                copy can't change the state of a newer one
+  let clipboardClearTimer = null;
+  let activeCopyBtn = null;
+  let clipboardHoldsVaultPassword = false;
+  let clipboardClearOverdue = false;
+  let clipboardGeneration = 0;
+  // Returns 'cleared', 'blocked' (browser refused), or 'nothing' (no vault password on the clipboard).
+  async function tryClearClipboard() {
+    if (!clipboardHoldsVaultPassword) return 'nothing';
+    const gen = clipboardGeneration;
+    try {
+      await navigator.clipboard.writeText('');
+    } catch (e) {
+      return 'blocked';
+    }
+    if (gen === clipboardGeneration) {
+      clipboardHoldsVaultPassword = false;
+      clipboardClearOverdue = false;
+    }
+    return 'cleared';
+  }
+  async function retryOverdueClear() {
+    if (!clipboardClearOverdue) return;
+    const gen = clipboardGeneration;
+    const result = await tryClearClipboard();
+    if (result === 'cleared' && gen === clipboardGeneration) setVaultStatus('Clipboard cleared.', 'success');
+  }
+  window.addEventListener('focus', retryOverdueClear);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) retryOverdueClear(); });
+  document.addEventListener('click', retryOverdueClear);
+  document.addEventListener('keydown', retryOverdueClear);
+  // A single shared timer, not one per button: if a second password is copied
+  // before the first one's 30 seconds are up, that earlier timer must NOT fire
+  // and wipe out the second (newer) password early. Only the most recent copy
+  // should ever govern when the clipboard actually gets cleared.
+  async function copyPasswordWithAutoClear(password, btn) {
+    if (activeCopyBtn && activeCopyBtn !== btn && document.body.contains(activeCopyBtn)) {
+      activeCopyBtn.textContent = 'Copy';
+    }
+    if (clipboardClearTimer) { clearTimeout(clipboardClearTimer); clipboardClearTimer = null; }
+    // The clipboard is about to be overwritten, so any older pending clear is moot.
+    // Resetting this state *before* the await also keeps the document-level click
+    // retry (which runs right after this button's own handler) from wiping the
+    // password that is being copied.
+    clipboardGeneration++;
+    clipboardHoldsVaultPassword = false;
+    clipboardClearOverdue = false;
+    const gen = clipboardGeneration;
+    try {
+      await navigator.clipboard.writeText(password);
+    } catch (e) {
+      setVaultStatus('Could not copy: your browser blocked clipboard access.', 'error');
+      return;
+    }
+    clipboardHoldsVaultPassword = true;
+    btn.textContent = 'Copied';
+    activeCopyBtn = btn;
+    clipboardClearTimer = setTimeout(async () => {
+      clipboardClearTimer = null;
+      const result = await tryClearClipboard();
+      if (gen === clipboardGeneration) {
+        if (result === 'blocked') clipboardClearOverdue = true;
+        if (document.body.contains(btn)) btn.textContent = 'Copy';
+        activeCopyBtn = null;
+      }
+    }, 30000);
+  }
+  document.getElementById('save-vault-btn').addEventListener('click', async () => {
+    try {
+      const revAtSave = changeRev;
+      const content = await encryptVault(vaultEntries, vaultPassword);
+      const result = await writeVaultFile(content);
+      if (revAtSave === changeRev) setDirty(false);
+      setVaultStatus(result.method === 'direct' ? 'Saved.' : 'Downloaded updated vault — replace your old file with this one.', 'success');
+    } catch (e) {
+      setVaultStatus('Could not save: ' + e.message, 'error');
+    }
+  });
+  // ---- Search / render ----
+  document.getElementById('search-input').addEventListener('input', renderEntries);
+  function renderEntries() {
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    const list = document.getElementById('entry-list');
+    const filtered = vaultEntries.filter(e =>
+      !query || e.site.toLowerCase().includes(query) || e.username.toLowerCase().includes(query) || (e.notes || '').toLowerCase().includes(query)
+    );
+    if (filtered.length === 0) {
+      list.innerHTML = `<div class="empty-state">${vaultEntries.length === 0 ? 'No entries yet — add your first one above.' : 'No entries match your search.'}</div>`;
+      return;
+    }
+    list.innerHTML = filtered.map(e => `
+      <div class="entry-row" data-id="${e.id}">
+        <div class="entry-head">
+          <span class="entry-site">${escapeHtml(e.site)}</span>
+          <span class="entry-username">${escapeHtml(e.username)}</span>
+        </div>
+        <div class="entry-field-row">
+          <span class="mono" id="pw-display-${e.id}">••••••••••••</span>
+          <button class="btn-secondary toggle-pw" data-id="${e.id}" style="padding:6px 10px;font-size:.78rem;">Show</button>
+          <button class="btn-secondary copy-pw" data-id="${e.id}" style="padding:6px 10px;font-size:.78rem;">Copy</button>
+        </div>
+        ${e.notes ? `<p class="help" style="margin:8px 0 0;">${escapeHtml(e.notes)}</p>` : ''}
+        <div class="entry-actions">
+          <button class="btn-secondary edit-entry" data-id="${e.id}">Edit</button>
+          <button class="btn-danger delete-entry" data-id="${e.id}">Delete</button>
+        </div>
+      </div>
+    `).join('');
+    list.querySelectorAll('.toggle-pw').forEach(btn => btn.addEventListener('click', () => {
+      const entry = vaultEntries.find(e => e.id === btn.dataset.id);
+      const display = document.getElementById('pw-display-' + btn.dataset.id);
+      const showing = display.textContent !== '••••••••••••';
+      display.textContent = showing ? '••••••••••••' : entry.password;
+      btn.textContent = showing ? 'Show' : 'Hide';
+    }));
+    list.querySelectorAll('.copy-pw').forEach(btn => btn.addEventListener('click', async () => {
+      const entry = vaultEntries.find(e => e.id === btn.dataset.id);
+      await copyPasswordWithAutoClear(entry.password, btn);
+    }));
+    list.querySelectorAll('.edit-entry').forEach(btn => btn.addEventListener('click', () => openEntryForm(btn.dataset.id)));
+    list.querySelectorAll('.delete-entry').forEach(btn => btn.addEventListener('click', () => {
+      if (!confirm('Delete this entry? This cannot be undone.')) return;
+      vaultEntries = vaultEntries.filter(e => e.id !== btn.dataset.id);
+      setDirty(true);
+      renderEntries();
+    }));
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+  }
+  // ---- Add/edit entry form ----
+  document.getElementById('add-entry-btn').addEventListener('click', () => openEntryForm(null));
+  document.getElementById('cancel-entry-btn').addEventListener('click', closeEntryForm);
+  function openEntryForm(entryId) {
+    editingEntryId = entryId;
+    const panel = document.getElementById('entry-form-panel');
+    const title = document.getElementById('entry-form-title');
+    if (entryId) {
+      const entry = vaultEntries.find(e => e.id === entryId);
+      title.textContent = 'Edit Entry';
+      document.getElementById('entry-site').value = entry.site;
+      document.getElementById('entry-username').value = entry.username;
+      document.getElementById('entry-password').value = entry.password;
+      document.getElementById('entry-notes').value = entry.notes || '';
+    } else {
+      title.textContent = 'Add Entry';
+      document.getElementById('entry-site').value = '';
+      document.getElementById('entry-username').value = '';
+      document.getElementById('entry-password').value = '';
+      document.getElementById('entry-notes').value = '';
+    }
+    panel.classList.add('show');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function closeEntryForm() {
+    document.getElementById('entry-form-panel').classList.remove('show');
+    editingEntryId = null;
+  }
+  document.getElementById('toggle-entry-pw-visible').addEventListener('click', () => {
+    const input = document.getElementById('entry-password');
+    const btn = document.getElementById('toggle-entry-pw-visible');
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? 'Hide' : 'Show';
+  });
+  document.getElementById('generate-for-entry-btn').addEventListener('click', () => {
+    const type = document.getElementById('gen-type').value;
+    const value = type === 'password' ? generateStrongPassword(24) : generatePassphrase(6, '-', false, false);
+    document.getElementById('entry-password').value = value;
+  });
+  document.getElementById('save-entry-btn').addEventListener('click', () => {
+    const site = document.getElementById('entry-site').value.trim();
+    const username = document.getElementById('entry-username').value.trim();
+    const password = document.getElementById('entry-password').value;
+    const notes = document.getElementById('entry-notes').value.trim();
+    if (!site || !password) { setVaultStatus('Site and password are required.', 'error'); return; }
+    if (editingEntryId) {
+      const entry = vaultEntries.find(e => e.id === editingEntryId);
+      entry.site = site; entry.username = username; entry.password = password; entry.notes = notes;
+    } else {
+      vaultEntries.push({ id: uid(), site, username, password, notes });
+    }
+    setDirty(true);
+    closeEntryForm();
+    renderEntries();
+    setVaultStatus('Entry saved locally — click Save to write it to your vault file.', 'success');
+  });
+</script>
+</body>
+</html>

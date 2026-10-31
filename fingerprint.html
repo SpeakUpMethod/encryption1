@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Fingerprint — Encryption 1™ Suite</title>
+  <meta name="description" content="Free browser-based file fingerprinting tool. Generate and verify SHA-256/SHA-512 fingerprints locally — no upload, no account, no server storage." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+  .nolines { text-decoration: none; font-size: small; }
+  .container { max-width: 780px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; margin-bottom: 20px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .badge {display: inline-block;background: #e9f2ff;color: #0a58ca;border-radius: 999px;padding: 6px 12px;font-size: .85rem;font-weight: 700;margin-bottom: 10px;}
+  .card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;}
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: #fbfcff; flex-wrap: wrap; }
+  .tab-btn {appearance: none;border: 0;background: transparent;padding: 16px 20px;cursor: pointer;font: inherit;font-size: 1rem;color: var(--muted);border-bottom: 3px solid transparent;transition: .2s ease;}
+  .tab-btn:hover, .tab-btn.active {color: var(--accent);border-bottom-color: var(--accent);background: rgba(13, 110, 253, .04);}
+  .panel { display: none; padding: 24px; }
+  .panel.active { display: block; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  .field { margin-bottom: 16px; }
+  .help { margin-top: 6px; font-size: small; color: var(--muted); line-height: 1.45; }
+  .mode-note {padding: 12px 14px;border-radius: 12px;background: #eef6ff;color: #0a58ca;margin-bottom: 18px;font-size: small;}
+  .algo-select { display: flex; gap: 8px; margin-top: 8px; }
+  .algo-btn {appearance: none;border: 1px solid var(--border);background: #fff;color: var(--muted);padding: 8px 14px;border-radius: 10px;font: inherit;font-size: .85rem;cursor: pointer;transition: .15s;}
+  .algo-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(13,110,253,.06); font-weight: 600; }
+  .dropzone {border: 2px dashed #b9c9dc;border-radius: 18px;padding: 28px 18px;text-align: center;background: #f8fbff;cursor: pointer;transition: .15s;}
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: #eef6ff; }
+  .dropzone strong { display: block; font-size: 1.05rem; margin-bottom: 5px; }
+  input[type="file"] { display: none; }
+  .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .file-row {padding: 16px;background: #f8fafc;border: 1px solid var(--border);border-radius: 14px;}
+  .file-row-head {display: flex;justify-content: space-between;align-items: baseline;gap: 10px;margin-bottom: 10px;}
+  .file-row-name { font-weight: 600; word-break: break-all; }
+  .file-row-meta {color: var(--muted);font-size: .8rem;white-space: nowrap;}
+  .remove-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .9rem; margin-left: 8px; }
+  .remove-btn:hover { color: var(--danger); }
+  .mono {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;word-break: break-word;font-size: .82rem;}
+  textarea, input[type="text"] {width: 100%;padding: 10px 12px;border: 1px solid var(--border);border-radius: 12px;font: inherit;background: #fff;color: var(--text);resize: vertical;margin-top: 6px;}
+  .row-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button {appearance: none;border: 0;cursor: pointer;padding: 12px 16px;border-radius: 14px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-secondary { background: #eef2f7; color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+  .btn-secondary.small { padding: 8px 12px; font-size: .82rem; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  .verdict-inline {margin-top: 12px;border-radius: 12px;padding: 12px 14px;display: none;align-items: center;gap: 10px;font-size: .88rem;line-height: 1.4;}
+  .verdict-inline.show { display: flex; }
+  .verdict-inline.match { background: #e9f7f0; border: 1px solid var(--success); color: #0f5132; }
+  .verdict-inline.mismatch { background: #fbeaea; border: 1px solid var(--danger); color: #842029; }
+  .v-icon { font-weight: 700; flex-shrink: 0; }
+  .limit-note { font-size: .8rem; color: var(--muted); margin-top: 10px; }
+  .footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.js-required-notice { display: none; }
+.no-js .js-required-notice { display: block; }
+.no-js #appRoot { display: none; }
+.js-required-card {max-width: 560px; margin: 60px auto; padding: 32px 28px; text-align: center;}
+.js-required-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.js-required-card h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.js-required-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.js-required-card .btn-live {display: inline-block; padding: 12px 22px; border-radius: 14px; text-decoration: none;background: var(--accent); color: #fff; font-weight: 700;}
+.js-required-card .btn-live:hover { background: var(--accent-2); }
+.js-required-card .fine-print { margin: 18px 0 0; font-size: .85rem; color: var(--muted); }
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html" aria-current="page"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required-notice">
+  <div class="card js-required-card">
+    <div class="icon"><img src="img/ec1-logo-med.png" height="119px" /></div>
+    <h2>This page needs JavaScript to work</h2>
+    <p>JavaScript couldn't run in this view &mdash; often because a local file opened in a preview like Quick Look on iPhone or iPad, or because JavaScript is turned off in your browser's settings. Encryption 1™ needs JavaScript to encrypt or decrypt your content, so nothing below this message will work until that's resolved.</p>
+    <p><a class="btn-live" href="#">Reload this page &#8635;</a></p>
+    <p class="fine-print">If JavaScript is turned off in your browser's settings, turning it back on will fix this.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" height="45" align="absmiddle" onerror="this.style.display='none'"> Fingerprint</h1>
+    <p>Generate a verifiable fingerprint for a file, or check a file against one you saved earlier — up to five at once. Everything happens in this browser tab; nothing is uploaded.</p>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="generate">Generate</button>
+      <button class="tab-btn" data-tab="verify">Verify</button>
+    </div>
+    <!-- GENERATE -->
+    <div class="panel active" id="panel-generate">
+      <div class="field">
+        <label>Algorithm</label>
+        <div class="algo-select" data-group="gen">
+          <button class="algo-btn active" data-algo="SHA-256">SHA-256</button>
+          <button class="algo-btn" data-algo="SHA-512">SHA-512</button>
+        </div>
+        <p class="help"><strong>SHA-256</strong> gives a 64-character fingerprint and is the most widely recognized standard (Bitcoin, TLS certificates, Git) — a good default. <strong>SHA-512</strong> gives a longer 128-character fingerprint and can run faster on modern 64-bit hardware for large files. Both fully detect any change, no matter how small.</p>
+      </div>
+      <div class="dropzone" id="dropzone-gen" tabindex="0">
+        <strong>Drop up to 5 files here, or click to choose</strong>
+        <span class="help">Processed locally · up to 200MB per file</span>
+      </div>
+      <input type="file" id="file-gen" multiple>
+      <div class="file-list" id="list-gen"></div>
+      <p class="limit-note" id="limit-note-gen"></p>
+      <div class="actions" id="global-actions-gen" style="display:none;">
+        <button class="btn-primary" id="download-all">Download certificate (all files)</button>
+        <button class="btn-secondary" id="clear-gen">Clear all</button>
+      </div>
+    </div>
+    <!-- VERIFY -->
+    <div class="panel" id="panel-verify">
+      <div class="mode-note">Algorithm is detected automatically from the length of the fingerprint you paste — no need to select it.</div>
+      <div class="dropzone" id="dropzone-ver" tabindex="0">
+        <strong>Drop up to 5 files here, or click to choose</strong>
+        <span class="help">Processed locally · up to 200MB per file</span>
+      </div>
+      <input type="file" id="file-ver" multiple>
+      <div class="file-list" id="list-ver"></div>
+      <p class="limit-note" id="limit-note-ver"></p>
+      <div class="actions" id="global-actions-ver" style="display:none;">
+        <button class="btn-secondary" id="clear-ver">Clear all</button>
+      </div>
+    </div>
+  </div>
+  <p class="footer">
+  <strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+
+<br /><br />
+  <em>A matching fingerprint means the file is byte-for-byte identical to the one it was generated from — useful for confirming a document wasn't altered in transit or storage.</em></p>
+</div>
+<script>
+  const MAX_FILES = 5;
+  document.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+  async function hashFile(file, algo) {
+    const buffer = await file.arrayBuffer();
+    const digest = await crypto.subtle.digest(algo, buffer);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  function setupDropzone(zoneId, inputId, onFiles) {
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') input.click(); });
+    input.addEventListener('change', () => { if (input.files.length) onFiles(Array.from(input.files)); input.value = ''; });
+    ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('dragover'); }));
+    ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('dragover'); }));
+    zone.addEventListener('drop', e => { if (e.dataTransfer.files.length) onFiles(Array.from(e.dataTransfer.files)); });
+  }
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  // ---------- GENERATE ----------
+  let genAlgo = 'SHA-256';
+  let genFiles = [];
+  document.querySelectorAll('[data-group="gen"] .algo-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      document.querySelectorAll('[data-group="gen"] .algo-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      genAlgo = btn.dataset.algo;
+      for (const entry of genFiles) entry.hash = await hashFile(entry.file, genAlgo);
+      renderGenList();
+    });
+  });
+  function renderGenList() {
+    const list = document.getElementById('list-gen');
+    list.innerHTML = '';
+    genFiles.forEach((entry, i) => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      row.innerHTML = `
+        <div class="file-row-head">
+          <span class="file-row-name">${entry.file.name}</span>
+          <span class="file-row-meta">${formatSize(entry.file.size)} · ${genAlgo}<button class="remove-btn" data-i="${i}">✕</button></span>
+        </div>
+        <div class="mono">${entry.hash}</div>
+        <div class="row-actions"><button class="btn-secondary small copy-one" data-i="${i}">Copy fingerprint</button></div>
+      `;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('.remove-btn').forEach(b => b.addEventListener('click', () => { genFiles.splice(Number(b.dataset.i), 1); renderGenList(); }));
+    list.querySelectorAll('.copy-one').forEach(b => b.addEventListener('click', () => {
+      navigator.clipboard.writeText(genFiles[Number(b.dataset.i)].hash);
+      const original = b.textContent; b.textContent = 'Copied'; setTimeout(() => { b.textContent = original; }, 1200);
+    }));
+    document.getElementById('global-actions-gen').style.display = genFiles.length ? 'flex' : 'none';
+    document.getElementById('limit-note-gen').textContent = genFiles.length >= MAX_FILES ? `Limit reached (${MAX_FILES} files). Remove one to add another.` : '';
+  }
+  setupDropzone('dropzone-gen', 'file-gen', async (files) => {
+    const room = MAX_FILES - genFiles.length;
+    for (const file of files.slice(0, room)) {
+      const hash = await hashFile(file, genAlgo);
+      genFiles.push({ file, hash });
+    }
+    renderGenList();
+  });
+  document.getElementById('clear-gen').addEventListener('click', () => { genFiles = []; renderGenList(); });
+  document.getElementById('download-all').addEventListener('click', () => {
+    const lines = genFiles.map(entry => (
+`File name:     ${entry.file.name}
+File size:     ${entry.file.size} bytes
+Algorithm:     ${genAlgo}
+Fingerprint:   ${entry.hash}
+`));
+    const cert = `FINGERPRINT CERTIFICATE
+Generated by Fingerprint (Encryption 1™ Suite)
+Generated:     ${new Date().toISOString()}
+Files:         ${genFiles.length}
+${lines.join('\n')}
+To verify a file later, use the Verify tab and paste the matching fingerprint above.
+`;
+    const blob = new Blob([cert], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'fingerprints-' + Date.now() + '.txt'; a.click();
+    URL.revokeObjectURL(url);
+  });
+  // ---------- VERIFY ----------
+  let verFiles = [];
+  function detectAlgo(hexStr) {
+    const clean = hexStr.trim().toLowerCase();
+    if (/^[0-9a-f]{64}$/.test(clean)) return 'SHA-256';
+    if (/^[0-9a-f]{128}$/.test(clean)) return 'SHA-512';
+    return null;
+  }
+  function renderVerList() {
+    const list = document.getElementById('list-ver');
+    list.innerHTML = '';
+    verFiles.forEach((entry, i) => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      row.innerHTML = `
+        <div class="file-row-head">
+          <span class="file-row-name">${entry.file.name}</span>
+          <span class="file-row-meta">${formatSize(entry.file.size)}<button class="remove-btn" data-i="${i}">✕</button></span>
+        </div>
+        <textarea class="expected-input" rows="2" placeholder="Paste the fingerprint to check against" data-i="${i}"></textarea>
+        <div class="row-actions"><button class="btn-secondary small check-one" data-i="${i}">Check</button></div>
+        <div class="verdict-inline" id="verdict-ver-${i}"><span class="v-icon"></span><span class="v-text"></span></div>
+      `;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('.remove-btn').forEach(b => b.addEventListener('click', () => { verFiles.splice(Number(b.dataset.i), 1); renderVerList(); }));
+    list.querySelectorAll('.check-one').forEach(b => b.addEventListener('click', async () => {
+      const i = Number(b.dataset.i);
+      const textarea = list.querySelector(`.expected-input[data-i="${i}"]`);
+      const expected = textarea.value.trim().toLowerCase();
+      const algo = detectAlgo(expected);
+      const verdictEl = document.getElementById('verdict-ver-' + i);
+      const icon = verdictEl.querySelector('.v-icon');
+      const text = verdictEl.querySelector('.v-text');
+      if (!algo) {
+        verdictEl.className = 'verdict-inline show mismatch';
+        icon.textContent = '?';
+        text.textContent = "That doesn't look like a SHA-256 or SHA-512 fingerprint — check for missing characters.";
+        return;
+      }
+      const entry = verFiles[i];
+      if (algo === 'SHA-256' && !entry.sha256) entry.sha256 = await hashFile(entry.file, 'SHA-256');
+      if (algo === 'SHA-512' && !entry.sha512) entry.sha512 = await hashFile(entry.file, 'SHA-512');
+      const actual = algo === 'SHA-256' ? entry.sha256 : entry.sha512;
+      if (actual === expected) {
+        verdictEl.className = 'verdict-inline show match';
+        icon.textContent = '✓';
+        text.textContent = `Matches (${algo}). This file is identical to the one the fingerprint was generated from.`;
+      } else {
+        verdictEl.className = 'verdict-inline show mismatch';
+        icon.textContent = '✕';
+        text.textContent = `Does not match (${algo} compared). Even a single changed byte causes this.`;
+      }
+    }));
+    document.getElementById('global-actions-ver').style.display = verFiles.length ? 'flex' : 'none';
+    document.getElementById('limit-note-ver').textContent = verFiles.length >= MAX_FILES ? `Limit reached (${MAX_FILES} files). Remove one to add another.` : '';
+  }
+  setupDropzone('dropzone-ver', 'file-ver', (files) => {
+    const room = MAX_FILES - verFiles.length;
+    files.slice(0, room).forEach(file => verFiles.push({ file, sha256: null, sha512: null }));
+    renderVerList();
+  });
+  document.getElementById('clear-ver').addEventListener('click', () => { verFiles = []; renderVerList(); });
+</script>
+</body>
+</html>

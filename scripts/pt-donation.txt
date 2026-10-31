@@ -1,0 +1,22 @@
+<nav class="fixed-bottom bg-body-tertiary border-top p-3 small">
+  <div class="container-fluid">
+<center><strong>Speak Up!™ Method of Language Learning</strong><br />
+&copy; <?= $YearFounded ?? '' ?> - 2025 
+YLCLearning Systems&nbsp;&nbsp;
+	<a href="/donate.php" target="_blank">Why Donate?</a> 
+<br />
+<script type="text/javascript">
+function makeArray() {
+for (i = 0; i<makeArray.arguments.length; i++)
+this[i + 1] = makeArray.arguments[i];
+}
+var months = new makeArray('January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December');
+var date = new Date();
+var day = date.getDate();
+var month = date.getMonth() + 1;
+var yy = date.getYear();
+var year = (yy < 1000) ? yy + 1900 : yy;
+document.write(day + " " + months[month] + " " + year);
+</script>
+  </div>
+</nav>

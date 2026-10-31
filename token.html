@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Encryption 1™</title>
+  <meta name="description" content="Free browser-based TOTP / 2FA authenticator code generator. Generate the same time-based codes as Google Authenticator or Authy, entirely locally — no upload, no account, no server." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--warn-bg:#fff3e0;--warn-border:#fde3b8;--warn-txt:#9a3412;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+  .container { max-width: 620px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; margin-bottom: 20px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);padding: 24px;}
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: .92rem; }
+  textarea, input[type="text"] {width: 100%;padding: 12px 14px;border: 1px solid var(--border);border-radius: 12px;font: inherit;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size: .92rem;background: #f8fafc;color: var(--text);resize: none;}
+  textarea:focus, input:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .field { margin-bottom: 16px; }
+  .help { margin-top: 6px; font-size: small; color: var(--muted); line-height: 1.45; }
+  .error-text { margin-top: 6px; font-size: .85rem; color: var(--danger); }
+  .code-display { display: none; text-align: center; margin: 24px 0; }
+  .code-display.show { display: block; }
+  .account-label { font-size: .9rem; color: var(--muted); margin-bottom: 10px; }
+  .code-value {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size: 2.6rem;font-weight: 700;letter-spacing: .12em;color: var(--text);margin-bottom: 14px;}
+  .countdown-track { height: 6px; border-radius: 999px; background: #e9edf3; overflow: hidden; margin: 0 auto 14px; max-width: 240px; }
+  .countdown-fill { height: 100%; background: var(--accent); transition: width 1s linear, background .3s ease; }
+  .countdown-text { font-size: .82rem; color: var(--muted); margin-bottom: 16px; }
+  .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  button.btn {appearance: none;border: 0;cursor: pointer;padding: 11px 18px;border-radius: 12px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button.btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-2); }
+  .btn-secondary { background: #eef2f7; color: var(--text); }
+  .btn-secondary:hover { background: #e3e9f2; }
+  details.advanced { margin-top: 18px; border-top: 1px solid var(--border); padding-top: 14px; }
+  summary { cursor: pointer; font-weight: 600; font-size: .88rem; color: var(--muted); list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '▸ '; }
+  details[open] summary::before { content: '▾ '; }
+  .advanced-row { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .advanced-field { flex: 1; min-width: 120px; }
+  .warning {margin-top: 18px;padding: 12px 14px;border: 1px solid var(--warn-border);background: var(--warn-bg);border-radius: 14px;color: var(--warn-txt);line-height: 1.55;font-size: .88rem;}
+  .footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.js-required-notice { display: none; }
+.no-js .js-required-notice { display: block; }
+.no-js #appRoot { display: none; }
+.js-required-card {max-width: 560px; margin: 60px auto; padding: 32px 28px; text-align: center;}
+.js-required-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.js-required-card h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.js-required-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.js-required-card .btn-live {display: inline-block; padding: 12px 22px; border-radius: 14px; text-decoration: none;background: var(--accent); color: #fff; font-weight: 700;}
+.js-required-card .btn-live:hover { background: var(--accent-2); }
+.js-required-card .fine-print { margin: 18px 0 0; font-size: .85rem; color: var(--muted); }
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html" aria-current="page"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required-notice">
+  <div class="card js-required-card">
+    <div class="icon"><img src="img/ec1-logo-med.png" height="119px" /></div>
+    <h2>This page needs JavaScript to work</h2>
+    <p>JavaScript couldn't run in this view &mdash; often because a local file opened in a preview like Quick Look on iPhone or iPad, or because JavaScript is turned off in your browser's settings. Encryption 1™ needs JavaScript to encrypt or decrypt your content, so nothing below this message will work until that's resolved.</p>
+    <p><a class="btn-live" href="#">Reload this page &#8635;</a></p>
+    <p class="fine-print">If JavaScript is turned off in your browser's settings, turning it back on will fix this.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" height="45" align="absmiddle" onerror="this.style.display='none'"> Token</h1>
+    <p>Generate the same time-based (TOTP) codes as Google Authenticator or Authy. Everything happens in this browser tab — nothing is sent anywhere.</p>
+  </div>
+  <div class="card">
+    <div class="field">
+      <label for="secret-input">Secret key or otpauth:// setup URI</label>
+      <textarea id="secret-input" rows="2" placeholder="Paste the secret shown during 2FA setup, e.g. JBSWY3DPEHPK3PXP"></textarea>
+      <p class="help">This is usually shown as text underneath a QR code when setting up two-factor authentication — look for a "can't scan?" or "enter manually" option.</p>
+      <p class="error-text" id="secret-error" style="display:none;"></p>
+    </div>
+    <div class="code-display" id="code-display">
+      <div class="account-label" id="account-label" style="display:none;"></div>
+      <div class="code-value" id="code-value">------</div>
+      <div class="countdown-track"><div class="countdown-fill" id="countdown-fill"></div></div>
+      <div class="countdown-text" id="countdown-text"></div>
+      <div class="actions">
+        <button class="btn btn-primary" id="copy-code">Copy code</button>
+        <button class="btn btn-secondary" id="clear-secret">Clear</button>
+      </div>
+    </div>
+    <details class="advanced">
+      <summary>Advanced settings</summary>
+      <div class="advanced-row">
+        <div class="advanced-field">
+          <label for="digits-select">Code length</label>
+          <select id="digits-select">
+            <option value="6" selected>6 digits (standard)</option>
+            <option value="8">8 digits</option>
+          </select>
+        </div>
+        <div class="advanced-field">
+          <label for="period-select">Refresh interval</label>
+          <select id="period-select">
+            <option value="30" selected>30 seconds (standard)</option>
+            <option value="60">60 seconds</option>
+          </select>
+        </div>
+      </div>
+      <p class="help">Only change these if the service told you to use something other than the standard 6-digit, 30-second setup — most services never require this. If you pasted a full <span style="font-family:monospace;">otpauth://</span> URI, its own settings are used automatically and these are ignored.</p>
+    </details>
+  </div>
+  <div class="warning"><strong>Treat this secret like a password.</strong> Anyone with it can generate valid codes for your account, same as this tool does. It's never transmitted or saved — it exists only in this browser tab until you clear it or close the page.</div>
+<footer class="footer"><em>Token implements the standard TOTP algorithm (RFC 6238) — the exact same math every authenticator app uses. Codes generated here will match codes from any other authenticator app using the same secret, since both are just independently computing the same formula from the same starting point.</em><br /><br />
+<strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+
+</footer>
+</div>
+<p>&nbsp;</p><p>&nbsp;</p>
+<script>
+  // ---- Base32 (RFC 4648) decode — verified against RFC 6238's official test vectors.
+  // Only whitespace and '=' padding are treated as harmless formatting; anything else
+  // that isn't a valid Base32 character is reported as an error rather than silently
+  // discarded, so a typo (e.g. a stray hyphen) doesn't get quietly transformed into a
+  // different — wrong — secret. ----
+  function base32Decode(base32) {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    const normalized = base32.toUpperCase().replace(/[\s=]/g, '');
+    const invalidChars = [...new Set(normalized.replace(/[A-Z2-7]/g, ''))];
+    if (invalidChars.length > 0) {
+      throw new Error(`Contains character${invalidChars.length > 1 ? 's' : ''} that ${invalidChars.length > 1 ? "aren't" : "isn't"} valid in a Base32 secret: ${invalidChars.join(' ')}`);
+    }
+    let bits = '';
+    for (const char of normalized) {
+      bits += alphabet.indexOf(char).toString(2).padStart(5, '0');
+    }
+    const bytes = [];
+    for (let i = 0; i + 8 <= bits.length; i += 8) {
+      bytes.push(parseInt(bits.slice(i, i + 8), 2));
+    }
+    return { bytes: new Uint8Array(bytes), cleanLength: normalized.length };
+  }
+  // ---- TOTP generation (RFC 6238) — verified against all 6 official SHA1 test vectors ----
+  async function generateTOTP(secretBase32, digits, period, timestampMs) {
+    const { bytes: keyBytes } = base32Decode(secretBase32);
+    const counter = Math.floor(timestampMs / 1000 / period);
+    const counterBuf = new ArrayBuffer(8);
+    const counterView = new DataView(counterBuf);
+    const high = Math.floor(counter / 0x100000000);
+    const low = counter >>> 0;
+    counterView.setUint32(0, high);
+    counterView.setUint32(4, low);
+    const key = await crypto.subtle.importKey('raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+    const hmac = new Uint8Array(await crypto.subtle.sign('HMAC', key, counterBuf));
+    const offset = hmac[hmac.length - 1] & 0xf;
+    const binCode = ((hmac[offset] & 0x7f) << 24) | ((hmac[offset + 1] & 0xff) << 16) | ((hmac[offset + 2] & 0xff) << 8) | (hmac[offset + 3] & 0xff);
+    return (binCode % (10 ** digits)).toString().padStart(digits, '0');
+  }
+  // ---- otpauth:// URI parsing — many services offer this alongside their QR code.
+  // Explicitly requires the totp/ type and rejects hotp/ (counter-based, a different
+  // algorithm entirely) rather than silently treating it as if it were TOTP. ----
+  function parseOtpauthUri(input) {
+    const trimmed = input.trim();
+    if (!/^otpauth:\/\//i.test(trimmed)) return null;
+    let url;
+    try {
+      url = new URL(trimmed);
+    } catch (e) {
+      throw new Error('This otpauth:// link looks malformed — check that it was copied in full.');
+    }
+    const type = url.hostname.toLowerCase();
+    if (type === 'hotp') {
+      throw new Error('This is an HOTP (counter-based) setup code, not TOTP (time-based) — Token only supports TOTP.');
+    }
+    if (type !== 'totp') {
+      throw new Error(`Unrecognized otpauth type "${type}" — Token only supports TOTP.`);
+    }
+    const params = url.searchParams;
+    const label = decodeURIComponent((url.pathname || '').replace(/^\/+/, ''));
+    const secret = params.get('secret');
+    if (!secret) throw new Error('This otpauth:// URI is missing a secret parameter.');
+    return {
+      secret,
+      digits: parseInt(params.get('digits'), 10) || 6,
+      period: parseInt(params.get('period'), 10) || 30,
+      issuer: params.get('issuer') || '',
+      label,
+    };
+  }
+  // ---- Wiring ----
+  const secretInput = document.getElementById('secret-input');
+  const secretError = document.getElementById('secret-error');
+  const codeDisplay = document.getElementById('code-display');
+  const accountLabel = document.getElementById('account-label');
+  const codeValue = document.getElementById('code-value');
+  const countdownFill = document.getElementById('countdown-fill');
+  const countdownText = document.getElementById('countdown-text');
+  const digitsSelect = document.getElementById('digits-select');
+  const periodSelect = document.getElementById('period-select');
+  const copyBtn = document.getElementById('copy-code');
+  const clearBtn = document.getElementById('clear-secret');
+  let activeConfig = null; // { secret, digits, period, label }
+  let tickInterval = null;
+  let lastCounterValue = null;
+  function showError(msg) {
+    secretError.textContent = msg;
+    secretError.style.display = 'block';
+    codeDisplay.classList.remove('show');
+    stopTicking();
+  }
+  function clearError() {
+    secretError.style.display = 'none';
+  }
+  function stopTicking() {
+    if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+  }
+  async function updateCode() {
+    if (!activeConfig) return;
+    const now = Date.now();
+    const counter = Math.floor(now / 1000 / activeConfig.period);
+    const secondsIntoWindow = Math.floor(now / 1000) % activeConfig.period;
+    const secondsRemaining = activeConfig.period - secondsIntoWindow;
+    if (counter !== lastCounterValue) {
+      lastCounterValue = counter;
+      try {
+        const code = await generateTOTP(activeConfig.secret, activeConfig.digits, activeConfig.period, now);
+        codeValue.textContent = code.slice(0, code.length / 2) + ' ' + code.slice(code.length / 2);
+      } catch (e) {
+        showError('Could not generate a code from this secret — it may be formatted incorrectly.');
+        return;
+      }
+    }
+    const pct = (secondsRemaining / activeConfig.period) * 100;
+    countdownFill.style.width = pct + '%';
+    countdownFill.style.background = secondsRemaining <= 5 ? '#b42318' : '#0d6efd';
+    countdownText.textContent = `Refreshes in ${secondsRemaining}s`;
+  }
+  function startTicking() {
+    stopTicking();
+    lastCounterValue = null;
+    updateCode();
+    tickInterval = setInterval(updateCode, 1000);
+  }
+  function processInput() {
+    const raw = secretInput.value;
+    if (!raw.trim()) {
+      clearError();
+      codeDisplay.classList.remove('show');
+      stopTicking();
+      activeConfig = null;
+      return;
+    }
+    let parsed;
+    try {
+      parsed = parseOtpauthUri(raw);
+    } catch (e) {
+      showError(e.message);
+      activeConfig = null;
+      return;
+    }
+    let secret, digits, period, label;
+    if (parsed) {
+      secret = parsed.secret;
+      digits = parsed.digits;
+      period = parsed.period;
+      label = [parsed.issuer, parsed.label].filter(Boolean).join(': ');
+      digitsSelect.value = String(digits);
+      periodSelect.value = String(period);
+      digitsSelect.disabled = true;
+      periodSelect.disabled = true;
+    } else {
+      secret = raw;
+      digits = parseInt(digitsSelect.value, 10);
+      period = parseInt(periodSelect.value, 10);
+      label = '';
+      digitsSelect.disabled = false;
+      periodSelect.disabled = false;
+    }
+    let bytes, cleanLength;
+    try {
+      ({ bytes, cleanLength } = base32Decode(secret));
+    } catch (e) {
+      showError(e.message);
+      activeConfig = null;
+      return;
+    }
+    if (cleanLength === 0 || bytes.length === 0) {
+      showError("This doesn't look like a valid secret — check for typos or missing characters.");
+      activeConfig = null;
+      return;
+    }
+    clearError();
+    activeConfig = { secret, digits, period, label };
+    accountLabel.style.display = label ? 'block' : 'none';
+    accountLabel.textContent = label;
+    codeDisplay.classList.add('show');
+    startTicking();
+  }
+  secretInput.addEventListener('input', processInput);
+  digitsSelect.addEventListener('change', () => { if (activeConfig && !digitsSelect.disabled) processInput(); });
+  periodSelect.addEventListener('change', () => { if (activeConfig && !periodSelect.disabled) processInput(); });
+  copyBtn.addEventListener('click', async () => {
+    const code = codeValue.textContent.replace(/\s+/g, '');
+    try {
+      await navigator.clipboard.writeText(code);
+      const original = copyBtn.textContent;
+      copyBtn.textContent = 'Copied';
+      setTimeout(() => { copyBtn.textContent = original; }, 1400);
+    } catch (e) {
+      alert('Could not copy automatically — please select and copy the code manually.');
+    }
+  });
+  clearBtn.addEventListener('click', () => {
+    secretInput.value = '';
+    processInput();
+  });
+</script>
+</body>
+</html>

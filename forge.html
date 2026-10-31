@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Forge - Encryption 1™</title>
+  <meta name="description" content="Free browser-based password and passphrase generator. Strong random passwords or EFF Diceware-style passphrases, generated locally — no upload, no account, no server." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+  .container { max-width: 680px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; margin-bottom: 20px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;}
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: #fbfcff; }
+  .tab-btn {appearance: none;border: 0;background: transparent;padding: 16px 20px;cursor: pointer;font: inherit;font-size: 1rem;color: var(--muted);border-bottom: 3px solid transparent;transition: .2s ease;flex: 1;}
+  .tab-btn:hover, .tab-btn.active {color: var(--accent);border-bottom-color: var(--accent);background: rgba(13, 110, 253, .04);}
+  .panel { display: none; padding: 24px; }
+  .panel.active { display: block; }
+  .output-row {display: flex;gap: 8px;margin-bottom: 16px;}
+  .output-box {flex: 1;font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size: 1.05rem;background: #f8fafc;border: 1px solid var(--border);border-radius: 12px;padding: 14px 16px;word-break: break-all;min-height: 24px;display: flex;align-items: center;}
+  .output-box.empty { color: var(--muted); font-family: inherit; font-size: .92rem; }
+  .field { margin-bottom: 16px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; font-size: .92rem; }
+  .control-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  input[type="range"] { flex: 1; min-width: 120px; }
+  input[type="number"] {width: 64px;padding: 8px 10px;border: 1px solid var(--border);border-radius: 8px;font: inherit;text-align: center;}
+  select {padding: 8px 12px;border: 1px solid var(--border);border-radius: 8px;font: inherit;background: #fff;color: var(--text);}
+  .value-badge {font-family: ui-monospace, monospace;font-size: .85rem;background: #e9f2ff;color: #0a58ca;padding: 4px 10px;border-radius: 999px;font-weight: 700;min-width: 28px;text-align: center;}
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .checkbox-row input { width: 16px; height: 16px; }
+  .checkbox-row label { margin: 0; font-weight: 500; font-size: .9rem; cursor: pointer; }
+  .strength-wrap { margin-bottom: 16px; }
+  .strength-bar { height: 8px; border-radius: 999px; background: #e9edf3; overflow: hidden; margin-bottom: 6px; }
+  .strength-fill { height: 100%; width: 0%; background: #d0d7e2; transition: width .2s ease, background .2s ease; }
+  .strength-text { font-size: .82rem; color: var(--muted); }
+  .entropy-note {font-size: .85rem; color: var(--muted); background: #f8fafc; border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;}
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  button.btn {appearance: none;border: 0;cursor: pointer;padding: 12px 18px;border-radius: 12px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button.btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-2); }
+  .btn-secondary { background: #eef2f7; color: var(--text); }
+  .btn-secondary:hover { background: #e3e9f2; }
+  .footer a { color: var(--accent); }
+  .next-step { margin: 14px 0 0; padding: 12px 16px; border-radius: 14px; background: #eef4ff; border: 1px solid #cfe0ff; font-size: .9rem; line-height: 1.5; }
+  .next-step a { color: var(--accent); font-weight: 600; }
+  .next-step[hidden] { display: none; }
+  .footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.js-required-notice { display: none; }
+.no-js .js-required-notice { display: block; }
+.no-js #appRoot { display: none; }
+.js-required-card {max-width: 560px; margin: 60px auto; padding: 32px 28px; text-align: center;}
+.js-required-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.js-required-card h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.js-required-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.js-required-card .btn-live {display: inline-block; padding: 12px 22px; border-radius: 14px; text-decoration: none;background: var(--accent); color: #fff; font-weight: 700;}
+.js-required-card .btn-live:hover { background: var(--accent-2); }
+.js-required-card .fine-print { margin: 18px 0 0; font-size: .85rem; color: var(--muted); }
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html" aria-current="page"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required-notice">
+  <div class="card js-required-card">
+    <div class="icon"><img src="img/ec1-logo-med.png" height="119" alt="" /></div>
+    <h2>This page needs JavaScript to work</h2>
+    <p>JavaScript couldn&#039;t run in this view — often because a local file opened in a preview like Quick Look on iPhone or iPad, or because JavaScript is turned off in your browser&#039;s settings. Encryption 1™ needs JavaScript to encrypt or decrypt your content, so nothing below this message will work until that&#039;s resolved.</p>
+    <p><a class="btn-live" href="#">Reload this page &#8635;</a></p>
+    <p class="fine-print">If JavaScript is turned off in your browser&#039;s settings, turning it back on will fix this.</p>
+  </div>
+</div>
+<div class="container" id="appRoot">
+<aside id="e1-donate" class="e1-donate" data-campaign="2026-11-10" aria-labelledby="e1-donate-title">
+  <button type="button" class="e1-donate-x" data-e1-dismiss aria-label="Close">&times;</button>
+  <div class="e1-donate-icon" aria-hidden="true">&#9749;</div>
+  <div class="e1-donate-text">
+    <span class="e1-donate-badge">Hosting fund · until 2026-11-10</span>
+    <h2 id="e1-donate-title"><bdi>Encryption 1</bdi> is free, and it will stay free</h2>
+    <p>No ads, no accounts, no tracking — that was true in 1996 and it is true today. Hosting for the site comes due every three months. If <bdi>Encryption 1</bdi> has been useful to you, a small contribution on Ko-fi this week helps keep it online.</p>
+    <div class="e1-donate-actions">
+      <a class="e1-donate-btn" href="https://ko-fi.com/encryption1" target="_blank" rel="noopener" data-e1-dismiss>Support on Ko-fi</a>
+      <a class="e1-donate-link" href="donate.html">Why I ask</a>
+      <button type="button" class="e1-donate-later" data-e1-dismiss>Maybe later</button>
+    </div>
+  </div>
+</aside>
+
+<style>
+.e1-donate{position:relative;display:flex;gap:16px;align-items:flex-start;
+  background:var(--card,#fff);border:1px solid var(--border,#dbe3ee);border-inline-start:4px solid var(--accent,#0d6efd);
+  border-radius:18px;padding:18px 20px;margin:16px auto;max-width:960px;
+  box-shadow:0 2px 10px rgba(15,23,42,.05);color:var(--text,#1f2937);font-family:inherit}
+.e1-donate[hidden]{display:none}
+.e1-donate-icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  background:#e7f0ff;font-size:22px}
+.e1-donate-badge{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;
+  background:#e7f0ff;color:var(--accent-2,#0b5ed7);font-size:.78rem;font-weight:600;letter-spacing:.01em}
+.e1-donate h2{margin:0 0 6px;font-size:1.05rem;line-height:1.3}
+.e1-donate p{margin:0 0 12px;color:var(--muted,#6b7280);line-height:1.5;font-size:.95rem}
+.e1-donate-actions{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.e1-donate-btn{display:inline-block;background:var(--accent,#0d6efd);color:#fff;text-decoration:none;
+  padding:8px 18px;border-radius:999px;font-weight:600;font-size:.92rem}
+.e1-donate-btn:hover,.e1-donate-btn:focus-visible{background:var(--accent-2,#0b5ed7)}
+.e1-donate-link{color:var(--accent,#0d6efd);font-size:.92rem}
+.e1-donate-later{background:none;border:0;padding:0;color:var(--muted,#6b7280);font:inherit;font-size:.92rem;cursor:pointer;text-decoration:underline}
+.e1-donate-x{position:absolute;top:8px;inset-inline-end:10px;background:none;border:0;font-size:22px;line-height:1;
+  color:var(--muted,#6b7280);cursor:pointer;padding:4px 8px;border-radius:8px}
+.e1-donate-x:hover{background:var(--bg,#f5f7fb)}
+@media (max-width:560px){.e1-donate{padding:16px}.e1-donate-icon{display:none}}
+/* Burmese and Thai marks sit above/below the line: give them room */
+.e1-donate:lang(my),.e1-donate:lang(th){line-height:1.9}
+.e1-donate:lang(my) .e1-donate-btn,.e1-donate:lang(my) .e1-donate-badge{padding-top:6px;padding-bottom:6px}
+</style>
+
+<script>
+(function(){
+  var KEY='e1DonateDismissed', card=document.getElementById('e1-donate');
+  if(!card) return;
+  var id=card.getAttribute('data-campaign'), preview=card.hasAttribute('data-preview');
+  try{ if(!preview && localStorage.getItem(KEY)===id){ card.hidden=true; return; } }catch(e){}
+  function remember(){ if(preview) return; try{ localStorage.setItem(KEY,id); }catch(e){} }
+  card.querySelectorAll('[data-e1-dismiss]').forEach(function(el){
+    el.addEventListener('click',function(){
+      remember();
+      if(el.tagName!=='A') card.hidden=true;
+      else setTimeout(function(){ card.hidden=true; },300);   // Ko-fi opens in a new tab
+    });
+  });
+})();
+</script>
+
+
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" height="45" alt="" align="absmiddle" onerror="this.style.display='none'"> <bdi>Forge</bdi></h1>
+    <p style="font-size:small;">Generate a strong random password, or a memorable word-based passphrase. Everything happens in this browser tab — nothing is sent anywhere, and nothing is kept after you leave the page.</p>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="password">Password</button>
+      <button class="tab-btn" data-tab="passphrase">Passphrase</button>
+    </div>
+    <!-- PASSWORD -->
+    <div class="panel active" id="panel-password">
+      <div class="output-row">
+        <div class="output-box empty" id="password-output">Click Generate to create a password</div>
+      </div>
+      <div class="actions" style="margin-bottom:20px;">
+        <button class="btn btn-primary" id="password-generate">Generate</button>
+        <button class="btn btn-secondary" id="password-copy" disabled>Copy</button>
+      </div>
+      <div class="strength-wrap">
+        <div class="strength-bar"><div class="strength-fill" id="password-strength-bar"></div></div>
+        <div class="strength-text" id="password-strength-text">Strength: not generated yet</div>
+      </div>
+      <div class="field">
+        <label for="password-length">Length</label>
+        <div class="control-row">
+          <input type="range" id="password-length" min="8" max="64" value="24">
+          <span class="value-badge" id="password-length-value">24</span>
+        </div>
+      </div>
+      <p class="entropy-note">Uses the same generator built into Encryption 1™ — a mix of upper/lowercase letters, numbers, and symbols, with visually ambiguous characters (like <span style="font-family:monospace;">l</span>, <span style="font-family:monospace;">1</span>, <span style="font-family:monospace;">I</span>, <span style="font-family:monospace;">0</span>, <span style="font-family:monospace;">O</span>) deliberately excluded.</p>
+    </div>
+    <!-- PASSPHRASE -->
+    <div class="panel" id="panel-passphrase">
+      <div class="output-row">
+        <div class="output-box empty" id="passphrase-output">Click Generate to create a passphrase</div>
+      </div>
+      <div class="actions" style="margin-bottom:20px;">
+        <button class="btn btn-primary" id="passphrase-generate">Generate</button>
+        <button class="btn btn-secondary" id="passphrase-copy" disabled>Copy</button>
+      </div>
+      <div class="field">
+        <label for="passphrase-words">Number of words</label>
+        <div class="control-row">
+          <input type="range" id="passphrase-words" min="4" max="8" value="6">
+          <span class="value-badge" id="passphrase-words-value">6</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="passphrase-separator">Separator</label>
+        <select id="passphrase-separator">
+          <option value="-" selected>Dash (correct-horse-battery)</option>
+          <option value=" ">Space (correct horse battery)</option>
+          <option value=".">Dot (correct.horse.battery)</option>
+          <option value="">None (correcthorsebattery)</option>
+        </select>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="passphrase-capitalize">
+        <label for="passphrase-capitalize">Capitalize each word</label>
+      </div>
+      <div class="checkbox-row" style="margin-bottom:16px;">
+        <input type="checkbox" id="passphrase-number">
+        <label for="passphrase-number">Add a random number to one word</label>
+      </div>
+      <p class="entropy-note" id="entropy-note"></p>
+    </div>
+  </div>
+  <p class="next-step" id="next-step-split" hidden>Keeping this for something important? Save it in <a href="vault.php"><bdi>Vault</bdi></a>. If losing it would be serious, back it up with <a href="split.php"><bdi>Split</bdi></a>, which turns it into shares for people you trust. Copy it here first, then paste it there.</p>
+<footer class="footer">
+<em>A password or passphrase generated here is never transmitted, logged, or stored — it exists only in this browser tab until you close it or generate a new one. Save it somewhere secure (like a password manager, or an encrypted note in <a href="ec1.php">Encryption 1™</a>) right away, since it cannot be recovered afterward.</em>
+   <br /><br /> 
+  <strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+
+</footer>
+</div>
+<p>&nbsp;</p><p>&nbsp;</p>
+<script src="scripts/eff-wordlist.js"></script>
+<script>
+/* Show the Vault / Split hint once something has been generated. */
+['password-generate', 'passphrase-generate'].forEach(function (id) {
+  var b = document.getElementById(id), hint = document.getElementById('next-step-split');
+  if (b && hint) b.addEventListener('click', function () { hint.hidden = false; });
+});
+</script>
+<script>
+'use strict';
+/* Interface text for this language, from /lang/forge/en.json */
+const I18N = {"strengthVeryWeak":"Very weak","strengthWeak":"Weak","strengthMedium":"Medium","strengthStrong":"Strong","strengthVeryStrong":"Very strong","strengthNotEnteredLabel":"Not entered yet","strengthLabel":"Strength: {label}","copied":"Copied","copyFailed":"Could not copy automatically — please select and copy the text manually.","bitsUnit":"{bits} bits","entropyNote":"Each word is chosen at random from the EFF's 7,776-word Diceware list — {bits} of entropy at {n} words, which comfortably exceeds most password strength requirements while staying easier to type and remember than a random character string. The words themselves stay in English, because they come from this verified list."};
+const UI_LANG = document.documentElement.lang || 'en';
+// T('key') returns the text; T('key', {n: 3}) fills {n} and picks the right plural form.
+function T(key, vars) {
+  let s = I18N[key];
+  if (s == null) return key;
+  if (typeof s === 'object') {
+    let form = 'other';
+    try { form = new Intl.PluralRules(UI_LANG).select(vars && vars.n); } catch (e) {}
+    s = s[form] ?? s.other;
+  }
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+  // ---- Password generator — identical logic to the one built into Encryption 1™ ----
+  // Unbiased random index in [0, n): values from the uneven top slice of the 32-bit range are redrawn.
+  function randomIndex(n) {
+    const limit = Math.floor(0x100000000 / n) * n;
+    const buf = new Uint32Array(1);
+    let v;
+    do { crypto.getRandomValues(buf); v = buf[0]; } while (v >= limit);
+    return v % n;
+  }
+  function generateStrongPassword(length) {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*-_=+';
+    let result = '';
+    for (let i = 0; i < length; i++) result += alphabet[randomIndex(alphabet.length)];
+    return result;
+  }
+  function evaluatePasswordStrength(password) {
+    const c = {
+      length8: password.length >= 8, uppercase: /[A-Z]/.test(password), special: /[^A-Za-z0-9]/.test(password),
+      lowercase: /[a-z]/.test(password), number: /\d/.test(password), length12: password.length >= 12, length16: password.length >= 16
+    };
+    let score = 0;
+    if (c.length8) score += 30;
+    if (c.uppercase) score += 20;
+    if (c.special) score += 20;
+    if (c.lowercase) score += 10;
+    if (c.number) score += 10;
+    if (c.length12) score += 5;
+    if (c.length16) score += 5;
+    let label = T('strengthVeryWeak'), color = '#b42318';
+    if (!password) { label = T('strengthNotEnteredLabel'); color = '#d0d7e2'; score = 0; }
+    else if (score >= 90) { label = T('strengthVeryStrong'); color = '#157347'; }
+    else if (score >= 70) { label = T('strengthStrong'); color = '#2d8a57'; }
+    else if (score >= 50) { label = T('strengthMedium'); color = '#b7791f'; }
+    else if (score >= 30) { label = T('strengthWeak'); color = '#c05621'; }
+    return { score, label, color, meetsMinimum: c.length8 && c.uppercase && c.special };
+  }
+  // ---- Passphrase generator — EFF Diceware wordlist (verified: 7,776 unique words) ----
+  function generatePassphrase(wordCount, separator, capitalize, includeNumber) {
+    let words = [];
+    for (let i = 0; i < wordCount; i++) {
+      let w = WORDLIST[randomIndex(WORDLIST.length)];
+      if (capitalize) w = w[0].toUpperCase() + w.slice(1);
+      words.push(w);
+    }
+    if (includeNumber) {
+      const digit = randomIndex(100);
+      const pos = randomIndex(words.length);
+      words[pos] = words[pos] + digit;
+    }
+    return words.join(separator);
+  }
+  function estimateEntropyBits(wordCount, includeNumber) {
+    let bits = wordCount * Math.log2(7776);
+    if (includeNumber) bits += Math.log2(100);
+    return bits;
+  }
+  async function copyToClipboard(text, btn) {
+    try {
+      await navigator.clipboard.writeText(text);
+      const original = btn.textContent;
+      btn.textContent = T('copied');
+      setTimeout(() => { btn.textContent = original; }, 1400);
+    } catch (e) {
+      alert(T('copyFailed'));
+    }
+  }
+  // ---- Tabs ----
+  document.querySelectorAll('.tab-btn').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+  // ---- Password tab wiring ----
+  const pwLength = document.getElementById('password-length');
+  const pwLengthValue = document.getElementById('password-length-value');
+  const pwOutput = document.getElementById('password-output');
+  const pwCopyBtn = document.getElementById('password-copy');
+  const pwStrengthBar = document.getElementById('password-strength-bar');
+  const pwStrengthText = document.getElementById('password-strength-text');
+  let currentPassword = '';
+  pwLength.addEventListener('input', () => { pwLengthValue.textContent = pwLength.value; });
+  document.getElementById('password-generate').addEventListener('click', () => {
+    currentPassword = generateStrongPassword(Number(pwLength.value));
+    pwOutput.textContent = currentPassword;
+    pwOutput.classList.remove('empty');
+    pwCopyBtn.disabled = false;
+    const r = evaluatePasswordStrength(currentPassword);
+    pwStrengthBar.style.width = r.score + '%';
+    pwStrengthBar.style.background = r.color;
+    pwStrengthText.textContent = T('strengthLabel', { label: r.label });
+  });
+  pwCopyBtn.addEventListener('click', () => copyToClipboard(currentPassword, pwCopyBtn));
+  // ---- Passphrase tab wiring ----
+  const ppWords = document.getElementById('passphrase-words');
+  const ppWordsValue = document.getElementById('passphrase-words-value');
+  const ppSeparator = document.getElementById('passphrase-separator');
+  const ppCapitalize = document.getElementById('passphrase-capitalize');
+  const ppNumber = document.getElementById('passphrase-number');
+  const ppOutput = document.getElementById('passphrase-output');
+  const ppCopyBtn = document.getElementById('passphrase-copy');
+  const entropyNoteEl = document.getElementById('entropy-note');
+  let currentPassphrase = '';
+  function updateEntropyNote() {
+    const bits = estimateEntropyBits(Number(ppWords.value), ppNumber.checked);
+    // The translation is escaped first; only the number is wrapped in <strong>.
+    const n = Number(ppWords.value);
+    const text = String(T('entropyNote', { n: n, bits: '\u0001' })).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Latin digits in every language (same as the "{n}" next to it); only the decimal mark follows the language.
+    let bitsText; try { bitsText = bits.toLocaleString(UI_LANG + '-u-nu-latn', { minimumFractionDigits: 1, maximumFractionDigits: 1 }); } catch (e) { bitsText = bits.toFixed(1); }
+    entropyNoteEl.innerHTML = text.replace('\u0001', '<strong><bdi>' + T('bitsUnit', { bits: bitsText }) + '</bdi></strong>');
+  }
+  ppWords.addEventListener('input', () => { ppWordsValue.textContent = ppWords.value; updateEntropyNote(); });
+  ppNumber.addEventListener('change', updateEntropyNote);
+  document.getElementById('passphrase-generate').addEventListener('click', () => {
+    currentPassphrase = generatePassphrase(Number(ppWords.value), ppSeparator.value, ppCapitalize.checked, ppNumber.checked);
+    ppOutput.textContent = currentPassphrase;
+    ppOutput.classList.remove('empty');
+    ppCopyBtn.disabled = false;
+  });
+  ppCopyBtn.addEventListener('click', () => copyToClipboard(currentPassphrase, ppCopyBtn));
+  updateEntropyNote();
+</script>
+</body>
+</html>

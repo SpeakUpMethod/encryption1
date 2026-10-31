@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Scrub — Encryption 1™ Suite</title>
+  <meta name="description" content="Free browser-based metadata remover. Strips EXIF/GPS from photos and author/company metadata from Word, Excel, PowerPoint, OpenDocument, and PDF files locally — no upload, no account." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--warning-bg: #ffe6e6;--warning-border: #ff8080;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+  .container { max-width: 780px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; margin-bottom: 20px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .badge {display: inline-block;background: #ffe9e9;color: #b42318;border-radius: 999px;padding: 6px 12px;font-size: .85rem;font-weight: 700;margin-bottom: 10px;}
+  .card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;padding: 24px;}
+  .dropzone {border: 2px dashed #b9c9dc;border-radius: 18px;padding: 28px 18px;text-align: center;background: #f8fbff;cursor: pointer;transition: .15s;}
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: #eef6ff; }
+  .dropzone strong { display: block; font-size: 1.05rem; margin-bottom: 5px; }
+  .help { margin-top: 6px; font-size: small; color: var(--muted); line-height: 1.45; }
+  input[type="file"] { display: none; }
+  .file-list { margin-top: 18px; display: flex; flex-direction: column; gap: 14px; }
+  .file-row {padding: 18px;background: #f8fafc;border: 1px solid var(--border);border-radius: 14px;}
+  .file-row-head {display: flex;justify-content: space-between;align-items: baseline;gap: 10px;margin-bottom: 12px;}
+  .file-row-name { font-weight: 600; word-break: break-all; }
+  .file-row-meta {color: var(--muted);font-size: .8rem;white-space: nowrap;}
+  .remove-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: .9rem; margin-left: 8px; }
+  .remove-btn:hover { color: var(--danger); }
+  .preview-row { display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
+  .thumb { width: 84px; height: 84px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); flex-shrink: 0; }
+  .meta-panel { flex: 1; min-width: 200px; }
+  .meta-found {background: #fff7ed;border: 1px solid #fdba74;border-radius: 10px;padding: 10px 12px;font-size: .82rem;line-height: 1.6;color: #9a3412;}
+  .meta-found strong { display: block; margin-bottom: 4px; color: #7c2d12; }
+  .meta-none {background: #f0fdf4;border: 1px solid #86efac;border-radius: 10px;padding: 10px 12px;font-size: .82rem;color: #166534;}
+  .meta-clean {background: #e9f7f0;border: 1px solid var(--success);border-radius: 10px;padding: 10px 12px;font-size: .85rem;color: #0f5132;margin-top: 10px;display:none;}
+  .meta-clean.show { display: block; }
+  .status-line { font-size: .8rem; color: var(--muted); margin-top: 8px; }
+  .row-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  button {appearance: none;border: 0;cursor: pointer;padding: 10px 16px;border-radius: 12px;font: inherit;font-weight: 600;font-size: .85rem;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-secondary { background: #eef2f7; color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .actions .btn-primary, .actions .btn-secondary { padding: 12px 16px; font-size: .95rem; }
+  .limit-note { font-size: .8rem; color: var(--muted); margin-top: 10px; }
+  .footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.js-required-notice { display: none; }
+.no-js .js-required-notice { display: block; }
+.no-js #appRoot { display: none; }
+.js-required-card {max-width: 560px; margin: 60px auto; padding: 32px 28px; text-align: center;}
+.js-required-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.js-required-card h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.js-required-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.js-required-card .btn-live {display: inline-block; padding: 12px 22px; border-radius: 14px; text-decoration: none;background: var(--accent); color: #fff; font-weight: 700;}
+.js-required-card .btn-live:hover { background: var(--accent-2); }
+.js-required-card .fine-print { margin: 18px 0 0; font-size: .85rem; color: var(--muted); }
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html" aria-current="page"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required-notice">
+  <div class="card js-required-card">
+    <div class="icon"><img src="img/ec1-logo-med.png" height="119px" /></div>
+    <h2>This page needs JavaScript to work</h2>
+    <p>JavaScript couldn't run in this view &mdash; often because a local file opened in a preview like Quick Look on iPhone or iPad, or because JavaScript is turned off in your browser's settings. Encryption 1™ needs JavaScript to encrypt or decrypt your content, so nothing below this message will work until that's resolved.</p>
+    <p><a class="btn-live" href="#">Reload this page &#8635;</a></p>
+    <p class="fine-print">If JavaScript is turned off in your browser's settings, turning it back on will fix this.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" height="45" align="absmiddle" onerror="this.style.display='none'"> Scrub</h1>
+    <p>Remove EXIF/GPS from photos and author/company metadata from Word, Excel, PowerPoint, OpenDocument, and PDF files before you share them.</p>
+  </div>
+  <div class="card">
+    <div class="dropzone" id="dropzone" tabindex="0">
+      <strong>Drop up to 5 files here, or click to choose</strong>
+      <span class="help">JPEG, PNG, HEIC, DOCX, XLSX, PPTX, ODT, ODS, ODP, PDF · up to 25MB per file</span>
+    </div>
+    <input type="file" id="file-input" accept="image/jpeg,image/png,image/heic,image/heif,application/pdf,.docx,.xlsx,.pptx,.odt,.ods,.odp" multiple>
+    <div class="file-list" id="file-list"></div>
+    <p class="limit-note" id="limit-note"></p>
+    <div class="actions" id="global-actions" style="display:none;">
+      <button class="btn-primary" id="download-all">Download all (.zip)</button>
+      <button class="btn-secondary" id="clear-all">Clear all</button>
+    </div>
+  </div>
+  <p class="footer"><strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+
+  <br /><br />
+  <em>Photos can carry GPS coordinates precise to the building; documents carry author names, company, and edit history in the file itself. Scrub removes all while leaving the photo or the document text unchanged.</em>
+  </p>
+</div>
+<script src="lib/jszip.min.js"></script>
+<script src="lib/heic2any.min.js"></script>
+<script src="lib/pdf-lib.min.js"></script>
+<script>
+  const MAX_FILES = 5;
+  const MAX_BYTES = 25 * 1024 * 1024;
+  let entries = []; // {id, originalFile, displayName, thumbUrl, foundMeta, cleanBlob, cleanUrl, status}
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+  // ---- Minimal JPEG EXIF reader: Make, Model, DateTimeOriginal, Software, GPS ----
+  function readJpegExif(buffer) {
+    const view = new DataView(buffer);
+    if (view.getUint16(0) !== 0xFFD8) return null;
+    let offset = 2;
+    while (offset < view.byteLength) {
+      if (view.getUint16(offset) === 0xFFE1) {
+        const exifLength = view.getUint16(offset + 2);
+        const start = offset + 4;
+        if (getStr(view, start, 4) !== 'Exif') { offset += 2 + exifLength; continue; }
+        return parseTiff(view, start + 6);
+      } else if ((view.getUint16(offset) & 0xFF00) !== 0xFF00) {
+        break;
+      } else {
+        offset += 2 + view.getUint16(offset + 2);
+      }
+    }
+    return null;
+  }
+  function getStr(view, offset, length) {
+    let s = '';
+    for (let i = 0; i < length; i++) s += String.fromCharCode(view.getUint8(offset + i));
+    return s;
+  }
+  function parseTiff(view, tiffStart) {
+    const little = view.getUint16(tiffStart) === 0x4949;
+    const ifd0Offset = view.getUint32(tiffStart + 4, little);
+    const tags = {};
+    let gpsIfdOffset = null;
+    function readIfd(ifdOffset) {
+      const count = view.getUint16(ifdOffset, little);
+      const result = {};
+      for (let i = 0; i < count; i++) {
+        const entryOffset = ifdOffset + 2 + i * 12;
+        const tag = view.getUint16(entryOffset, little);
+        const type = view.getUint16(entryOffset + 2, little);
+        const numValues = view.getUint32(entryOffset + 4, little);
+        const valueOffset = entryOffset + 8;
+        result[tag] = { type, numValues, valueOffset };
+      }
+      return result;
+    }
+    const ifd0 = readIfd(tiffStart + ifd0Offset);
+    function readAscii(entry) {
+      const len = entry.numValues;
+      const addr = len <= 4 ? entry.valueOffset : tiffStart + view.getUint32(entry.valueOffset, little);
+      let s = '';
+      for (let i = 0; i < len - 1; i++) s += String.fromCharCode(view.getUint8(addr + i));
+      return s.trim();
+    }
+    if (ifd0[0x010F]) tags.make = readAscii(ifd0[0x010F]);
+    if (ifd0[0x0110]) tags.model = readAscii(ifd0[0x0110]);
+    if (ifd0[0x0131]) tags.software = readAscii(ifd0[0x0131]);
+    if (ifd0[0x0132]) tags.dateTime = readAscii(ifd0[0x0132]);
+    if (ifd0[0x8825]) gpsIfdOffset = tiffStart + view.getUint32(ifd0[0x8825].valueOffset, little);
+    // DateTimeOriginal lives in the Exif sub-IFD, not IFD0 — most cameras set this
+    // rather than (or in addition to) IFD0's plain DateTime, so check it too.
+    if (ifd0[0x8769]) {
+      const exifIfd = readIfd(tiffStart + view.getUint32(ifd0[0x8769].valueOffset, little));
+      if (exifIfd[0x9003]) tags.dateTime = readAscii(exifIfd[0x9003]);
+    }
+    if (gpsIfdOffset) {
+      const gps = readIfd(gpsIfdOffset);
+      function readRational3(entry) {
+        const addr = tiffStart + view.getUint32(entry.valueOffset, little);
+        const vals = [];
+        for (let i = 0; i < 3; i++) {
+          const num = view.getUint32(addr + i * 8, little);
+          const den = view.getUint32(addr + i * 8 + 4, little);
+          vals.push(den ? num / den : 0);
+        }
+        return vals[0] + vals[1] / 60 + vals[2] / 3600;
+      }
+      if (gps[0x0002] && gps[0x0004]) {
+        let lat = readRational3(gps[0x0002]);
+        let lon = readRational3(gps[0x0004]);
+        if (gps[0x0001]) { const ref = String.fromCharCode(view.getUint8(gps[0x0001].valueOffset)); if (ref === 'S') lat = -lat; }
+        if (gps[0x0003]) { const ref = String.fromCharCode(view.getUint8(gps[0x0003].valueOffset)); if (ref === 'W') lon = -lon; }
+        tags.gpsLat = lat.toFixed(6);
+        tags.gpsLon = lon.toFixed(6);
+      }
+    }
+    return Object.keys(tags).length ? tags : null;
+  }
+  function summarizeMeta(tags) {
+    if (!tags) return null;
+    const lines = [];
+    if (tags.gpsLat && tags.gpsLon) lines.push(`GPS location: ${tags.gpsLat}, ${tags.gpsLon}`);
+    if (tags.make || tags.model) lines.push(`Camera: ${[tags.make, tags.model].filter(Boolean).join(' ')}`);
+    if (tags.dateTime) lines.push(`Date taken: ${tags.dateTime}`);
+    if (tags.software) lines.push(`Software: ${tags.software}`);
+    return lines;
+  }
+  // ---- Strip by re-encoding through canvas ----
+  async function stripImage(file) {
+    let sourceBlob = file;
+    let outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+    const isHeic = /heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name);
+    if (isHeic) {
+      if (typeof heic2any === 'undefined') throw new Error('HEIC support failed to load. Try a JPEG or PNG instead.');
+      sourceBlob = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+      outputType = 'image/jpeg';
+    }
+    const bitmap = await createImageBitmap(sourceBlob);
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0);
+    return new Promise((resolve, reject) => {
+      canvas.toBlob(blob => {
+        if (blob) resolve(blob); else reject(new Error('Could not process this image.'));
+      }, outputType, 0.92);
+    });
+  }
+  function outputName(originalName, isHeic) {
+    const base = originalName.replace(/\.[^.]+$/, '');
+    return isHeic ? `${base}-scrubbed.jpg` : `${base}-scrubbed${originalName.match(/\.[^.]+$/)?.[0] || '.jpg'}`;
+  }
+  function fileKind(file) {
+    const name = file.name.toLowerCase();
+    if (/\.(jpe?g|png|heic|heif)$/.test(name) || /^image\//.test(file.type)) return 'image';
+    if (/\.docx$/.test(name)) return 'docx';
+    if (/\.xlsx$/.test(name)) return 'xlsx';
+    if (/\.pptx$/.test(name)) return 'pptx';
+    if (/\.odt$/.test(name)) return 'odt';
+    if (/\.ods$/.test(name)) return 'ods';
+    if (/\.odp$/.test(name)) return 'odp';
+    if (/\.pdf$/.test(name) || file.type === 'application/pdf') return 'pdf';
+    return null;
+  }
+  const OOXML_KINDS = ['docx', 'xlsx', 'pptx'];
+  const ODF_KINDS = ['odt', 'ods', 'odp'];
+  const OOXML_MIME = {
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  };
+  const ODF_MIME = {
+    odt: 'application/vnd.oasis.opendocument.text',
+    ods: 'application/vnd.oasis.opendocument.spreadsheet',
+    odp: 'application/vnd.oasis.opendocument.presentation',
+  };
+  // ---- Peek at Word/Excel/PowerPoint metadata without modifying anything (used at file-add time) ----
+  // Works unmodified across .docx/.xlsx/.pptx — all three share the same docProps/core.xml + app.xml schema.
+  async function peekOoxmlMeta(file) {
+    const zip = await JSZip.loadAsync(file);
+    const lines = [];
+    const coreEntry = zip.file('docProps/core.xml');
+    if (coreEntry) {
+      const xmlText = await coreEntry.async('string');
+      const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      const get = (ns, local) => { const el = xmlDoc.getElementsByTagNameNS(ns, local)[0]; return el && el.textContent.trim(); };
+      const DC = 'http://purl.org/dc/elements/1.1/', CP = 'http://schemas.openxmlformats.org/package/2006/metadata/core-properties';
+      const author = get(DC, 'creator'); if (author) lines.push(`Author: ${author}`);
+      const lastMod = get(CP, 'lastModifiedBy'); if (lastMod) lines.push(`Last modified by: ${lastMod}`);
+      const title = get(DC, 'title'); if (title) lines.push(`Title: ${title}`);
+    }
+    const appEntry = zip.file('docProps/app.xml');
+    if (appEntry) {
+      const xmlText = await appEntry.async('string');
+      const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      const company = xmlDoc.getElementsByTagName('Company')[0];
+      if (company && company.textContent.trim()) lines.push(`Company: ${company.textContent.trim()}`);
+    }
+    return lines.length ? lines : null;
+  }
+  // ---- Peek at OpenDocument (.odt/.ods/.odp) metadata without modifying anything ----
+  // All three ODF formats share one unified meta.xml at the zip root — verified against
+  // real LibreOffice-format files generated with odfpy before writing this.
+  async function peekOdfMeta(file) {
+    const zip = await JSZip.loadAsync(file);
+    const lines = [];
+    const metaEntry = zip.file('meta.xml');
+    if (!metaEntry) return null;
+    const xmlText = await metaEntry.async('string');
+    const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+    const META_NS = 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0';
+    const DC_NS = 'http://purl.org/dc/elements/1.1/';
+    const get = (ns, local) => { const el = xmlDoc.getElementsByTagNameNS(ns, local)[0]; return el && el.textContent.trim(); };
+    const author = get(META_NS, 'initial-creator'); if (author) lines.push(`Author: ${author}`);
+    const lastMod = get(DC_NS, 'creator'); if (lastMod) lines.push(`Last modified by: ${lastMod}`);
+    const title = get(DC_NS, 'title'); if (title) lines.push(`Title: ${title}`);
+    return lines.length ? lines : null;
+  }
+  // ---- Peek at PDF metadata without modifying anything (used at file-add time) ----
+  async function peekPdfMeta(file) {
+    const buffer = await file.arrayBuffer();
+    const pdfDoc = await PDFLib.PDFDocument.load(buffer, { updateMetadata: false });
+    const lines = [];
+    const author = pdfDoc.getAuthor(); if (author) lines.push(`Author: ${author}`);
+    const title = pdfDoc.getTitle(); if (title) lines.push(`Title: ${title}`);
+    const creator = pdfDoc.getCreator(); if (creator) lines.push(`Creator: ${creator}`);
+    return lines.length ? lines : null;
+  }
+  // ---- Strip Word/Excel/PowerPoint author/company metadata via JSZip + DOMParser ----
+  // Unmodified from the original .docx-only version — confirmed the docProps schema is
+  // byte-for-byte identical across all three OOXML formats before reusing this as-is.
+  async function stripOoxml(file, kind) {
+    const zip = await JSZip.loadAsync(file);
+    const foundMeta = [];
+    const CORE_NS = 'http://schemas.openxmlformats.org/package/2006/metadata/core-properties';
+    const DC_NS = 'http://purl.org/dc/elements/1.1/';
+    const DCTERMS_NS = 'http://purl.org/dc/terms/';
+    const coreEntry = zip.file('docProps/core.xml');
+    if (coreEntry) {
+      const xmlText = await coreEntry.async('string');
+      const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      const fields = [
+        [DC_NS, 'creator', 'Author'], [CORE_NS, 'lastModifiedBy', 'Last modified by'],
+        [DC_NS, 'title', 'Title'], [DC_NS, 'subject', 'Subject'],
+        [CORE_NS, 'keywords', 'Keywords'], [DC_NS, 'description', 'Comments'],
+        [CORE_NS, 'category', 'Category'],
+      ];
+      for (const [ns, local, label] of fields) {
+        const els = xmlDoc.getElementsByTagNameNS(ns, local);
+        for (let i = 0; i < els.length; i++) {
+          const el = els[i];
+          if (el.textContent && el.textContent.trim()) { foundMeta.push(`${label}: ${el.textContent.trim()}`); el.textContent = ''; }
+        }
+      }
+      [['created', 'Created'], ['modified', 'Modified']].forEach(([local, label]) => {
+        const els = xmlDoc.getElementsByTagNameNS(DCTERMS_NS, local);
+        for (let i = els.length - 1; i >= 0; i--) {
+          const el = els[i];
+          if (el.textContent && el.textContent.trim()) { foundMeta.push(`${label}: ${el.textContent.trim()}`); el.parentNode.removeChild(el); }
+        }
+      });
+      zip.file('docProps/core.xml', new XMLSerializer().serializeToString(xmlDoc));
+    }
+    const appEntry = zip.file('docProps/app.xml');
+    if (appEntry) {
+      const xmlText = await appEntry.async('string');
+      const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      ['Manager', 'Company'].forEach(tag => {
+        const els = xmlDoc.getElementsByTagName(tag);
+        for (let i = 0; i < els.length; i++) {
+          const el = els[i];
+          if (el.textContent && el.textContent.trim()) { foundMeta.push(`${tag}: ${el.textContent.trim()}`); el.textContent = ''; }
+        }
+      });
+      zip.file('docProps/app.xml', new XMLSerializer().serializeToString(xmlDoc));
+    }
+    const outBlob = await zip.generateAsync({ type: 'blob', mimeType: OOXML_MIME[kind] });
+    return { blob: outBlob, foundMeta };
+  }
+  // ---- Strip OpenDocument (.odt/.ods/.odp) metadata via JSZip + DOMParser ----
+  // Verified against real LibreOffice-format files (generated with odfpy) — one shared
+  // meta.xml at the zip root covers all three formats, unlike OOXML's two docProps files.
+  async function stripOdf(file, kind) {
+    const zip = await JSZip.loadAsync(file);
+    const foundMeta = [];
+    const metaEntry = zip.file('meta.xml');
+    if (metaEntry) {
+      const xmlText = await metaEntry.async('string');
+      const xmlDoc = new DOMParser().parseFromString(xmlText, 'application/xml');
+      const META_NS = 'urn:oasis:names:tc:opendocument:xmlns:meta:1.0';
+      const DC_NS = 'http://purl.org/dc/elements/1.1/';
+      const fields = [
+        [META_NS, 'initial-creator', 'Author'], [DC_NS, 'creator', 'Last modified by'],
+        [DC_NS, 'title', 'Title'], [DC_NS, 'subject', 'Subject'],
+        [DC_NS, 'description', 'Comments'],
+      ];
+      for (const [ns, local, label] of fields) {
+        const els = xmlDoc.getElementsByTagNameNS(ns, local);
+        for (let i = 0; i < els.length; i++) {
+          const el = els[i];
+          if (el.textContent && el.textContent.trim()) { foundMeta.push(`${label}: ${el.textContent.trim()}`); el.textContent = ''; }
+        }
+      }
+      // Keywords appear as multiple separate <meta:keyword> elements (unlike OOXML's
+      // single comma-separated field), so collect all of them before removing.
+      const keywordEls = xmlDoc.getElementsByTagNameNS(META_NS, 'keyword');
+      if (keywordEls.length) {
+        const words = [];
+        for (let i = 0; i < keywordEls.length; i++) words.push(keywordEls[i].textContent.trim());
+        foundMeta.push(`Keywords: ${words.filter(Boolean).join(', ')}`);
+        for (let i = keywordEls.length - 1; i >= 0; i--) keywordEls[i].parentNode.removeChild(keywordEls[i]);
+      }
+      [['creation-date', 'Created'], ['generator', 'Software']].forEach(([local, label]) => {
+        const els = xmlDoc.getElementsByTagNameNS(META_NS, local);
+        for (let i = els.length - 1; i >= 0; i--) {
+          const el = els[i];
+          if (el.textContent && el.textContent.trim()) { foundMeta.push(`${label}: ${el.textContent.trim()}`); el.parentNode.removeChild(el); }
+        }
+      });
+      const dateEls = xmlDoc.getElementsByTagNameNS(DC_NS, 'date');
+      for (let i = dateEls.length - 1; i >= 0; i--) {
+        const el = dateEls[i];
+        if (el.textContent && el.textContent.trim()) { foundMeta.push(`Modified: ${el.textContent.trim()}`); el.parentNode.removeChild(el); }
+      }
+      zip.file('meta.xml', new XMLSerializer().serializeToString(xmlDoc));
+    }
+    const outBlob = await zip.generateAsync({ type: 'blob', mimeType: ODF_MIME[kind] });
+    return { blob: outBlob, foundMeta };
+  }
+  // ---- Strip PDF author metadata + embedded XMP via pdf-lib ----
+  async function stripPdf(file) {
+    const buffer = await file.arrayBuffer();
+    const pdfDoc = await PDFLib.PDFDocument.load(buffer, { updateMetadata: false });
+    const foundMeta = [];
+    const checks = [['getAuthor', 'setAuthor', 'Author'], ['getTitle', 'setTitle', 'Title'],
+      ['getSubject', 'setSubject', 'Subject'], ['getCreator', 'setCreator', 'Creator'],
+      ['getProducer', 'setProducer', 'Producer']];
+    for (const [getter, setter, label] of checks) {
+      const val = pdfDoc[getter]();
+      if (val) { foundMeta.push(`${label}: ${val}`); pdfDoc[setter](''); }
+    }
+    const keywords = pdfDoc.getKeywords();
+    if (keywords && keywords.length) { foundMeta.push(`Keywords: ${keywords}`); pdfDoc.setKeywords([]); }
+    const creationDate = pdfDoc.getCreationDate();
+    if (creationDate) { foundMeta.push(`Created: ${creationDate.toISOString()}`); pdfDoc.setCreationDate(new Date(0)); }
+    const modDate = pdfDoc.getModificationDate();
+    if (modDate) { foundMeta.push(`Modified: ${modDate.toISOString()}`); pdfDoc.setModificationDate(new Date(0)); }
+    const catalog = pdfDoc.catalog;
+    if (catalog.get(PDFLib.PDFName.of('Metadata'))) {
+      foundMeta.push('Embedded XMP metadata stream');
+      catalog.delete(PDFLib.PDFName.of('Metadata'));
+    }
+    const outBytes = await pdfDoc.save();
+    return { blob: new Blob([outBytes], { type: 'application/pdf' }), foundMeta };
+  }
+  function render() {
+    const list = document.getElementById('file-list');
+    list.innerHTML = '';
+    entries.forEach(entry => {
+      const row = document.createElement('div');
+      row.className = 'file-row';
+      const isDoc = entry.kind !== 'image';
+      let metaHtml;
+      if (entry.foundMeta && entry.foundMeta.length) {
+        metaHtml = entry.cleanBlob
+          ? `<div class="meta-found" style="background:#f8fafc;border-color:var(--border);color:var(--muted);"><strong style="color:var(--muted);">Originally contained (now removed from the download):</strong>${entry.foundMeta.join('<br>')}</div>`
+          : `<div class="meta-found"><strong>Metadata found:</strong>${entry.foundMeta.join('<br>')}</div>`;
+      } else {
+        metaHtml = `<div class="meta-none">No readable metadata found in this file.</div>`;
+      }
+      const thumbHtml = isDoc
+        ? `<div class="thumb" style="display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--muted);background:#eef2f7;">${entry.kind.toUpperCase()}</div>`
+        : `<img class="thumb" src="${entry.thumbUrl || ''}" alt="">`;
+      const scrubLabel = entry.kind === 'image' ? 'Scrub this photo' : 'Scrub this document';
+      row.innerHTML = `
+        <div class="file-row-head">
+          <span class="file-row-name">${entry.originalFile.name}</span>
+          <span class="file-row-meta">${formatSize(entry.originalFile.size)}<button class="remove-btn" data-id="${entry.id}">✕</button></span>
+        </div>
+        <div class="preview-row">
+          ${thumbHtml}
+          <div class="meta-panel">
+            ${metaHtml}
+            <div class="meta-clean ${entry.cleanBlob ? 'show' : ''}" id="clean-${entry.id}">✓ Metadata removed. Ready to download.</div>
+            <div class="status-line" id="status-${entry.id}">${entry.status || ''}</div>
+            <div class="row-actions">
+              <button class="btn-primary scrub-one" data-id="${entry.id}" ${entry.cleanBlob ? 'disabled' : ''}>${entry.cleanBlob ? 'Scrubbed' : scrubLabel}</button>
+              <button class="btn-secondary download-one" data-id="${entry.id}" ${entry.cleanBlob ? '' : 'disabled'}>Download</button>
+            </div>
+          </div>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+    list.querySelectorAll('.remove-btn').forEach(b => b.addEventListener('click', () => {
+      entries = entries.filter(e => e.id !== b.dataset.id);
+      render();
+    }));
+    list.querySelectorAll('.scrub-one').forEach(b => b.addEventListener('click', () => scrubEntry(b.dataset.id)));
+    list.querySelectorAll('.download-one').forEach(b => b.addEventListener('click', () => downloadEntry(b.dataset.id)));
+    document.getElementById('global-actions').style.display = entries.length ? 'flex' : 'none';
+    document.getElementById('limit-note').textContent = entries.length >= MAX_FILES ? `Limit reached (${MAX_FILES} files). Remove one to add another.` : '';
+    document.getElementById('download-all').disabled = !entries.some(e => e.cleanBlob);
+  }
+  async function scrubEntry(id) {
+    const entry = entries.find(e => e.id === id);
+    if (!entry) return;
+    const statusEl = document.getElementById('status-' + id);
+    statusEl.textContent = 'Processing…';
+    try {
+      if (entry.kind === 'image') {
+        const isHeic = /heic|heif/i.test(entry.originalFile.type) || /\.(heic|heif)$/i.test(entry.originalFile.name);
+        entry.cleanBlob = await stripImage(entry.originalFile);
+        entry.outputName = outputName(entry.originalFile.name, isHeic);
+      } else if (OOXML_KINDS.includes(entry.kind)) {
+        const result = await stripOoxml(entry.originalFile, entry.kind);
+        entry.cleanBlob = result.blob;
+        entry.foundMeta = result.foundMeta;
+        entry.outputName = outputName(entry.originalFile.name, false);
+      } else if (ODF_KINDS.includes(entry.kind)) {
+        const result = await stripOdf(entry.originalFile, entry.kind);
+        entry.cleanBlob = result.blob;
+        entry.foundMeta = result.foundMeta;
+        entry.outputName = outputName(entry.originalFile.name, false);
+      } else if (entry.kind === 'pdf') {
+        const result = await stripPdf(entry.originalFile);
+        entry.cleanBlob = result.blob;
+        entry.foundMeta = result.foundMeta;
+        entry.outputName = outputName(entry.originalFile.name, false);
+      }
+      entry.cleanUrl = URL.createObjectURL(entry.cleanBlob);
+      entry.status = '';
+      render();
+    } catch (e) {
+      statusEl.textContent = 'Error: ' + e.message;
+    }
+  }
+  function downloadEntry(id) {
+    const entry = entries.find(e => e.id === id);
+    if (!entry || !entry.cleanBlob) return;
+    const a = document.createElement('a');
+    a.href = entry.cleanUrl;
+    a.download = entry.outputName;
+    a.click();
+  }
+  function setupDropzone() {
+    const zone = document.getElementById('dropzone');
+    const input = document.getElementById('file-input');
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') input.click(); });
+    input.addEventListener('change', () => { if (input.files.length) addFiles(Array.from(input.files)); input.value = ''; });
+    ['dragenter', 'dragover'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.add('dragover'); }));
+    ['dragleave', 'drop'].forEach(ev => zone.addEventListener(ev, e => { e.preventDefault(); zone.classList.remove('dragover'); }));
+    zone.addEventListener('drop', e => { if (e.dataTransfer.files.length) addFiles(Array.from(e.dataTransfer.files)); });
+  }
+  async function addFiles(files) {
+    const room = MAX_FILES - entries.length;
+    for (const file of files.slice(0, room)) {
+      if (file.size > MAX_BYTES) { alert(`${file.name} is over the 25MB limit.`); continue; }
+      const kind = fileKind(file);
+      if (!kind) { alert(`${file.name} isn't a supported type (JPEG, PNG, HEIC, DOCX, XLSX, PPTX, ODT, ODS, ODP, PDF).`); continue; }
+      const id = Math.random().toString(36).slice(2);
+      const thumbUrl = kind === 'image' ? URL.createObjectURL(file) : null;
+      let foundMeta = null;
+      try {
+        if (kind === 'image' && (/jpe?g$/i.test(file.name) || file.type === 'image/jpeg')) {
+          const buf = await file.arrayBuffer();
+          foundMeta = summarizeMeta(readJpegExif(buf));
+        } else if (OOXML_KINDS.includes(kind)) {
+          foundMeta = await peekOoxmlMeta(file);
+        } else if (ODF_KINDS.includes(kind)) {
+          foundMeta = await peekOdfMeta(file);
+        } else if (kind === 'pdf') {
+          foundMeta = await peekPdfMeta(file);
+        }
+      } catch (e) { /* unreadable metadata, treat as none found */ }
+      entries.push({ id, kind, originalFile: file, thumbUrl, foundMeta, cleanBlob: null, cleanUrl: null, status: '' });
+    }
+    render();
+  }
+  document.getElementById('clear-all').addEventListener('click', () => { entries = []; render(); });
+  document.getElementById('download-all').addEventListener('click', async () => {
+    const scrubbed = entries.filter(e => e.cleanBlob);
+    if (!scrubbed.length) return;
+    const zip = new JSZip();
+    scrubbed.forEach(e => zip.file(e.outputName, e.cleanBlob));
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(zipBlob);
+    a.download = 'scrubbed-photos-' + Date.now() + '.zip';
+    a.click();
+  });
+  setupDropzone();
+</script>
+</body>
+</html>

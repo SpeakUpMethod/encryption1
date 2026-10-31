@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>File Truth - Encryption 1™</title>
+  <meta name="description" content="Free browser-based file checker. Find out what a file really is before you open it: programs disguised as documents, double extensions, macros, risky PDFs and phishing attachments. Files are only read, never opened or uploaded." />
+<style>
+/* Layout: EC1 Suite card system; a drop area, then one verdict card per file */
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --border:#dbe3ee;
+  --accent:#0d6efd; --accent-2:#0b5ed7; --accent-soft:#e7f0ff;
+  --danger:#b42318; --danger-bg:#fdecea; --warn:#a15c07; --warn-bg:#fff4e0;
+  --success:#157347; --success-bg:#e6f4ec; --note:#475467; --note-bg:#eef1f6; --field:#fbfcfe;
+  --font: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;
+  --mono: ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131c; --card:#161d2a; --text:#e6eaf1; --muted:#9aa5b6; --border:#2a3446;
+  --accent:#5b9bff; --accent-2:#7aaeff; --accent-soft:#1b2a45;
+  --danger:#ff8a7a; --danger-bg:#3a1a17; --warn:#f5b545; --warn-bg:#352812;
+  --success:#5fd39a; --success-bg:#132f22; --note:#b8c2d3; --note-bg:#222b3a; --field:#111824; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131c; --card:#161d2a; --text:#e6eaf1; --muted:#9aa5b6; --border:#2a3446;
+  --accent:#5b9bff; --accent-2:#7aaeff; --accent-soft:#1b2a45;
+  --danger:#ff8a7a; --danger-bg:#3a1a17; --warn:#f5b545; --warn-bg:#352812;
+  --success:#5fd39a; --success-bg:#132f22; --note:#b8c2d3; --note-bg:#222b3a; --field:#111824; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:clamp(28px,4vw,38px);line-height:1.1;margin:0;letter-spacing:-.01em}
+h1 .tag{font-size:12px;vertical-align:middle;margin-inline-start:8px;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);letter-spacing:.04em;font-weight:700}
+.lede{margin:0;color:var(--muted);max-width:72ch}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.drop{border:2px dashed var(--border);border-radius:16px;padding:30px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;background:var(--field);transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0}
+button{font:inherit;font-size:14px;cursor:pointer;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 16px}
+button:hover{border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:10px 22px}
+button.primary:hover{background:var(--accent-2);color:#fff}
+button:focus-visible,a:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:2px}
+input[type=file]{display:none}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spacer{flex:1}
+.results{display:flex;flex-direction:column;gap:12px}
+.file{border:1px solid var(--border);border-radius:16px;background:var(--card);padding:14px 16px;display:flex;flex-direction:column;gap:8px;border-inline-start-width:6px;min-width:0}
+.file.danger{border-inline-start-color:var(--danger)}
+.file.careful{border-inline-start-color:var(--warn)}
+.file.note{border-inline-start-color:var(--border)}
+.file.ok{border-inline-start-color:var(--success)}
+.file.busy{border-inline-start-color:var(--border);opacity:.7}
+.ftop{display:flex;gap:10px;align-items:baseline;justify-content:space-between;flex-wrap:wrap}
+.fname{font-weight:650;font-size:16px;overflow-wrap:anywhere;min-width:0}
+.pill{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.pill.danger{background:var(--danger-bg);color:var(--danger)}
+.pill.careful{background:var(--warn-bg);color:var(--warn)}
+.pill.note{background:var(--note-bg);color:var(--note)}
+.pill.ok{background:var(--success-bg);color:var(--success)}
+.verdict{font-size:15px;font-weight:600;margin:0}
+.facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 12px;font-size:14px;margin:0}
+.facts dt{color:var(--muted)} .facts dd{margin:0;overflow-wrap:anywhere}
+.reasons{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.reasons li.danger::marker{color:var(--danger)} .reasons li.careful::marker{color:var(--warn)}
+.fp{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.fp code{font-family:var(--mono);font-size:12px;overflow-wrap:anywhere;direction:ltr;unicode-bidi:isolate}
+.fp a{color:var(--accent)}
+.fp button{padding:3px 10px;font-size:12px}
+.next-step{margin:0;font-size:14px}
+.next-step a,footer a{color:var(--accent)}
+details.how{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 18px}
+details.how summary{cursor:pointer;font-weight:650}
+details.how .body{display:flex;flex-direction:column;gap:10px;margin-top:10px;max-width:74ch}
+details.how p,details.how li{font-size:14px;margin:0}
+details.how ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
+footer{font-size:13px;color:var(--muted);max-width:78ch;display:flex;flex-direction:column;gap:6px}
+footer p{margin:0}
+.js-required{display:none;max-width:640px;margin:24px auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));text-align:center}
+.no-js .js-required{display:block}
+.no-js .wrap{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html" aria-current="page"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required">
+  <img src="img/ec1-logo-med.png" height="119" alt="" />
+  <h2>This page needs JavaScript to work</h2>
+  <p>JavaScript couldn’t run in this view, or it is turned off in your browser’s settings. File Truth needs JavaScript to read files.</p>
+</div>
+<div class="wrap">
+<aside id="e1-donate" class="e1-donate" data-campaign="2026-11-10" aria-labelledby="e1-donate-title">
+  <button type="button" class="e1-donate-x" data-e1-dismiss aria-label="Close">&times;</button>
+  <div class="e1-donate-icon" aria-hidden="true">&#9749;</div>
+  <div class="e1-donate-text">
+    <span class="e1-donate-badge">Hosting fund · until 2026-11-10</span>
+    <h2 id="e1-donate-title"><bdi>Encryption 1</bdi> is free, and it will stay free</h2>
+    <p>No ads, no accounts, no tracking — that was true in 1996 and it is true today. Hosting for the site comes due every three months. If <bdi>Encryption 1</bdi> has been useful to you, a small contribution on Ko-fi this week helps keep it online.</p>
+    <div class="e1-donate-actions">
+      <a class="e1-donate-btn" href="https://ko-fi.com/encryption1" target="_blank" rel="noopener" data-e1-dismiss>Support on Ko-fi</a>
+      <a class="e1-donate-link" href="donate.html">Why I ask</a>
+      <button type="button" class="e1-donate-later" data-e1-dismiss>Maybe later</button>
+    </div>
+  </div>
+</aside>
+<style>
+.e1-donate{position:relative;display:flex;gap:16px;align-items:flex-start;
+  background:var(--card,#fff);border:1px solid var(--border,#dbe3ee);border-inline-start:4px solid var(--accent,#0d6efd);
+  border-radius:18px;padding:18px 20px;margin:16px auto;max-width:960px;
+  box-shadow:0 2px 10px rgba(15,23,42,.05);color:var(--text,#1f2937);font-family:inherit}
+.e1-donate[hidden]{display:none}
+.e1-donate-icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  background:#e7f0ff;font-size:22px}
+.e1-donate-badge{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;
+  background:#e7f0ff;color:var(--accent-2,#0b5ed7);font-size:.78rem;font-weight:600;letter-spacing:.01em}
+.e1-donate h2{margin:0 0 6px;font-size:1.05rem;line-height:1.3}
+.e1-donate p{margin:0 0 12px;color:var(--muted,#6b7280);line-height:1.5;font-size:.95rem}
+.e1-donate-actions{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.e1-donate-btn{display:inline-block;background:var(--accent,#0d6efd);color:#fff;text-decoration:none;
+  padding:8px 18px;border-radius:999px;font-weight:600;font-size:.92rem}
+.e1-donate-btn:hover,.e1-donate-btn:focus-visible{background:var(--accent-2,#0b5ed7)}
+.e1-donate-link{color:var(--accent,#0d6efd);font-size:.92rem}
+.e1-donate-later{background:none;border:0;padding:0;color:var(--muted,#6b7280);font:inherit;font-size:.92rem;cursor:pointer;text-decoration:underline}
+.e1-donate-x{position:absolute;top:8px;inset-inline-end:10px;background:none;border:0;font-size:22px;line-height:1;
+  color:var(--muted,#6b7280);cursor:pointer;padding:4px 8px;border-radius:8px}
+.e1-donate-x:hover{background:var(--bg,#f5f7fb)}
+@media (max-width:560px){.e1-donate{padding:16px}.e1-donate-icon{display:none}}
+/* Burmese and Thai marks sit above/below the line: give them room */
+.e1-donate:lang(my),.e1-donate:lang(th){line-height:1.9}
+.e1-donate:lang(my) .e1-donate-btn,.e1-donate:lang(my) .e1-donate-badge{padding-top:6px;padding-bottom:6px}
+</style>
+<script>
+(function(){
+  var KEY='e1DonateDismissed', card=document.getElementById('e1-donate');
+  if(!card) return;
+  var id=card.getAttribute('data-campaign'), preview=card.hasAttribute('data-preview');
+  try{ if(!preview && localStorage.getItem(KEY)===id){ card.hidden=true; return; } }catch(e){}
+  function remember(){ if(preview) return; try{ localStorage.setItem(KEY,id); }catch(e){} }
+  card.querySelectorAll('[data-e1-dismiss]').forEach(function(el){
+    el.addEventListener('click',function(){
+      remember();
+      if(el.tagName!=='A') card.hidden=true;
+      else setTimeout(function(){ card.hidden=true; },300);   // Ko-fi opens in a new tab
+    });
+  });
+})();
+</script>
+  <header>
+    <div class="eyebrow"><bdi>Encryption 1™</bdi></div>
+    <h1><img src="img/ec1-logo-med.png" height="45" alt="" style="vertical-align:middle" onerror="this.style.display='none'"> <bdi>File Truth</bdi> <span class="tag">BETA</span></h1>
+    <p class="lede">Find out what a file really is before you open it. File Truth reads the file’s own bytes, not its name, and warns you about programs disguised as documents, fake extensions, macros, risky PDFs and attachments that fake a login page. Files are only read on your device. Nothing is opened, run or uploaded.</p>
+  </header>
+  <section class="card">
+    <div class="drop" id="drop">
+      <p><strong>Drop files here to check them</strong></p>
+      <p class="hint">Any kind of file, up to 20 at a time. Save an email attachment first, then check it here before you open it.</p>
+      <button type="button" class="primary" id="chooseBtn">Choose files</button>
+      <input type="file" id="fileIn" multiple>
+    </div>
+  </section>
+  <div class="bar" id="bar" hidden>
+    <span class="hint" id="summary" aria-live="polite"></span>
+    <span class="spacer"></span>
+    <button type="button" id="clearBtn">Clear the list</button>
+  </div>
+  <div class="results" id="results"></div>
+  <p class="next-step" id="nextStep" hidden>Got this file in an email? Check the message itself with <a href="reveal.php"><bdi>Reveal</bdi></a>.</p>
+  <details class="how">
+    <summary>How File Truth works, and what it can’t do</summary>
+    <div class="body">
+      <p>Every kind of file starts with its own tell-tale bytes: a PDF starts with “%PDF”, a Windows program with “MZ”, a ZIP with “PK”. File Truth reads those bytes, and for some files a little more, then compares what it finds with the file’s name.</p>
+      <ul>
+        <li><b>Disguised programs.</b> A program renamed “invoice.pdf”, a shortcut called “Contract.docx”, or “photo.jpg.exe” all show up for what they are.</li>
+        <li><b>Risky documents.</b> Office files with macros, PDFs that run scripts or launch other programs, and RTF files with embedded packages are flagged, because these are common ways to deliver malware.</li>
+        <li><b>Phishing attachments.</b> Web-page attachments (.html) that contain a password form, or that send what you type to another site, are a favourite way to steal logins.</li>
+        <li><b>Archives and disk images.</b> Inside ZIP files, File Truth lists programs, scripts and disguised names. Disk images (.iso, .img, .vhd) and password-protected archives are flagged because they are used to slip files past email scanners.</li>
+      </ul>
+      <p><b>Limits.</b> File Truth is not an antivirus. A file can be exactly what its name says and still be harmful, and a careful attacker can hide things this check can’t see, such as code inside compressed parts of a PDF or inside RAR and 7z archives. Use it as a first look, keep your device’s own protection on, and only open files you expected from people you trust. The fingerprint link sends only the file’s SHA-256 fingerprint to VirusTotal when you click it, never the file.</p>
+    </div>
+  </details>
+  <footer>
+    <p>File Truth works offline and can be saved and run from a USB stick like the other Encryption 1™ tools.</p>
+    <p>&copy; 1996–2001, 2026 Sean L. Young · <a href="license.html">MIT license</a></p>
+  </footer>
+</div>
+<script>
+/* Interface text for this language, from /lang/filetruth/en.json */
+var I18N = {"checking":"Checking…","readFailed":"This file couldn’t be read. It may be in use, or the browser may not have permission to read it.","pillNote":"Note","pill_danger":"Danger","pill_careful":"Careful","pill_note":"Note","pill_ok":"Looks right","verdict_danger":"Don’t open this file.","verdict_careful":"Open it only if you were expecting it from someone you trust.","verdict_note":"Probably fine, but notice this:","verdict_ok":"This file is what its name says.","sum_danger":{"one":"{n} file to avoid","other":"{n} files to avoid"},"sum_careful":{"one":"{n} to treat with care","other":"{n} to treat with care"},"sum_note":{"one":"{n} with a note","other":"{n} with notes"},"sum_ok":{"one":"{n} looks right","other":"{n} look right"},"tooMany":"{n} more not checked (up to {max} at a time)","factReal":"Really is","factEntries":{"one":"{n} file inside","other":"{n} files inside"},"factName":"Name says","factNoExt":"no file type in the name","factShownAs":"Name as it appears","factSize":"Size","fpWorking":"Calculating fingerprint…","fpSkipped":"Fingerprint not calculated (file too large for this page; use Fingerprint).","fpLabel":"SHA-256 fingerprint:","copy":"Copy","copied":"Copied","copyFailed":"Couldn’t copy","vtLink":"Look it up on VirusTotal (sends only the fingerprint)","rNameBidi":"The name contains hidden characters that reverse the letters shown on screen. It appears as “{shown}” but is really “{real}”.","rNameDouble":"The name ends in {fake} followed by {ext}. The real file type is the last one, {ext}; the {fake} is there to fool you.","rNamePadding":"The name is padded with spaces or dots to push the real ending ({ext}) out of sight.","rNoExt":"The name has no file type at the end, so your device may not know how to open it.","rEmpty":"The file is empty.","rProgramDisguised":"This is really {kind}, but its name says {ext}. Programs disguised as documents or pictures are a classic way to spread malware.","rScriptDisguised":"This is really {kind}, but its name says {ext}.","rProgram":"This is {kind}. Opening it runs it.","rScript":"This is {kind}. Windows can run it when you double-click it.","rScriptPlain":"This is a script (a small program). It runs only if you start it on purpose.","rRunsExt":"Files ending in {ext} can run code when opened on Windows.","rNotReal":"This doesn’t look like a real {ext} file. It may be damaged, or something else renamed.","rMismatch":"This is really {kind}, although its name says {ext}. That is usually harmless (a renamed file), but it is not what it claims to be.","rMacros":"This Office document contains macros, small programs that run inside it. Don’t click “Enable content” or “Enable editing” unless you expected macros.","rEmbeddedObject":"This Office document contains embedded objects, which can hide other files.","rDiskImage":"This is {kind}. Disk images open like a folder, and they are often used to slip programs past email scanners.","rZipDisguised":"Inside this archive, a file has a disguised name: {list}.","rZipRisky":{"one":"Inside this archive is something that can run: {list}.","other":"Inside this archive are {n} things that can run, such as: {list}."},"rZipNested":"Inside this archive is another archive or disk image ({list}), which this check doesn’t open.","rZipEncrypted":"This archive is password-protected. Its contents can’t be checked, which is why such archives are used to get past scanners.","rZipUnreadable":"The list of files inside this archive couldn’t be read.","rArchiveClosed":"This is {kind}. File Truth can’t look inside this kind of archive.","rPartlyRead":"This file is large, so only its beginning and end were checked.","rPdfLaunch":"This PDF is set up to launch another program.","rPdfEmbeddedExe":"This PDF carries an attached program or script.","rPdfEmbedded":"This PDF carries attached files.","rPdfJs":"This PDF contains JavaScript, which runs when it’s opened in some readers.","rPdfOpenAction":"This PDF does something automatically when it opens, such as opening a web address.","rPdfSubmit":"This PDF contains a form that sends what you type somewhere.","rWebPassword":"This web-page file asks for a password. Real companies don’t send login pages as attachments; this is a common way to steal passwords.","rWebForm":"This web-page file contains a form.","rWebScript":"This web-page file contains scripts.","rSvgScript":"This picture (SVG) contains a script, which can run when it’s opened in a browser.","rWebObfuscated":"The code in this file is deliberately scrambled, which is often done to hide what it does.","rWebRedirect":"This file sends you to another web address when it opens.","rWebPostsAway":"What you type into this file is sent to another website.","rRtfPackage":"This RTF document has another file packed inside it.","rRtfEquation":"This RTF document contains an old Equation Editor object, a part that attackers have exploited.","rRtfObject":"This RTF document contains embedded objects.","rMatch":"It is really {kind}, as its name says.","kinds":{"exe":"Windows program","dll":"Windows program library","dosexe":"older DOS or Windows program","elf":"Linux program","macho":"Mac program","class":"Java program","dex":"Android program code","lnk":"Windows shortcut","urlshortcut":"web shortcut","desktop":"Linux shortcut","msi":"Windows installer","hta":"Windows HTML application (a program)","doc":"Word document (older format)","xls":"Excel workbook (older format)","ppt":"PowerPoint presentation (older format)","msg":"Outlook email","ole":"older Office file","pdf":"PDF document","zip":"ZIP archive","docx":"Word document","xlsx":"Excel workbook","pptx":"PowerPoint presentation","ooxml":"Office document","odf":"OpenDocument file","epub":"e-book","apk":"Android app","ipa":"iPhone app","jar":"Java program","extension":"browser extension","rar":"RAR archive","7z":"7-Zip archive","gz":"gzip archive","bz2":"bzip2 archive","xz":"xz archive","cab":"Windows cabinet archive","tar":"tar archive","iso":"disc image","vhd":"virtual hard disk","vhdx":"virtual hard disk","dmg":"Mac disk image","png":"PNG image","jpeg":"JPEG photo","gif":"GIF image","webp":"WebP image","bmp":"BMP image","tiff":"TIFF image","ico":"icon","psd":"Photoshop image","heic":"HEIC photo","avif":"AVIF image","wav":"WAV audio file","mp3":"MP3 audio file","ogg":"Ogg audio file","flac":"FLAC audio file","m4a":"M4A audio file","avi":"AVI video","mp4":"MP4 video","mov":"QuickTime video","3gp":"3GP video","mkv":"Matroska video","webm":"WebM video","rtf":"RTF document","svg":"SVG image (which can contain code)","html":"web page","eml":"email file","script":"script (a small program)","reg":"Windows registry file","xml":"XML file","json":"JSON data file","text":"plain text file","unknown":"unrecognized data","empty":"empty file"},"kindsA":{"exe":"a Windows program","dll":"a Windows program library","dosexe":"an older DOS or Windows program","elf":"a Linux program","macho":"a Mac program","class":"a Java program","dex":"Android program code","lnk":"a Windows shortcut","urlshortcut":"a web shortcut","desktop":"a Linux shortcut","msi":"a Windows installer","hta":"a Windows HTML application (a program)","doc":"a Word document (older format)","xls":"an Excel workbook (older format)","ppt":"a PowerPoint presentation (older format)","msg":"an Outlook email","ole":"an older Office file","pdf":"a PDF document","zip":"a ZIP archive","docx":"a Word document","xlsx":"an Excel workbook","pptx":"a PowerPoint presentation","ooxml":"an Office document","odf":"an OpenDocument file","epub":"an e-book","apk":"an Android app","ipa":"an iPhone app","jar":"a Java program","extension":"a browser extension","rar":"a RAR archive","7z":"a 7-Zip archive","gz":"a gzip archive","bz2":"a bzip2 archive","xz":"an xz archive","cab":"a Windows cabinet archive","tar":"a tar archive","iso":"a disc image","vhd":"a virtual hard disk","vhdx":"a virtual hard disk","dmg":"a Mac disk image","png":"a PNG image","jpeg":"a JPEG photo","gif":"a GIF image","webp":"a WebP image","bmp":"a BMP image","tiff":"a TIFF image","ico":"an icon","psd":"a Photoshop image","heic":"a HEIC photo","avif":"an AVIF image","wav":"a WAV audio file","mp3":"an MP3 audio file","ogg":"an Ogg audio file","flac":"a FLAC audio file","m4a":"an M4A audio file","avi":"an AVI video","mp4":"an MP4 video","mov":"a QuickTime video","3gp":"a 3GP video","mkv":"a Matroska video","webm":"a WebM video","rtf":"an RTF document","svg":"an SVG image (which can contain code)","html":"a web page","eml":"an email file","script":"a script (a small program)","reg":"a Windows registry file","xml":"an XML file","json":"a JSON data file","text":"a plain text file","unknown":"unrecognized data","empty":"an empty file"}};
+</script>
+<script>
+/* ================================================================
+   File Truth - identification engine (shared by every language)
+   Encryption 1(TM) -- released under the MIT License.
+   Works out what a file really is from its bytes (never from its
+   name), then compares that with the name. Nothing is opened, run
+   or uploaded: the page hands this engine a read(start, end)
+   function that returns raw bytes, and the engine only reads.
+   analyze(name, size, read) -> Promise of
+     { level: 'danger'|'careful'|'note'|'ok',
+       real: {type, family, macros?, ...},
+       name: {ext, exts, tricks},
+       reasons: [{level, key, vars}],   // keys are turned into words by the page
+       entries: [...] }                 // archive contents, when readable
+   ================================================================ */
+var FILETRUTH = (function(){
+"use strict";
+var HEAD = 65536, TAIL = 65536, FULL_SCAN = 30 * 1024 * 1024;
+function u16le(b, i){ return b[i] | (b[i + 1] << 8); }
+function u32le(b, i){ return (b[i] | (b[i + 1] << 8) | (b[i + 2] << 16)) + ((b[i + 3] << 24) >>> 0); }
+function u32be(b, i){ return ((b[i] << 24) >>> 0) + (b[i + 1] << 16) + (b[i + 2] << 8) + b[i + 3]; }
+function at(b, i, sig){ if (i < 0 || i + sig.length > b.length) return false; for (var k = 0; k < sig.length; k++) if (b[i + k] !== sig[k]) return false; return true; }
+function str(b, i, n){ var s = ''; for (var k = 0; k < n && i + k < b.length; k++) s += String.fromCharCode(b[i + k]); return s; }
+function bytesOf(s){ var a = []; for (var i = 0; i < s.length; i++) a.push(s.charCodeAt(i)); return a; }
+function utf16(s){ var a = []; for (var i = 0; i < s.length; i++){ a.push(s.charCodeAt(i) & 255, s.charCodeAt(i) >> 8); } return a; }
+function find(b, sig, from){
+  var n = sig.length, first = sig[0];
+  for (var i = from || 0; i <= b.length - n; i++){
+    if (b[i] !== first) continue;
+    var k = 1; while (k < n && b[i + k] === sig[k]) k++;
+    if (k === n) return i;
+  }
+  return -1;
+}
+function has(b, s){ return find(b, bytesOf(s)) >= 0; }
+function hasU16(b, s){ return find(b, utf16(s)) >= 0; }
+function latin1(b, max){ var n = Math.min(b.length, max || b.length), out = '', CH = 8192; for (var i = 0; i < n; i += CH) out += String.fromCharCode.apply(null, Array.prototype.slice.call(b.subarray(i, Math.min(n, i + CH)))); return out; }
+// ---- what the name says ----
+var DOC_EXT = ['pdf','doc','docx','xls','xlsx','ppt','pptx','odt','ods','odp','rtf','txt','csv','md','log','pages','numbers','key','epub',
+  'jpg','jpeg','png','gif','webp','heic','heif','bmp','tif','tiff','svg','psd','mp3','mp4','mov','m4a','wav','avi','mkv','webm','ogg','flac','json','xml','eml'];
+var RUNS_EXT = ['exe','scr','com','pif','cpl','msi','msp','bat','cmd','js','jse','vbs','vbe','wsf','wsh','hta','ps1','psm1','lnk','url','jar','reg',
+  'dll','sys','apk','app','dmg','pkg','sh','command','run','iso','img','vhd','vhdx','docm','xlsm','pptm','scf','inf','application','appref-ms','chm','msc','gadget','xll','library-ms','settingcontent-ms'];
+// Bidi controls and invisible characters that can disguise a name
+var NAME_TRICK = /[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C\u200B-\u200D\u2060\uFEFF]/;
+function nameInfo(name){
+  var n = String(name || ''), clean = n.replace(/[\u202A-\u202E\u2066-\u2069\u200E\u200F\u061C\u200B-\u200D\u2060\uFEFF]/g, '');
+  var parts = clean.split('.'), exts = [];
+  if (parts.length > 1) for (var i = parts.length - 1; i >= 1 && exts.length < 3; i--){
+    var e = parts[i].trim().toLowerCase();
+    if (!/^[a-z0-9-]{1,10}$/.test(e)) break;
+    exts.unshift(e);
+  }
+  var ext = exts.length ? exts[exts.length - 1] : '';
+  var tricks = [];
+  if (NAME_TRICK.test(n)) tricks.push('bidi');
+  if (exts.length >= 2 && RUNS_EXT.indexOf(ext) >= 0 && DOC_EXT.indexOf(exts[exts.length - 2]) >= 0) tricks.push('double');
+  if (/\s{3,}\.?[A-Za-z0-9]{1,6}$/.test(clean) || /\.{2,}[A-Za-z0-9]{1,6}$/.test(clean) && RUNS_EXT.indexOf(ext) >= 0) tricks.push('padding');
+  return {ext: ext, exts: exts, tricks: tricks, display: clean, shown: n};
+}
+// ---- what the bytes say ----
+// Returns {type, family, ...}. family: program | installer | shortcut | script | document | pdf | web | image | audio | video | archive | diskimage | text | data | unknown | empty
+function identify(head, size, tail){
+  var b = head;
+  if (size === 0) return {type:'empty', family:'empty'};
+  if (at(b, 0, [0x4D, 0x5A])){
+    var pe = b.length >= 0x40 ? u32le(b, 0x3C) : 0;
+    if (pe > 0 && pe + 24 <= b.length && at(b, pe, [0x50, 0x45, 0, 0])){
+      var chars = u16le(b, pe + 22), dll = (chars & 0x2000) !== 0;
+      var magic = u16le(b, pe + 24), sub = pe + 24 + (magic === 0x20B ? 68 : 68) < b.length ? u16le(b, pe + 24 + 68) : 0;
+      var dotnet = has(b.subarray(0, Math.min(b.length, 8192)), 'mscoree.dll') || has(b, '_CorExeMain');
+      return {type: dll ? 'dll' : 'exe', family:'program', os:'windows', dotnet: dotnet};
+    }
+    return {type:'dosexe', family:'program', os:'windows'};
+  }
+  if (at(b, 0, [0x7F, 0x45, 0x4C, 0x46])) return {type:'elf', family:'program', os:'linux'};
+  if (at(b, 0, [0xFE,0xED,0xFA,0xCE]) || at(b, 0, [0xFE,0xED,0xFA,0xCF]) || at(b, 0, [0xCE,0xFA,0xED,0xFE]) || at(b, 0, [0xCF,0xFA,0xED,0xFE])) return {type:'macho', family:'program', os:'mac'};
+  if (at(b, 0, [0xCA,0xFE,0xBA,0xBE])){ var nArch = b.length >= 8 ? u32be(b, 4) : 99; return nArch > 0 && nArch < 20 ? {type:'macho', family:'program', os:'mac'} : {type:'class', family:'program', os:'java'}; }
+  if (at(b, 0, [0x64,0x65,0x78,0x0A])) return {type:'dex', family:'program', os:'android'};
+  if (at(b, 0, [0x4C,0,0,0,0x01,0x14,0x02,0x00])) return {type:'lnk', family:'shortcut'};
+  if (at(b, 0, [0xD0,0xCF,0x11,0xE0,0xA1,0xB1,0x1A,0xE1])){
+    var macros = hasU16(b, '_VBA_PROJECT') || hasU16(b, 'VBA') && hasU16(b, 'dir') || has(b, 'Attribute VB_');
+    if (has(b, 'Windows Installer') || has(b, 'Installation Database') || hasU16(b, 'Installation Database')) return {type:'msi', family:'installer', os:'windows'};
+    if (hasU16(b, 'WordDocument')) return {type:'doc', family:'document', macros: macros, office:true};
+    if (hasU16(b, 'Workbook') || hasU16(b, 'Book')) return {type:'xls', family:'document', macros: macros, office:true};
+    if (hasU16(b, 'PowerPoint Document')) return {type:'ppt', family:'document', macros: macros, office:true};
+    if (hasU16(b, '__substg1.0_')) return {type:'msg', family:'document'};
+    return {type:'ole', family:'document', macros: macros, office:true, unsure:true};
+  }
+  var pdfAt = find(b.subarray(0, Math.min(b.length, 1024)), bytesOf('%PDF-'));
+  if (pdfAt >= 0) return {type:'pdf', family:'pdf', offset: pdfAt};
+  if (at(b, 0, [0x50,0x4B,0x03,0x04]) || at(b, 0, [0x50,0x4B,0x05,0x06]) || at(b, 0, [0x50,0x4B,0x07,0x08])) return {type:'zip', family:'archive', needsListing:true};
+  if (at(b, 0, bytesOf('Rar!\x1A\x07'))) return {type:'rar', family:'archive'};
+  if (at(b, 0, [0x37,0x7A,0xBC,0xAF,0x27,0x1C])) return {type:'7z', family:'archive'};
+  if (at(b, 0, [0x1F,0x8B])) return {type:'gz', family:'archive'};
+  if (at(b, 0, bytesOf('BZh'))) return {type:'bz2', family:'archive'};
+  if (at(b, 0, [0xFD,0x37,0x7A,0x58,0x5A,0x00])) return {type:'xz', family:'archive'};
+  if (at(b, 0, bytesOf('MSCF'))) return {type:'cab', family:'archive'};
+  if (at(b, 257, bytesOf('ustar'))) return {type:'tar', family:'archive'};
+  if (at(b, 0x8001, bytesOf('CD001')) || at(b, 0x8801, bytesOf('CD001')) || at(b, 0x9001, bytesOf('CD001'))) return {type:'iso', family:'diskimage'};
+  if (at(b, 0, bytesOf('vhdxfile'))) return {type:'vhdx', family:'diskimage'};
+  if (tail && tail.length >= 512 && at(tail, tail.length - 512, bytesOf('conectix'))) return {type:'vhd', family:'diskimage'};
+  if (tail && tail.length >= 512 && at(tail, tail.length - 512, bytesOf('koly'))) return {type:'dmg', family:'diskimage', os:'mac'};
+  // images
+  if (at(b, 0, [0x89,0x50,0x4E,0x47,0x0D,0x0A,0x1A,0x0A])) return {type:'png', family:'image'};
+  if (at(b, 0, [0xFF,0xD8,0xFF])) return {type:'jpeg', family:'image'};
+  if (at(b, 0, bytesOf('GIF87a')) || at(b, 0, bytesOf('GIF89a'))) return {type:'gif', family:'image'};
+  if (at(b, 0, bytesOf('RIFF')) && at(b, 8, bytesOf('WEBP'))) return {type:'webp', family:'image'};
+  if (at(b, 0, bytesOf('RIFF')) && at(b, 8, bytesOf('WAVE'))) return {type:'wav', family:'audio'};
+  if (at(b, 0, bytesOf('RIFF')) && at(b, 8, bytesOf('AVI '))) return {type:'avi', family:'video'};
+  if (at(b, 0, bytesOf('BM')) && b.length > 30 && u32le(b, 2) === size) return {type:'bmp', family:'image'};
+  if (at(b, 0, [0x49,0x49,0x2A,0x00]) || at(b, 0, [0x4D,0x4D,0x00,0x2A])) return {type:'tiff', family:'image'};
+  if (at(b, 0, [0,0,1,0]) && b.length > 6 && u16le(b, 4) > 0 && u16le(b, 4) < 256) return {type:'ico', family:'image'};
+  if (at(b, 0, bytesOf('8BPS'))) return {type:'psd', family:'image'};
+  if (at(b, 4, bytesOf('ftyp'))){
+    var brand = str(b, 8, 4).toLowerCase();
+    if (/^(heic|heix|hevc|heim|heis|mif1|msf1)/.test(brand)) return {type:'heic', family:'image'};
+    if (/^avi[fs]/.test(brand)) return {type:'avif', family:'image'};
+    if (/^(m4a |m4b |m4p )/.test(brand)) return {type:'m4a', family:'audio'};
+    if (/^qt/.test(brand)) return {type:'mov', family:'video'};
+    if (/^3g/.test(brand)) return {type:'3gp', family:'video'};
+    return {type:'mp4', family:'video'};
+  }
+  if (at(b, 0, bytesOf('ID3')) || (b[0] === 0xFF && (b[1] & 0xE0) === 0xE0 && b.length > 2 && (b[1] & 0x06))) return {type:'mp3', family:'audio'};
+  if (at(b, 0, bytesOf('OggS'))) return {type:'ogg', family:'audio'};
+  if (at(b, 0, bytesOf('fLaC'))) return {type:'flac', family:'audio'};
+  if (at(b, 0, [0x1A,0x45,0xDF,0xA3])) return {type: has(b.subarray(0, 64), 'webm') ? 'webm' : 'mkv', family:'video'};
+  if (at(b, 0, bytesOf('{\\rtf'))) return {type:'rtf', family:'document', needsScan:true};
+  // text-based files
+  var t = textOf(b);
+  if (t !== null) return identifyText(t, size);
+  return {type:'unknown', family:'unknown'};
+}
+// Returns the start of the file as text if it looks like text (no NUL bytes, few control characters), else null.
+function textOf(b){
+  var n = Math.min(b.length, 8192), start = 0;
+  if (at(b, 0, [0xEF,0xBB,0xBF])) start = 3;
+  else if (at(b, 0, [0xFF,0xFE]) || at(b, 0, [0xFE,0xFF])){
+    // UTF-16 text: rebuild an approximate string from every other byte
+    var le = b[0] === 0xFF, s16 = '';
+    for (var j = 2; j + 1 < n; j += 2) s16 += String.fromCharCode(le ? b[j] | (b[j + 1] << 8) : (b[j] << 8) | b[j + 1]);
+    return s16;
+  }
+  // UTF-16 text without a byte-order mark: every other byte is zero
+  var z0 = 0, z1 = 0, m = Math.min(n, 400) & ~1;
+  for (var q = 0; q < m; q += 2){ if (b[q] === 0) z0++; if (b[q + 1] === 0) z1++; }
+  if (m >= 8 && (z0 > m * 0.45 || z1 > m * 0.45) && Math.min(z0, z1) < m * 0.05){
+    var be = z0 > z1, s2 = '';
+    for (var j2 = 0; j2 + 1 < n; j2 += 2) s2 += String.fromCharCode(be ? (b[j2] << 8) | b[j2 + 1] : b[j2] | (b[j2 + 1] << 8));
+    return s2;
+  }
+  var ctrl = 0;
+  for (var i = start; i < n; i++){
+    var c = b[i];
+    if (c === 0) return null;
+    if (c < 9 || (c > 13 && c < 32 && c !== 27)) ctrl++;
+  }
+  if (ctrl > n / 50) return null;
+  var out = '';
+  try { out = new TextDecoder('utf-8', {fatal:false}).decode(b.subarray(start, n)); } catch(e){ out = latin1(b.subarray(start, n)); }
+  return out;
+}
+function identifyText(t, size){
+  var s = t.replace(/^\s+/, ''), low = s.slice(0, 4000).toLowerCase();
+  if (/^#!/.test(s)) return {type:'script', family:'script', lang: /python/.test(s.slice(0, 80)) ? 'python' : 'shell'};
+  if (/^\[internetshortcut\]/i.test(s)) return {type:'urlshortcut', family:'shortcut'};
+  if (/^\[desktop entry\]/i.test(s)) return {type:'desktop', family:'shortcut'};
+  if (/^windows registry editor|^regedit4/i.test(s)) return {type:'reg', family:'script'};
+  if (/<hta:application/i.test(low)) return {type:'hta', family:'program', os:'windows'};
+  if (s.charAt(0) === '<' && /<svg[\s>]/i.test(s.slice(0, 3000)) && !/<html[\s>]/i.test(s.slice(0, 3000))) return {type:'svg', family:'image', needsScan:true, text:true};
+  if (/^<!doctype html|^<html/i.test(s) || (s.charAt(0) === '<' && /<(head|body|script|form|iframe|meta|div|table|p)[\s>]/i.test(low))) return {type:'html', family:'web', needsScan:true, text:true};
+  if (/^(received|return-path|from|delivered-to|message-id|mime-version):/im.test(s.slice(0, 2000)) && /^(subject|date|to):/im.test(s.slice(0, 4000))) return {type:'eml', family:'document', text:true};
+  if (/wscript\.(shell|createobject|echo)|createobject\s*\(\s*["'](wscript|scripting|msxml2|adodb)/i.test(low)) return {type:'script', family:'script', lang:'vbs-js'};
+  if (/^\s*(@echo\s+off|echo\s+off|rem\s|setlocal|::)/im.test(s.slice(0, 400))) return {type:'script', family:'script', lang:'batch'};
+  if (/invoke-expression|\biex\b\s*\(|-encodedcommand|new-object\s+net\.webclient|downloadstring\(|\[system\.convert\]::frombase64string|start-process/i.test(low)) return {type:'script', family:'script', lang:'powershell'};
+  if (/^<\?xml/i.test(s)) return {type:'xml', family:'text', text:true};
+  if (/^[\[{]\s*($|["\[{\]}]|-?\d|true|false|null)/.test(s)){
+    var jsonOk = false;
+    if (size <= t.length + 4){ try { JSON.parse(s); jsonOk = true; } catch(e){} } else jsonOk = /^\{\s*"[^"\n]{0,200}"\s*:/.test(s) || /^\[\s*(\{|"|-?\d|\[)/.test(s);
+    if (jsonOk) return {type:'json', family:'text', text:true};
+  }
+  return {type:'text', family:'text', text:true};
+}
+// ---- deeper looks, when the type needs one ----
+function scanPdf(b){
+  // PDF names may hide letters as #xx escapes (/J#61vaScript); undo those before looking.
+  var t = latin1(b).replace(/#([0-9A-Fa-f]{2})/g, function(m, h){ return String.fromCharCode(parseInt(h, 16)); });
+  var f = {};
+  f.javascript = /\/(JavaScript|JS)\b/.test(t);
+  // Opening at a page (/OpenAction [page /Fit]) is everyday; only actions that do something count.
+  f.openAction = (/\/OpenAction\b/.test(t) || /\/AA\s*<</.test(t)) && /\/S\s*\/(Launch|URI|SubmitForm|ImportData|GoToR|GoToE|JavaScript|Rendition)\b/.test(t);
+  f.launch = /\/Launch\b/.test(t);
+  f.embedded = /\/EmbeddedFile\b/.test(t);
+  f.embeddedExe = f.embedded && /\.(exe|scr|js|vbs|bat|cmd|ps1|hta|lnk|msi|jar)\b/i.test(t);
+  f.submitForm = /\/SubmitForm\b/.test(t);
+  f.compressed = /\/ObjStm\b/.test(t);
+  f.encrypted = /\/Encrypt\b/.test(t);
+  var uris = t.match(/\/URI\s*\(([^)]{1,300})\)/g) || [];
+  f.links = uris.length;
+  return f;
+}
+function scanWeb(text){
+  var t = text.slice(0, FULL_SCAN), low = t.toLowerCase(), f = {};
+  f.script = /<script[\s>]/.test(low) || /\son(load|error|click|mouseover)\s*=/.test(low) || /javascript:/.test(low);
+  f.form = /<form[\s>]/.test(low);
+  f.password = /<input[^>]+type\s*=\s*["']?password/.test(low);
+  f.externalPost = /<form[^>]+action\s*=\s*["']?https?:/.test(low);
+  f.redirect = /window\.location|location\.href\s*=|location\.replace|http-equiv\s*=\s*["']?refresh/.test(low);
+  f.obfuscated = /atob\s*\(|unescape\s*\(|fromcharcode|eval\s*\(|document\.write\s*\(\s*(unescape|atob)/.test(low);
+  f.bigData = /data:[a-z\/+-]+;base64,[a-z0-9+\/=]{20000,}/i.test(t);
+  return f;
+}
+function scanRtf(b){
+  var t = latin1(b), f = {};
+  f.objects = /\\object\b|\\objdata\b|\\objupdate\b/.test(t);
+  f.package = /\\objclass\s+Package|5061636b616765/i.test(t);    // embedded "Package" = a file inside the document
+  f.equation = /equation\.3|4571756174696f6e2e33/i.test(t);      // Equation Editor objects are a long-known exploit target
+  return f;
+}
+function scanOle(b){
+  return {macros: hasU16(b, '_VBA_PROJECT') || has(b, 'Attribute VB_') || hasU16(b, 'VBA') && hasU16(b, 'PROJECT'), autoOpen: /AutoOpen|Auto_Open|Document_Open|Workbook_Open/i.test(latin1(b, 4 * 1024 * 1024))};
+}
+// ---- ZIP (and Office, Java, Android ... which are ZIPs inside) ----
+// Find the central directory from the end of the file; returns {offset, size, count} or null
+function zipLocate(tail, fileSize){
+  for (var i = tail.length - 22; i >= 0 && i >= tail.length - 65557; i--){
+    if (tail[i] === 0x50 && tail[i + 1] === 0x4B && tail[i + 2] === 0x05 && tail[i + 3] === 0x06){
+      var count = u16le(tail, i + 10), size = u32le(tail, i + 12), offset = u32le(tail, i + 16);
+      if (offset === 0xFFFFFFFF || size === 0xFFFFFFFF) return {zip64:true};
+      if (offset + size <= fileSize) return {offset: offset, size: size, count: count};
+    }
+  }
+  return null;
+}
+function zipEntries(cd){
+  var out = [], i = 0;
+  while (i + 46 <= cd.length && at(cd, i, [0x50, 0x4B, 0x01, 0x02])){
+    var flags = u16le(cd, i + 8), usize = u32le(cd, i + 24), nlen = u16le(cd, i + 28), xlen = u16le(cd, i + 30), clen = u16le(cd, i + 32);
+    var nameBytes = cd.subarray(i + 46, i + 46 + nlen), name;
+    try { name = new TextDecoder((flags & 0x800) ? 'utf-8' : 'utf-8', {fatal:false}).decode(nameBytes); } catch(e){ name = latin1(nameBytes); }
+    out.push({name: name, encrypted: (flags & 1) === 1, size: usize});
+    i += 46 + nlen + xlen + clen;
+    if (out.length > 20000) break;
+  }
+  return out;
+}
+// What kind of ZIP is it, and what's inside that matters?
+function classifyZip(entries){
+  var names = entries.map(function(e){ return e.name; }), lower = names.map(function(n){ return n.toLowerCase(); });
+  var hasName = function(re){ return lower.some(function(n){ return re.test(n); }); };
+  var r = {kind:'zip', macros: hasName(/vbaproject\.bin$/) || hasName(/(^|\/)vbadata\.xml$/), encrypted: entries.some(function(e){ return e.encrypted; }), risky:[], disguised:[], nested:[]};
+  if (hasName(/^\[content_types\]\.xml$/)){
+    if (hasName(/^word\//)) r.kind = 'docx'; else if (hasName(/^xl\//)) r.kind = 'xlsx'; else if (hasName(/^ppt\//)) r.kind = 'pptx'; else r.kind = 'ooxml';
+    r.ole = hasName(/\/embeddings\/.*\.bin$/) || hasName(/oleobject\d*\.bin$/);
+    r.externalTemplate = false;
+  } else if (lower[0] === 'mimetype' || hasName(/^mimetype$/)){
+    r.kind = hasName(/^meta-inf\/container\.xml$/) ? 'epub' : 'odf';
+    r.macros = r.macros || hasName(/^basic\/.+\.xml$/) && hasName(/^basic\/script-lc\.xml$/);
+  } else if (hasName(/^androidmanifest\.xml$/) && hasName(/^classes\d*\.dex$/)) r.kind = 'apk';
+  else if (hasName(/^payload\/[^\/]+\.app\//)) r.kind = 'ipa';
+  else if (hasName(/^meta-inf\/manifest\.mf$/) && hasName(/\.class$/)) r.kind = 'jar';
+  else if (hasName(/^manifest\.json$/) && hasName(/\.js$/)) r.kind = 'extension';
+  entries.forEach(function(e){
+    var info = nameInfo(e.name.split('/').pop());
+    if (!info.ext) return;
+    if (info.tricks.length) r.disguised.push(e.name);
+    else if (RUNS_EXT.indexOf(info.ext) >= 0 && !/^(docm|xlsm|pptm)$/.test(info.ext)) r.risky.push(e.name);
+    else if (/^(zip|rar|7z|iso|img|vhd|vhdx|cab|gz|tar)$/.test(info.ext)) r.nested.push(e.name);
+    if (/^(html?|svg|xhtml|shtml)$/.test(info.ext) && r.kind === 'zip') r.risky.push(e.name);
+  });
+  if (r.kind === 'docx' || r.kind === 'xlsx' || r.kind === 'pptx' || r.kind === 'odf' || r.kind === 'epub'){ r.risky = r.risky.filter(function(n){ return !/\.(js|html?|xhtml)$/i.test(n) || r.kind !== 'epub'; }); }
+  return r;
+}
+// ---- what the name should match ----
+var EXPECT = {
+  pdf:['pdf'], doc:['doc','docx','rtf'], docx:['docx'], dot:['doc'], dotx:['docx'], docm:['docx'], xls:['xls','xlsx'], xlsx:['xlsx'], xlsm:['xlsx'], xlsb:['xlsx','zip'], ppt:['ppt','pptx'], pptx:['pptx'], pptm:['pptx'],
+  odt:['odf'], ods:['odf'], odp:['odf'], rtf:['rtf','doc'], epub:['epub'], msg:['msg'], eml:['eml','text'],
+  txt:['text','json','xml','script'], csv:['text'], log:['text'], md:['text'], json:['json','text'], xml:['xml','text','svg'], ini:['text'], cfg:['text'],
+  jpg:['jpeg'], jpeg:['jpeg'], jpe:['jpeg'], jfif:['jpeg'], png:['png'], gif:['gif'], webp:['webp'], heic:['heic'], heif:['heic'], avif:['avif'], bmp:['bmp'], tif:['tiff'], tiff:['tiff'], ico:['ico','png'], psd:['psd'], svg:['svg'],
+  html:['html','text'], htm:['html','text'], xhtml:['html','xml'], mht:['eml','text','html'], mhtml:['eml','text','html'],
+  mp3:['mp3'], m4a:['m4a','mp4'], wav:['wav'], ogg:['ogg'], flac:['flac'], mp4:['mp4','mov'], m4v:['mp4','mov'], mov:['mov','mp4'], avi:['avi'], mkv:['mkv','webm'], webm:['webm','mkv'], '3gp':['3gp','mp4'],
+  zip:['zip','docx','xlsx','pptx','ooxml','odf','epub','jar','apk','extension'], rar:['rar'], '7z':['7z'], gz:['gz'], tgz:['gz'], bz2:['bz2'], xz:['xz'], tar:['tar'], cab:['cab'],
+  iso:['iso'], img:['iso','unknown'], vhd:['vhd'], vhdx:['vhdx'], dmg:['dmg','unknown'],
+  exe:['exe','dosexe'], dll:['dll','exe'], scr:['exe'], com:['dosexe','exe'], cpl:['dll','exe'], sys:['exe','dll'], msi:['msi'], msp:['msi','ole'],
+  lnk:['lnk'], url:['urlshortcut'], desktop:['desktop'], jar:['jar','zip'], apk:['apk'], ipa:['ipa'], class:['class'], dex:['dex'],
+  sh:['script','text'], py:['script','text'], bat:['script','text'], cmd:['script','text'], ps1:['script','text'], psm1:['script','text'], vbs:['script','text'], js:['script','text'], jse:['text','unknown'], wsf:['text','xml','script'], hta:['hta','html'], reg:['reg'],
+  elf:['elf'], so:['elf'], bin:['unknown','elf','exe']
+};
+function realKind(real, zip){ return zip && zip.kind ? zip.kind : real.type; }
+// ---- verdict ----
+var LEVEL = {ok:0, note:1, careful:2, danger:3};
+async function analyze(name, size, read){
+  var nm = nameInfo(name), reasons = [], add = function(level, key, vars){ reasons.push({level:level, key:key, vars:vars || {}}); };
+  var head = size ? await read(0, Math.min(size, HEAD)) : new Uint8Array(0);
+  var tail = size > HEAD ? await read(Math.max(0, size - TAIL), size) : head;
+  var real = identify(head, size, tail), zip = null, entries = null, deep = null;
+  if (real.type === 'zip'){
+    var loc = zipLocate(tail, size);
+    if (loc && !loc.zip64 && loc.size < 50 * 1024 * 1024){
+      var cd = await read(loc.offset, loc.offset + loc.size);
+      entries = zipEntries(cd); zip = classifyZip(entries);
+    } else add('note', 'rZipUnreadable');
+  }
+  var full = null;
+  var needFull = real.family === 'pdf' || real.needsScan || real.type === 'html' || real.type === 'svg' || real.type === 'rtf' || real.office || real.family === 'installer';
+  if (needFull && size <= FULL_SCAN) full = size <= HEAD ? head : await read(0, size);
+  if (real.family === 'pdf'){ deep = scanPdf(full || head); if (!full) add('note', 'rPartlyRead'); }
+  if (real.type === 'html' || real.type === 'svg') deep = scanWeb(textOf(full || head) || latin1(full || head));
+  if (real.type === 'rtf') deep = scanRtf(full || head);
+  if (real.office){ deep = scanOle(full || head); real.macros = real.macros || deep.macros; }
+  var kind = realKind(real, zip), ext = nm.ext, expected = EXPECT[ext];
+  var looksLikeDoc = DOC_EXT.indexOf(ext) >= 0;
+  var runs = real.family === 'program' || real.family === 'installer' || real.family === 'shortcut' || kind === 'jar' || kind === 'apk' || kind === 'ipa' || real.type === 'hta';
+  // 1. the name itself
+  if (nm.tricks.indexOf('bidi') >= 0) add('danger', 'rNameBidi', {shown: nm.shown, real: nm.display});
+  if (nm.tricks.indexOf('double') >= 0) add('danger', 'rNameDouble', {fake: nm.exts[nm.exts.length - 2], ext: ext});
+  if (nm.tricks.indexOf('padding') >= 0) add('danger', 'rNamePadding', {ext: ext});
+  if (!ext) add('note', 'rNoExt');
+  // 2. what it really is versus what the name says
+  if (real.family === 'empty') add('note', 'rEmpty');
+  else if (runs && looksLikeDoc) add('danger', 'rProgramDisguised', {kind: kind, ext: ext});
+  else if (real.family === 'script' && (looksLikeDoc && !/^(txt|log|md|csv)$/.test(ext))) add('danger', 'rScriptDisguised', {kind: kind, ext: ext});
+  else if (runs) add('careful', 'rProgram', {kind: kind});
+  else if (real.family === 'script' && (real.lang === 'shell' || real.lang === 'python') && /^(sh|py|bash|zsh|pl|rb)$/.test(ext)) add('note', 'rScriptPlain');
+  else if (real.family === 'script') add('careful', 'rScript', {kind: kind});
+  else if (expected && expected.indexOf(kind) < 0 && expected.indexOf(real.type) < 0){
+    if (real.family === 'unknown') add('careful', 'rNotReal', {ext: ext});
+    else add('note', 'rMismatch', {kind: kind, ext: ext});
+  }
+  if (RUNS_EXT.indexOf(ext) >= 0 && ext !== 'sh' && !runs && real.family !== 'script' && !(ext === 'jse') && !/^(docm|xlsm|pptm|iso|img|vhd|vhdx|dmg)$/.test(ext) && real.family !== 'empty')
+    add('careful', 'rRunsExt', {ext: ext});
+  // 3. what's inside
+  if (real.macros || (zip && zip.macros) || /^(docm|xlsm|pptm)$/.test(ext)) add('careful', 'rMacros', {autoOpen: deep && deep.autoOpen ? 1 : 0});
+  if (zip && zip.ole) add('careful', 'rEmbeddedObject');
+  if (real.family === 'diskimage') add('careful', 'rDiskImage', {kind: kind});
+  if (zip){
+    if (zip.disguised.length) add('danger', 'rZipDisguised', {list: zip.disguised.slice(0, 5).join(', ')});
+    if (zip.risky.length) add('careful', 'rZipRisky', {list: zip.risky.slice(0, 5).join(', '), n: zip.risky.length});
+    if (zip.nested.length) add('note', 'rZipNested', {list: zip.nested.slice(0, 5).join(', ')});
+    if (zip.encrypted) add('careful', 'rZipEncrypted');
+  }
+  if (/^(rar|7z|cab|gz|bz2|xz|tar)$/.test(real.type)) add('note', 'rArchiveClosed', {kind: real.type});
+  if (real.family === 'pdf' && deep){
+    if (deep.launch) add('danger', 'rPdfLaunch');
+    if (deep.embeddedExe) add('danger', 'rPdfEmbeddedExe');
+    else if (deep.embedded) add('careful', 'rPdfEmbedded');
+    if (deep.javascript) add('careful', 'rPdfJs');
+    else if (deep.openAction) add('note', 'rPdfOpenAction');
+    if (deep.submitForm) add('note', 'rPdfSubmit');
+  }
+  if ((real.type === 'html' || real.type === 'svg') && deep){
+    if (deep.password) add('careful', 'rWebPassword');
+    else if (deep.form) add('note', 'rWebForm');
+    if (deep.script) add(real.type === 'svg' ? 'careful' : 'note', real.type === 'svg' ? 'rSvgScript' : 'rWebScript');
+    if (deep.obfuscated) add('careful', 'rWebObfuscated');
+    if (deep.redirect) add('note', 'rWebRedirect');
+    if (deep.externalPost) add('careful', 'rWebPostsAway');
+  }
+  if (real.type === 'rtf' && deep){
+    if (deep.package) add('danger', 'rRtfPackage');
+    else if (deep.equation) add('careful', 'rRtfEquation');
+    else if (deep.objects) add('careful', 'rRtfObject');
+  }
+  if (real.family === 'installer' && ext !== 'msi' && ext !== 'msp') { /* covered by "program disguised" or "program" */ }
+  var level = reasons.reduce(function(a, r){ return LEVEL[r.level] > LEVEL[a] ? r.level : a; }, 'ok');
+  if (!reasons.length || level === 'ok') add('ok', 'rMatch', {kind: kind});
+  reasons.sort(function(a, b){ return LEVEL[b.level] - LEVEL[a.level]; });
+  return {level: level, real: Object.assign({}, real, {kind: kind}), name: nm, reasons: reasons, entries: entries ? entries.length : null, zip: zip, deep: deep};
+}
+return {analyze:analyze, identify:identify, nameInfo:nameInfo, _zip:{locate:zipLocate, entries:zipEntries, classify:classifyZip}, _scan:{pdf:scanPdf, web:scanWeb, rtf:scanRtf}};
+})();
+if (typeof module !== 'undefined' && module.exports) module.exports = FILETRUTH;
+</script>
+<script>
+/* File Truth - page logic. Files are only read, in this browser tab. Nothing is opened, run or sent. */
+(function(){
+"use strict";
+var UI_LANG = document.documentElement.lang || 'en';
+function T(key, vars){
+  var s = I18N[key];
+  if (s == null) return key;
+  if (typeof s === 'object'){
+    var form = 'other';
+    try { form = new Intl.PluralRules(UI_LANG).select(vars && vars.n); } catch(e){}
+    s = (s[form] != null) ? s[form] : s.other;
+  }
+  if (vars) for (var k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+var $ = function(id){ return document.getElementById(id); };
+var esc = function(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var num = function(n){ return Number(n).toLocaleString(UI_LANG); };
+function kindLabel(k){ var m = I18N.kinds || {}; return m[k] || m.unknown || k; }
+function size(n){
+  var u = ['B','KB','MB','GB'], i = 0, v = n;
+  while (v >= 1024 && i < u.length - 1){ v /= 1024; i++; }
+  return (i ? v.toLocaleString(UI_LANG, {maximumFractionDigits: 1}) : num(v)) + ' ' + u[i];
+}
+var MAX_FILES = 20, HASH_LIMIT = 300 * 1024 * 1024;
+var counts = {danger:0, careful:0, note:0, ok:0};
+$('chooseBtn').addEventListener('click', function(){ $('fileIn').click(); });
+$('fileIn').addEventListener('change', function(e){ var fs = Array.prototype.slice.call(e.target.files || []); e.target.value = ''; run(fs); });
+var drop = $('drop');
+['dragenter','dragover'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.add('over'); }); });
+['dragleave','drop'].forEach(function(t){ drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.remove('over'); }); });
+drop.addEventListener('drop', function(e){ run(Array.prototype.slice.call((e.dataTransfer && e.dataTransfer.files) || [])); });
+$('clearBtn').addEventListener('click', function(){
+  $('results').innerHTML = ''; $('bar').hidden = true; counts = {danger:0, careful:0, note:0, ok:0};
+  if ($('nextStep')) $('nextStep').hidden = true;
+});
+async function run(files){
+  if (!files.length) return;
+  var extra = files.length > MAX_FILES ? files.length - MAX_FILES : 0;
+  files = files.slice(0, MAX_FILES);
+  $('bar').hidden = false;
+  for (var i = 0; i < files.length; i++){
+    var f = files[i], card = document.createElement('div');
+    card.className = 'file busy';
+    card.innerHTML = '<div class="ftop"><span class="fname">' + esc(cleanName(f.name)) + '</span><span class="pill note">' + esc(T('checking')) + '</span></div>';
+    $('results').insertBefore(card, $('results').firstChild);
+    try {
+      var read = (function(file){ return async function(s, e){ return new Uint8Array(await file.slice(s, e).arrayBuffer()); }; })(f);
+      var r = await FILETRUTH.analyze(f.name, f.size, read);
+      render(card, f, r);
+      counts[r.level]++;
+      fingerprint(card, f);
+    } catch(err){
+      card.className = 'file note';
+      card.innerHTML = '<div class="ftop"><span class="fname">' + esc(cleanName(f.name)) + '</span><span class="pill note">' + esc(T('pillNote')) + '</span></div><p class="verdict">' + esc(T('readFailed')) + '</p>';
+    }
+  }
+  var parts = [];
+  ['danger','careful','note','ok'].forEach(function(l){ if (counts[l]) parts.push(T('sum_' + l, {n: counts[l]})); });
+  $('summary').textContent = parts.join(' · ') + (extra ? ' · ' + T('tooMany', {n: extra, max: MAX_FILES}) : '');
+  if ($('nextStep')) $('nextStep').hidden = false;
+}
+// Names are shown with invisible and direction-changing characters taken out.
+function cleanName(n){ return FILETRUTH.nameInfo(n).display || n; }
+function reasonText(r, res){
+  var v = Object.assign({}, r.vars);
+  if (v.kind){ var ka = I18N.kindsA || {}; v.kind = ka[v.kind] || kindLabel(v.kind); }
+  if (v.ext != null) v.ext = '.' + v.ext;
+  if (v.fake != null) v.fake = '.' + v.fake;
+  return T(r.key, v);
+}
+function render(card, f, r){
+  var lvl = r.level, nm = r.name;
+  card.className = 'file ' + lvl;
+  var facts = '<dl class="facts">' +
+    '<dt>' + esc(T('factReal')) + '</dt><dd>' + esc(kindLabel(r.real.kind)) + (r.entries != null ? ' · ' + esc(T('factEntries', {n: r.entries})) : '') + '</dd>' +
+    '<dt>' + esc(T('factName')) + '</dt><dd>' + (nm.ext ? '<code dir="ltr">.' + esc(nm.ext) + '</code>' : esc(T('factNoExt'))) + '</dd>' +
+    (nm.tricks.indexOf('bidi') >= 0 ? '<dt>' + esc(T('factShownAs')) + '</dt><dd><bdi>' + esc(nm.shown) + '</bdi></dd>' : '') +
+    '<dt>' + esc(T('factSize')) + '</dt><dd>' + esc(size(f.size)) + '</dd></dl>';
+  // The name "as it appears" may contain direction-reversing characters: keep them inside <bdi>
+  // so they can't scramble the rest of the sentence.
+  var reasons = '<ul class="reasons">' + r.reasons.map(function(x){
+    var html;
+    if (x.key === 'rNameBidi'){ var raw = x.vars.shown; html = esc(T('rNameBidi', {shown: '\u0001', real: x.vars.real})).replace('\u0001', '<bdi>' + esc(raw) + '</bdi>'); }
+    else html = esc(reasonText(x, r));
+    return '<li class="' + x.level + '">' + html + '</li>';
+  }).join('') + '</ul>';
+  card.innerHTML = '<div class="ftop"><span class="fname">' + esc(nm.display || f.name) + '</span><span class="pill ' + lvl + '">' + esc(T('pill_' + lvl)) + '</span></div>' +
+    '<p class="verdict">' + esc(T('verdict_' + lvl)) + '</p>' + facts + reasons + '<div class="fp" data-fp></div>';
+}
+async function fingerprint(card, f){
+  var box = card.querySelector('[data-fp]');
+  if (!window.crypto || !crypto.subtle || f.size > HASH_LIMIT){ box.textContent = T('fpSkipped'); return; }
+  box.textContent = T('fpWorking');
+  try {
+    var h = new Uint8Array(await crypto.subtle.digest('SHA-256', await f.arrayBuffer()));
+    var hex = Array.prototype.map.call(h, function(x){ return ('0' + x.toString(16)).slice(-2); }).join('');
+    box.innerHTML = '<span>' + esc(T('fpLabel')) + '</span><code>' + hex + '</code><button type="button" data-copy="' + hex + '">' + esc(T('copy')) + '</button>' +
+      '<a href="https://www.virustotal.com/gui/file/' + hex + '" target="_blank" rel="noopener noreferrer">' + esc(T('vtLink')) + '</a>';
+  } catch(e){ box.textContent = T('fpSkipped'); }
+}
+$('results').addEventListener('click', function(e){
+  var h = e.target.getAttribute && e.target.getAttribute('data-copy');
+  if (!h) return;
+  var b = e.target;
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(h).then(function(){ b.textContent = T('copied'); }, function(){ b.textContent = T('copyFailed'); });
+});
+})();
+</script>
+</body>
+</html>

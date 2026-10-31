@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Privacy Policy — Encryption 1™ Suite</title>
+<meta name="description" content="Privacy Policy for the Encryption 1™ Suite — how your data is, and isn&#039;t, handled." />
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--muted:#667085;--border:#dbe3ee;--accent:#0d6efd}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,#eef4ff,#f5f7fb);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.65}
+.wrap{max-width:900px;margin:auto;padding:28px 22px 50px}
+.card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:32px;box-shadow:0 8px 28px rgba(0,0,0,.06)}
+h1{margin:.1em 0 .2em;font-size:2.2rem}
+h2{margin-top:2em;font-size:1.35rem}
+h3{margin-top:1.5em;font-size:1.1rem}
+.meta,.muted{color:var(--muted)}
+.notice{padding:15px 17px;border-radius:12px;background:#eef6ff;border:1px solid #cfe2ff}
+.translation{padding:12px 15px;border-radius:12px;background:#fff8e1;border:1px solid #f1d37a;margin:0 0 16px;font-size:.95rem}
+li+li{margin-top:7px}
+a{color:var(--accent)}
+footer{margin-top:25px;color:var(--muted);font-size:.9rem;text-align:center}
+@media (max-width:600px){.card{padding:22px 18px}h1{font-size:1.8rem}}
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html" aria-current="page"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<main class="wrap">
+<article class="card">
+<h1>Privacy Policy</h1>
+<p class="meta"><strong>Encryption 1™ Suite</strong><br>
+Effective Date: 6 July 2026<br>
+Last Updated: 15 October 2026</p>
+<div class="notice"><strong>Plain-English summary:</strong> The Encryption 1™ Suite is built for local, private use. Your files, text and passwords are processed in your browser or on your device, not on our server. You don’t need an account, and we don’t need your passwords or the contents of your files. The one exception is Burn, which briefly stores an encrypted message on our server that we cannot read.</div>
+<h2>1. About This Policy</h2>
+<p>This Privacy Policy explains how Sean L. Young (“we,” “us,” or “our”) handles information in connection with the Encryption 1™ Suite of websites, applications, documentation, and related services (collectively, the “Services”).</p>
+<p>The Services include Encryption 1™, Encryption 1™ — Multi Files, EC-1 Personal Journal, Fingerprint, Burn, Scrub, Clarify, Forge, Token, Vault, the Portable Edition and other downloads, the how-to guides and video tutorials, the Security Guide, the FAQ, translations of these pages, and future related tools.</p>
+<h2>2. Information We Do Not Need</h2>
+<p>The tools are designed to work locally. When you encrypt or decrypt text or files, generate a password, check a file’s fingerprint, remove hidden information from a file, or check a contract with Clarify, the work is done by your browser or device. Your content is not sent to us.</p>
+<ul>
+<li>No account or signup is required.</li>
+<li>We do not need your encryption password or your Vault master password.</li>
+<li>We do not need the text or files you choose to encrypt, or their decrypted contents.</li>
+<li>Using the tools does not require you to give us any personal information.</li>
+<li>When you use a password generator (Forge, Vault, or the Generate button in Encryption 1™, Multi Files and the Journal), the password is created on your device. If it is copied to your clipboard, that happens through your browser’s standard clipboard feature and is never sent to us. Clicking a tool’s Clear button also tries to clear that clipboard entry, and Vault clears a copied password from the clipboard after 30 seconds or when it locks. Browsers do not guarantee this works in every situation, and other software on your device (such as a clipboard manager or a cross-device clipboard sync feature) may keep a copy outside our control.</li>
+</ul>
+<h3>2a. Burn works differently</h3>
+<p>Burn lets you share a message or a photo that can be opened exactly once. Your message or photo is encrypted in your browser before anything is sent. Only the encrypted, unreadable result is sent to our server and stored there, together with the time it was created so that it can be deleted on schedule. The decryption key is never sent to us; it exists only in the link you share. We cannot read a Burn message or see a Burn photo, and the server cannot tell which of the two it is holding.</p>
+<p>When a message is opened for the first time, it is deleted from our server immediately and cannot be viewed again by anyone, including us. A message that is never opened is deleted automatically after 7 days.</p>
+<p>Burn needs an Internet connection to work. For that reason it is the one tool in the Suite not included in the offline Portable Edition: it depends on a server to make sure a message can be opened only once, which an offline copy cannot do.</p>
+<h3>2b. Vault keeps your data in your own file</h3>
+<p>Vault stores your saved passwords and notes in a single encrypted file that you keep: on your computer, a USB drive, a cloud folder of your choice, or several of these. The file is encrypted on your device with your master password before it is saved. We never receive the file, its contents, or your master password, and we have no copy of your vault. If you keep your vault file in a cloud folder, that copy is handled by your cloud provider under its own terms, though the provider sees only encrypted data.</p>
+<h2>3. Files and Text</h2>
+<p>Encryption 1™ can encrypt typed text or a file of most common types, up to a current size limit of 10 MB per file; Multi Files can encrypt up to 5 files at once. The result is an encrypted package that you download. The original file name and file type are stored inside the encrypted package itself, not as separate unencrypted information. Fingerprint and Scrub also read your files only on your device, and Clarify checks pasted text only in your browser.</p>
+<p>The Portable Edition and other downloadable copies can be used without an Internet connection, as long as the browser supports the required Web Crypto API.</p>
+<h2>4. Passwords</h2>
+<p>Your encryption password is part of the security of your encrypted data. We do not ask for it or store it. If you lose it, we cannot recover your encrypted content. The same is true of your Vault master password.</p>
+<h3>4a. Using Token</h3>
+<p>If you use Token to create two-factor authentication codes, the secret key you enter is processed entirely on your device and is never sent to us or stored by us. Token does not save the key: when you close or reload the page, it is gone. The key works like a password for the account that issued it, so treat it with the same care. Because we never have it, we cannot recover it for you.</p>
+<h2>5. Website and Technical Information</h2>
+<p>The website is served by our hosting provider. As a normal part of serving web pages and downloads, the provider automatically keeps standard server logs, which include visitors’ IP addresses, for security and operational purposes such as detecting abuse. We use a log-analysis tool provided with our hosting (AWStats) to view overall statistics from these logs, such as how many visits a page receives and which countries and languages visitors come from. We use these statistics only to understand which pages, tools and translations are used. We do not run any separate analytics, advertising, or tracking service, and we do not use a content delivery network beyond what our hosting provider itself operates.</p>
+<p>This processing is based on our legitimate interest in operating and securing the website. Log data is kept only as long as our hosting provider’s standard practices require.</p>
+<h2>6. Cookies and Browser Storage</h2>
+<p>The tools do not set cookies or use browser storage to track you, and the website does not use cookies for analytics or advertising. Vault saves one setting in your browser’s local storage: how many minutes to wait before it locks itself. No vault data is stored there, and the setting never leaves your device.</p>
+<p>The only feature on the site that can set a cookie is the optional “Support EC-1” donation widget provided by Ko-fi, a third party, which appears on some pages. Loading that widget causes your browser to request a script from Ko-fi’s servers, and Ko-fi may set its own cookies or use browser storage under its own practices, independently of us. See Ko-fi’s privacy policy at <a href="https://more.ko-fi.com/privacy" target="_blank" rel="noopener">more.ko-fi.com/privacy</a>.</p>
+<h2>7. Donations and Purchases</h2>
+<p>The tools are free, and donations are optional. The video tutorial series is sold separately through Ko-fi. Donations and purchases are processed by Ko-fi. Any payment details you provide are collected and handled by Ko-fi under its own privacy policy and terms, not ours; we do not receive your full payment details. When you buy the video series, Ko-fi gives us the information we need to complete and support your purchase, such as your name and email address, and we use it only for that. See <a href="https://more.ko-fi.com/privacy" target="_blank" rel="noopener">more.ko-fi.com/privacy</a> and <a href="https://more.ko-fi.com/terms" target="_blank" rel="noopener">more.ko-fi.com/terms</a>.</p>
+<h2>8. Third-Party Links</h2>
+<p>The Services may link to other websites. We are not responsible for the privacy practices of websites we do not operate. Read their privacy policies before giving them information.</p>
+<h3>8a. Clarify and the DocCheck Suite</h3>
+<p>Clarify includes an optional link to DocCheck Suite, a separate product we also operate, for deeper contract and document analysis. Unlike Clarify, DocCheck Suite uses AI-based processing that requires sending document text for analysis. If you choose to use DocCheck Suite, that use is governed by DocCheck Suite’s own privacy policy and terms, not this one.</p>
+<h2>9. Security</h2>
+<p>We design the Suite so that sensitive information does not need to leave your device. Still, no software, website, device, or Internet connection can be guaranteed to be completely secure.</p>
+<p>Encryption does not by itself protect against phishing, social engineering, malware, keyloggers, compromised devices, unsafe backups, or a disclosed password. See the <a href="security-guide.php">Security Guide</a> for practical advice.</p>
+<h2>10. Children’s Privacy</h2>
+<p>The Services are not directed to children and are not intended for anyone under the age of 13. The tools do not ask anyone, including children, for personal information, and we do not knowingly collect personal information from children under 13. We do not use a technical age-verification mechanism. If we learn that we have accidentally collected personal information from a child under 13, we will take reasonable steps to delete it. A parent or guardian who believes their child has given us personal information may contact us (see the Contact section below) to request its removal.</p>
+<h2>11. Your Privacy Rights</h2>
+<p>Because the tools need no account and we keep no database of your content, there is usually little or no personal information about you for us to look up, correct, or delete. Where we do hold personal information about you, such as information you send us by email, you may have the right to access, correct, delete, or restrict our use of it, and to object to certain processing, subject to applicable law.</p>
+<p>We do not sell or share personal information for cross-context behavioral advertising, and we do not otherwise sell or share personal information for money or anything else of value.</p>
+<p>If you are in the European Economic Area, the United Kingdom, or another place with its own data protection authority, you also have the right to complain to your local supervisory authority (for example, the UK Information Commissioner’s Office, or your national data protection authority within the EU) if you believe we have not handled your information lawfully.</p>
+<p>To exercise any of these rights, contact us at <strong>privacy@encryption-one.com</strong>.</p>
+
+<h2>12. Changes</h2>
+<p>We may update this Policy as the Services, technology, or legal requirements change. The Last Updated date shows the current version.</p>
+<h2>13. Contact</h2>
+<p><strong>Sean L. Young</strong><br><a href="mailto:privacy@encryption-one.com">privacy@encryption-one.com</a></p>
+<footer><strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</footer>
+</article></main>
+</body>
+</html>

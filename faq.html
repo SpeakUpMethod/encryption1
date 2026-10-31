@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Frequently Asked Questions — Encryption 1™ Suite</title>
+<meta name="description" content="Answers to common questions about the Encryption 1™ Suite, the free browser-based privacy tools: file types, size limits, privacy, passwords, Vault, Burn, Token and more." />
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#1f2937;--muted:#667085;--border:#dbe3ee;--accent:#0d6efd;--accent2:#0b5ed7;--shadow:0 10px 30px rgba(0,0,0,.07)}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(180deg,#eef4ff 0%,var(--bg) 100%);color:var(--text);line-height:1.55}
+code{background:#f1f4f8;padding:2px 5px;border-radius:5px}
+footer{text-align:center;color:var(--muted);font-size:.9rem;padding:12px 0 35px}
+h2{margin-top:0;font-size:1.35rem}
+li+li{margin-top:7px}
+ul{color:var(--muted)}
+.buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.button{display:inline-block;padding:11px 15px;border-radius:12px;text-decoration:none;background:var(--accent);color:#fff}
+.button:hover{background:var(--accent2)}
+.button.secondary{background:#eef2f7;color:var(--text)}
+.callout{border-radius:16px;padding:17px 18px;margin:18px 0}
+.callout.success{background:#edf8f1;color:#125b37;border:1px solid #b9dfc7}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow);padding:24px;margin:18px 0}
+.container{max-width:920px;margin:auto;padding:24px}
+.faq details+details{margin-top:10px}
+.faq details{border:1px solid var(--border);border-radius:15px;padding:15px 17px;background:#fff}
+.faq details p,.faq details ul{margin:11px 0 0;color:var(--muted)}
+.faq summary{cursor:pointer;font-weight:700}
+.hero{text-align:center;margin-bottom:20px}
+.hero h1{margin:0 0 8px;font-size:clamp(1.8rem,3vw,2.4rem);display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.hero h1 img{height:45px;width:auto}
+@media (max-width:600px){.container{padding:16px}.card{padding:18px}}
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html" aria-current="page"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+
+
+
+
+
+
+
+
+<div class="container">
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" alt="" />Frequently Asked Questions</h1>
+  </div>
+
+<aside id="e1-donate" class="e1-donate" data-campaign="2026-11-10" aria-labelledby="e1-donate-title">
+  <button type="button" class="e1-donate-x" data-e1-dismiss aria-label="Close">&times;</button>
+  <div class="e1-donate-icon" aria-hidden="true">&#9749;</div>
+  <div class="e1-donate-text">
+    <span class="e1-donate-badge">Hosting fund · until 2026-11-10</span>
+    <h2 id="e1-donate-title"><bdi>Encryption 1</bdi> is free, and it will stay free</h2>
+    <p>No ads, no accounts, no tracking — that was true in 1996 and it is true today. Hosting for the site comes due every three months. If <bdi>Encryption 1</bdi> has been useful to you, a small contribution on Ko-fi this week helps keep it online.</p>
+    <div class="e1-donate-actions">
+      <a class="e1-donate-btn" href="https://ko-fi.com/encryption1" target="_blank" rel="noopener" data-e1-dismiss>Support on Ko-fi</a>
+      <a class="e1-donate-link" href="donate.html">Why I ask</a>
+      <button type="button" class="e1-donate-later" data-e1-dismiss>Maybe later</button>
+    </div>
+  </div>
+</aside>
+
+<style>
+.e1-donate{position:relative;display:flex;gap:16px;align-items:flex-start;
+  background:var(--card,#fff);border:1px solid var(--border,#dbe3ee);border-inline-start:4px solid var(--accent,#0d6efd);
+  border-radius:18px;padding:18px 20px;margin:16px auto;max-width:960px;
+  box-shadow:0 2px 10px rgba(15,23,42,.05);color:var(--text,#1f2937);font-family:inherit}
+.e1-donate[hidden]{display:none}
+.e1-donate-icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  background:#e7f0ff;font-size:22px}
+.e1-donate-badge{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;
+  background:#e7f0ff;color:var(--accent-2,#0b5ed7);font-size:.78rem;font-weight:600;letter-spacing:.01em}
+.e1-donate h2{margin:0 0 6px;font-size:1.05rem;line-height:1.3}
+.e1-donate p{margin:0 0 12px;color:var(--muted,#6b7280);line-height:1.5;font-size:.95rem}
+.e1-donate-actions{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.e1-donate-btn{display:inline-block;background:var(--accent,#0d6efd);color:#fff;text-decoration:none;
+  padding:8px 18px;border-radius:999px;font-weight:600;font-size:.92rem}
+.e1-donate-btn:hover,.e1-donate-btn:focus-visible{background:var(--accent-2,#0b5ed7)}
+.e1-donate-link{color:var(--accent,#0d6efd);font-size:.92rem}
+.e1-donate-later{background:none;border:0;padding:0;color:var(--muted,#6b7280);font:inherit;font-size:.92rem;cursor:pointer;text-decoration:underline}
+.e1-donate-x{position:absolute;top:8px;inset-inline-end:10px;background:none;border:0;font-size:22px;line-height:1;
+  color:var(--muted,#6b7280);cursor:pointer;padding:4px 8px;border-radius:8px}
+.e1-donate-x:hover{background:var(--bg,#f5f7fb)}
+@media (max-width:560px){.e1-donate{padding:16px}.e1-donate-icon{display:none}}
+/* Burmese and Thai marks sit above/below the line: give them room */
+.e1-donate:lang(my),.e1-donate:lang(th){line-height:1.9}
+.e1-donate:lang(my) .e1-donate-btn,.e1-donate:lang(my) .e1-donate-badge{padding-top:6px;padding-bottom:6px}
+</style>
+
+<script>
+(function(){
+  var KEY='e1DonateDismissed', card=document.getElementById('e1-donate');
+  if(!card) return;
+  var id=card.getAttribute('data-campaign'), preview=card.hasAttribute('data-preview');
+  try{ if(!preview && localStorage.getItem(KEY)===id){ card.hidden=true; return; } }catch(e){}
+  function remember(){ if(preview) return; try{ localStorage.setItem(KEY,id); }catch(e){} }
+  card.querySelectorAll('[data-e1-dismiss]').forEach(function(el){
+    el.addEventListener('click',function(){
+      remember();
+      if(el.tagName!=='A') card.hidden=true;
+      else setTimeout(function(){ card.hidden=true; },300);   // Ko-fi opens in a new tab
+    });
+  });
+})();
+</script>
+
+
+<section class="card faq">
+<h2>About the Encryption 1™ Suite</h2>
+<details>
+<summary>What is in the Suite?</summary>
+<ul><li><strong>Encryption 1™</strong> encrypts text or a file with a password.</li><li><strong>Multi Files</strong> encrypts up to 5 files at once.</li><li><strong>EC-1 Personal Journal</strong> keeps a private, encrypted diary.</li><li><strong>Vault</strong> keeps your passwords in one encrypted file that you own.</li><li><strong>Burn</strong> sends a message or photo that can be opened only once.</li><li><strong>Fingerprint</strong> checks whether two files are exactly the same.</li><li><strong>Scrub</strong> removes hidden information, such as location and author names, from photos and documents.</li><li><strong>Forge</strong> creates strong passwords and passphrases.</li><li><strong>Token</strong> creates two-factor login codes.</li><li><strong>Clarify</strong> points out clauses in contracts and Terms of Service that deserve a closer look.</li></ul>
+</details>
+<details>
+<summary>Is it free?</summary>
+<p>Yes. Every tool is free, with no account, no trial period and no paid version. If you find the Suite useful, you can support it with an optional donation through Ko-fi; this helps pay for hosting, translations and new features. The video tutorial series is sold separately on Ko-fi.</p>
+</details>
+<details>
+<summary>Is the source code available?</summary>
+<p>Yes. The source code is released under the <a href="license.html">MIT License</a>, so anyone can read and check exactly what the tools do.</p>
+</details>
+<details>
+<summary>Which languages are available?</summary>
+<p>The website and tools are available in 23 languages. Two things stay in English by design: Clarify, because its checks are written for English-language contracts and English-speaking legal systems, and Forge’s passphrase word list, which is a carefully tested English list.</p>
+</details>
+<details>
+<summary>What’s the difference between Encryption 1™, Multi Files and the Journal?</summary>
+<p>Encryption 1™ encrypts one piece of text or one file at a time. <a href="ec1-multi.php">Multi Files</a> does the same for up to 5 files at once. The <a href="journal.php">Journal</a> is for writing private entries that are saved in encrypted form. All three use the same encryption.</p>
+</details>
+</section>
+<section class="card faq">
+<h2>Encrypting files and text</h2>
+<details>
+<summary>What kinds of files can I encrypt?</summary>
+<p>Almost any: Word documents, Excel spreadsheets, PDFs, images, ZIP files, text files and more. The tool doesn’t need to understand what is inside the file; it encrypts the file’s bytes.</p>
+</details>
+<details>
+<summary>Is there a size limit?</summary>
+<p>Yes. Each file can be up to <strong>10 MB</strong>. Multi Files can encrypt up to 5 such files at once. To encrypt more files, put them in a ZIP file first; the tool treats a ZIP file as a single file. The limit keeps the browser-based tool light and reliable.</p>
+</details>
+<details>
+<summary>Can I encrypt images?</summary>
+<p>Yes. JPG, PNG, GIF and other image files can be encrypted like any other file, as long as each is within the 10 MB limit.</p>
+</details>
+<details>
+<summary>Can I encrypt Word and Excel files?</summary>
+<p>Yes. The tool encrypts the file itself. When you decrypt it, you get back the original file with its original name and file type.</p>
+</details>
+<details>
+<summary>Can I encrypt PDFs and ZIP files?</summary>
+<p>Yes, as long as each file is no larger than 10 MB.</p>
+</details>
+<details>
+<summary>Where can I learn how to use it step by step?</summary>
+<p>See the <a href="how-to-ec1.php">how-to guide</a>, written in plain language with no technical background needed.</p>
+</details>
+</section>
+<section class="card faq">
+<h2>Privacy, storage, and the Internet</h2>
+<details>
+<summary>Are my files uploaded to a server?</summary>
+<p>No. Encryption and decryption happen in your browser. The server never receives, stores or sees the contents of the files you encrypt. The one tool that uses the server is Burn, and it sends only an encrypted message that we cannot read (see below).</p>
+</details>
+<details>
+<summary>Do I need an account?</summary>
+<p>No. There is no account, signup or login.</p>
+</details>
+<details>
+<summary>Does it need an Internet connection?</summary>
+<p>Only to load the page. The encryption itself happens in your browser, not on a remote service. For use without the Internet, download the free Portable Edition from the <a href="downloads/">Downloads page</a>; it works offline in any browser that supports the Web Crypto API. Burn is the only tool that always needs the Internet.</p>
+</details>
+<details>
+<summary>Do I have to install anything?</summary>
+<p>No. The tools run in your web browser. The Portable Edition is a folder of web pages that you open in your browser; nothing is installed.</p>
+</details>
+<details>
+<summary>Can I carry it on a USB drive?</summary>
+<p>Yes. Copy the Portable Edition to a USB drive and you can use it on almost any computer, without installing anything and without leaving your files on that computer.</p>
+</details>
+<details>
+<summary>Can I move an encrypted file by email, USB drive or cloud storage?</summary>
+<p>Yes. The encrypted <code>.pvault</code> package is an ordinary file and can be moved like any other. Keep the password separate from the file.</p>
+</details>
+<details>
+<summary>Does the site use cookies or tracking?</summary>
+<p>No tracking, no advertising and no analytics service. The only exception is the optional Ko-fi donation button, which comes from Ko-fi and may set its own cookies. Details are in the <a href="privacy.php">Privacy Policy</a>.</p>
+</details>
+</section>
+<section class="card faq">
+<h2>Passwords and decryption</h2>
+<details>
+<summary>What happens if I forget my password?</summary>
+<p>The encrypted content cannot be recovered. We never have a copy of your password, so nobody, including us, can open the file without it. This is an important part of how the tools protect your privacy.</p>
+</details>
+<details>
+<summary>Can it create a strong password for me?</summary>
+<p>Yes. Click <strong>Generate</strong> next to the password field, or use <a href="vault.php">Vault</a> or Forge. Save the password somewhere safe before you use it; it isn’t stored anywhere else.</p>
+</details>
+<details>
+<summary>Can I change the password on an encrypted file?</summary>
+<p>Not directly. Decrypt the file with the old password, then encrypt the original file again with the new one.</p>
+</details>
+<details>
+<summary>Can I send an encrypted file to someone else?</summary>
+<p>Yes. The other person needs the encrypted file and the correct password. For better security, send the password a different way than the file, for example by phone or text message if you emailed the file.</p>
+</details>
+<details>
+<summary>Can Encryption 1™ break or recover a password?</summary>
+<p>No. It is not a password-recovery service. If the correct password is lost, the content cannot be recovered.</p>
+</details>
+</section>
+<section class="card faq">
+<h2>Vault, Burn and Token</h2>
+<details>
+<summary>Where does Vault keep my passwords?</summary>
+<p>In one encrypted file that you save: on your computer, a USB drive, a cloud folder, or several of these. It is never sent to us. Because the file is encrypted with your master password, it stays protected even if someone else gets a copy.</p>
+</details>
+<details>
+<summary>What if I forget my Vault master password?</summary>
+<p>Your vault cannot be opened. Choose a master password you will remember, and keep a backup copy of your vault file.</p>
+</details>
+<details>
+<summary>Does Vault save automatically or fill in passwords on websites?</summary>
+<p>No to both. Click <strong>Save</strong> after making changes; unsaved changes are lost when Vault locks itself. Filling in passwords on websites would require a browser extension, which works very differently from the rest of the Suite. Vault is currently in beta.</p>
+</details>
+<details>
+<summary>Can you read my Burn messages?</summary>
+<p>No. A Burn message or photo is encrypted in your browser before it is sent, and the key exists only in the link you share. Our server stores only the encrypted version, which it cannot read.</p>
+</details>
+<details>
+<summary>What happens to a Burn message after it is opened?</summary>
+<p>It is deleted from the server the moment it is opened, and nobody can open it again. A message that is never opened is deleted automatically after 7 days.</p>
+</details>
+<details>
+<summary>Does Token remember my accounts?</summary>
+<p>No. Token does not save your secret key; when you close or reload the page, it is gone. Keep the secret key, or your account’s recovery codes, somewhere safe, such as Vault.</p>
+</details>
+</section>
+<section class="card faq">
+<h2>What it can and cannot protect</h2>
+<details>
+<summary>Does encryption protect the file itself?</summary>
+<p>The tools protect the contents of the encrypted package using AES-GCM with a key made from your password. That is strong protection, but it is not a guarantee against every possible threat.</p>
+</details>
+<details>
+<summary>Does it protect me from phishing?</summary>
+<p>No. Encryption protects data. It does not protect anyone from being tricked into revealing a password, opening a malicious attachment, or sending information to a scammer.</p>
+</details>
+<details>
+<summary>Does it protect me if my computer has malware or a keylogger?</summary>
+<p>No. If an attacker can see what you type or open the files on your device, encryption on that device cannot solve the problem. Use an up-to-date, trusted device whenever possible.</p>
+</details>
+<details>
+<summary>Does it protect against accidental deletion or a lost USB drive?</summary>
+<p>No. Encryption protects privacy, not availability. Keep safe backups of important encrypted files.</p>
+</details>
+<details>
+<summary>Is it “unbreakable”?</summary>
+<p>No security tool should make that claim. The Suite uses modern, strong encryption, but overall security also depends on your password, your device, your surroundings, and how you handle the encrypted files.</p>
+</details>
+</section>
+<section class="card">
+<h2>How to use it more safely</h2>
+<ul>
+  <li>Use a strong, unique password or passphrase.</li>
+  <li>Don’t reuse a password from email, banking, social media or another important account.</li>
+  <li>If you send an encrypted file, send its password a different way.</li>
+  <li>Avoid handling sensitive material on public or untrusted computers.</li>
+  <li>Keep safe backups of important encrypted files and of your Vault file.</li>
+  <li>Be careful with file names. A file name can reveal information even when the contents are encrypted.</li>
+  <li>Before sharing a photo or document, use <a href="scrub.php">Scrub</a> to remove hidden information such as location and author names.</li>
+  <li>Remember that encryption does not protect against phishing, social engineering, malware or careless password handling.</li>
+</ul>
+<div class="callout success">
+  <strong>Want the deeper explanation?</strong><br>
+  The Encryption 1™ Security Guide explains the encryption, good password habits, scams and phishing, safer file handling, and the limits of what encryption can protect.  <div class="buttons"><a class="button" href="security.html">Read the Security Guide</a></div>
+</div>
+</section>
+
+<footer><strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
+
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Burn - Encryption 1™ Suite</title>
+  <meta name="description" content="Free browser-based one-time-view message sharing. Encrypted locally, readable only once, then permanently deleted from the server." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--warning-bg: #ffe6e6;--warning-border: #ff8080;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+  .container { max-width: 680px; margin: 0 auto; padding: 24px; }
+  .hero { text-align: center; margin-bottom: 20px; }
+  .hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+  .hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+  .warning {margin: 20px 0;padding: 10px;border: 1px solid var(--warning-border);background: var(--warning-bg);border-radius: 14px;color: #5f4b00;line-height: 1.5;font-size: small;text-align: center;}
+  .card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;padding: 24px;}
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  textarea {width: 100%;min-height: 150px;padding: 12px 14px;border: 1px solid var(--border);border-radius: 14px;font: inherit;background: #fff;color: var(--text);resize: vertical;line-height: 1.5;}
+  textarea:focus, input:focus { outline: none; border-color: var(--accent); }
+  .field { margin-bottom: 16px; }
+  .help { margin-top: 6px; font-size: small; color: var(--muted); line-height: 1.45; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; flex-wrap: wrap; }
+  button {appearance: none;border: 0;cursor: pointer;padding: 12px 16px;border-radius: 14px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+  .btn-secondary { background: #eef2f7; color: var(--text); }
+  .btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+  .meta {margin-top: 16px;padding: 14px 16px;border-radius: 14px;background: #f8fafc;border: 1px solid var(--border);color: var(--muted);line-height: 1.5;font-size: .95rem;display: none;}
+  .meta.show { display: block; }
+  .mono {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;word-break: break-word;font-size: .82rem;background:#fff;border:1px solid var(--border);border-radius: 10px;padding: 12px;margin: 10px 0;}
+  .status { margin-top: 16px; min-height: 24px; font-size: small; }
+  .status.error { color: var(--danger); }
+  .status.success { color: var(--success); }
+  .view-message { font-size: 1rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .burned-note { margin-top: 18px; font-size: .85rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 14px; }
+  .footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+  .offline-notice { display: none; text-align: center; padding: 32px 28px; }
+  .offline-notice .icon { margin-bottom: 14px; }
+  .offline-notice h2 { margin: 0 0 12px; font-size: 1.3rem; }
+  .offline-notice p { margin: 0 0 14px; line-height: 1.55; color: var(--text); }
+  .offline-notice .fine-print { font-size: .82rem; color: var(--muted); margin-bottom: 0; }
+  .btn-retry {appearance: none;border: 0;cursor: pointer;padding: 10px 20px;border-radius: 12px;font: inherit;font-weight: 600;font-size: .92rem;background: var(--accent);color: #fff;display: inline-block;margin-bottom: 14px;}
+  .btn-retry:hover { background: var(--accent-2); }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); margin: -24px -24px 20px; background: #fbfcff; border-radius: 20px 20px 0 0; overflow: hidden; }
+  .tab-btn {appearance: none;border: 0;background: transparent;padding: 14px 20px;cursor: pointer;font: inherit;font-size: .95rem;color: var(--muted);border-bottom: 3px solid transparent;transition: .2s ease;flex: 1;}
+  .tab-btn:hover, .tab-btn.active {color: var(--accent);border-bottom-color: var(--accent);background: rgba(13, 110, 253, .04);}
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .dropzone {border: 2px dashed #b9c9dc;border-radius: 16px;padding: 26px 18px;text-align: center;background: #f8fbff;cursor: pointer;transition: .15s;}
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: #eef6ff; }
+  .dropzone strong { display: block; font-size: 1rem; margin-bottom: 5px; }
+  .photo-preview { margin-top: 14px; display: none; }
+  .photo-preview.show { display: block; }
+  .photo-preview img { max-width: 100%; max-height: 240px; border-radius: 12px; display: block; margin: 0 auto 10px; }
+  .photo-preview .file-info { font-size: .85rem; color: var(--muted); text-align: center; }
+  .size-warning { margin-top: 10px; padding: 10px 14px; border-radius: 10px; background: var(--warning-bg); border: 1px solid var(--warning-border); color: #5f4b00; font-size: .85rem; display: none; }
+  .size-warning.show { display: block; }
+  .view-image-wrap { display: none; text-align: center; }
+  .view-image-wrap.show { display: block; }
+  .view-image-wrap img { max-width: 100%; border-radius: 12px; margin-bottom: 12px; }
+.js-required-notice { display: none; }
+.no-js .js-required-notice { display: block; }
+.no-js #appRoot { display: none; }
+.js-required-card {max-width: 560px; margin: 60px auto; padding: 32px 28px; text-align: center;}
+.js-required-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.js-required-card h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.js-required-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.js-required-card .btn-live {display: inline-block; padding: 12px 22px; border-radius: 14px; text-decoration: none;background: var(--accent); color: #fff; font-weight: 700;}
+.js-required-card .btn-live:hover { background: var(--accent-2); }
+.js-required-card .fine-print { margin: 18px 0 0; font-size: .85rem; color: var(--muted); }
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html" aria-current="page"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required-notice">
+  <div class="card js-required-card">
+    <div class="icon"><img src="img/ec1-logo-med.png" height="119px" /></div>
+    <h2>This page needs JavaScript to work</h2>
+    <p>JavaScript couldn't run in this view &mdash; often because a local file opened in a preview like Quick Look on iPhone or iPad, or because JavaScript is turned off in your browser's settings. Encryption 1™ needs JavaScript to encrypt or decrypt your content, so nothing below this message will work until that's resolved.</p>
+    <p><a class="btn-live" href="#">Reload this page &#8635;</a></p>
+    <p class="fine-print">If JavaScript is turned off in your browser's settings, turning it back on will fix this.</p>
+  </div>
+</div>
+<div class="container">
+  <div class="hero">
+    <h1><img src="img/ec1-logo-med.png" height="45" align="absmiddle" onerror="this.style.display='none'"> <span id="page-title">Burn</span></h1>
+    <p id="page-lede">Write a message or share a photo. It's encrypted in your browser before it ever leaves your device, and the link you get can only be opened once — after that, it's gone for good.</p>
+  </div>
+  <!-- OFFLINE NOTICE -->
+  <div class="card offline-notice" id="offline-notice">
+    <div class="icon"><img src="img/ec1-logo-med.png" height="90" onerror="this.style.display='none'"></div>
+    <h2>Burn needs an internet connection</h2>
+    <p>Unlike most of the Encryption 1 Suite, Burn has to reach a server to create or open a one-time link — that's what makes the link work exactly once, for whoever opens it. This device doesn't appear to be connected right now, so Burn can't create or open links until that's restored.</p>
+    <p><button class="btn-retry" id="retry-connection-btn">Check connection again ↻</button></p>
+    <p class="fine-print">This will update automatically the moment your connection comes back — nothing you've typed will be lost while you wait.</p>
+  </div>
+  <!-- COMPOSE VIEW -->
+  <div id="compose-view">
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn active" data-compose-tab="text">Message</button>
+        <button class="tab-btn" data-compose-tab="photo">Photo</button>
+      </div>
+      <div class="panel active" id="panel-text">
+        <div class="field">
+          <label for="message">Your message</label>
+          <textarea id="message" placeholder="Type your message..."></textarea>
+          <p class="help" id="char-count">0 characters</p>
+        </div>
+      </div>
+      <div class="panel" id="panel-photo">
+        <div class="dropzone" id="photo-dropzone" tabindex="0">
+          <strong>Drop a photo here, or click to choose</strong>
+          <span class="help">JPEG, PNG, HEIC, etc. · up to 10MB</span>
+        </div>
+        <input type="file" id="photo-input" accept="image/*">
+        <div class="photo-preview" id="photo-preview">
+          <img id="photo-preview-img" alt="">
+          <div class="file-info" id="photo-file-info"></div>
+        </div>
+        <div class="size-warning" id="photo-size-warning"></div>
+      </div>
+      <div class="row">
+        <button class="btn-primary" id="create-btn" disabled>Create one-time link</button>
+      </div>
+      <div class="meta" id="link-box">
+        <strong>Send this link to whoever needs to read it.</strong> It will stop working the moment they open it.
+        <div class="mono" id="link-value"></div>
+        <button class="btn-secondary" id="copy-link">Copy link</button>
+        <p class="help" style="color:var(--danger);margin-top:10px;">This is the only time this link will be shown. It is not saved anywhere — including here.</p>
+      </div>
+    </div>
+  </div>
+  <!-- VIEW/READ VIEW -->
+  <div id="read-view" style="display:none;">
+    <div class="card">
+      <p class="status" id="view-status">Decrypting…</p>
+      <div class="view-message" id="view-message"></div>
+      <div class="view-image-wrap" id="view-image-wrap">
+        <img id="view-image" alt="Decrypted photo">
+        <p><a class="btn-secondary" id="download-photo" style="text-decoration:none;display:inline-block;" download="photo">Download photo</a></p>
+      </div>
+      <p class="burned-note" id="burned-note" style="display:none;">This message has now been permanently deleted from the server. Reloading this page will not bring it back.</p>
+    </div>
+<style>.fakelink {padding:10px;border-radius: 5px;text-decoration:none;}</style>	
+<center><a class="fakelink btn-primary" href="https://www.encryption-one.com/burn.php">Create your own self-destrucing message</a>
+<br /><br />
+</center>
+  </div>
+<div class="warning" style="text-align:left;">Burn guarantees a message or photo can only be retrieved once from the server, and the server never holds the decryption key. It cannot prevent someone from screenshotting, copying, or simply remembering what's shown once it's displayed on their screen — no technology can genuinely do that. Burn protects against the content existing indefinitely somewhere you don't control; it doesn't change what a person can do with what they've already been shown.</div>
+  <p class="footer"><strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. All Rights Reserved<br />This tool requires use of the server at <a href="https://www.encryption-one.com/burn.php" target="_blank">www.encryption-one.com</a>
+</p>
+  <script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</div>
+<script>
+  // Point this at wherever burn-api.php is deployed.
+  const API_BASE = 'burn-api.php';
+  function toBase64(buf) {
+    // Chunked conversion — spreading an entire large buffer into String.fromCharCode's
+    // arguments at once exceeds JS engines' function-argument limits for anything much
+    // bigger than a short text message, which silently breaks the moment a real photo
+    // is involved. Processing in fixed-size chunks avoids that ceiling entirely.
+    const bytes = new Uint8Array(buf);
+    let binary = '';
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+    }
+    return btoa(binary);
+  }
+  function fromBase64(str) { return Uint8Array.from(atob(str), c => c.charCodeAt(0)).buffer; }
+  const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // 10MB — matches Encryption 1's own file-size convention
+  // ---- Envelope format ----
+  // Byte 0: content type marker (0 = text, 1 = image)
+  // Text:  [0][UTF-8 text bytes...]
+  // Image: [1][2-byte big-endian MIME-type length][UTF-8 MIME-type bytes][raw image bytes]
+  // The whole envelope is encrypted as one unit, so the server never learns even the
+  // content type — it only ever sees one opaque encrypted blob either way.
+  function buildTextEnvelope(text) {
+    const textBytes = new TextEncoder().encode(text);
+    const envelope = new Uint8Array(1 + textBytes.length);
+    envelope[0] = 0;
+    envelope.set(textBytes, 1);
+    return envelope.buffer;
+  }
+  function buildImageEnvelope(imageBuf, mimeType) {
+    const mimeBytes = new TextEncoder().encode(mimeType);
+    const imageBytes = new Uint8Array(imageBuf);
+    const envelope = new Uint8Array(1 + 2 + mimeBytes.length + imageBytes.length);
+    envelope[0] = 1;
+    envelope[1] = (mimeBytes.length >> 8) & 0xff;
+    envelope[2] = mimeBytes.length & 0xff;
+    envelope.set(mimeBytes, 3);
+    envelope.set(imageBytes, 3 + mimeBytes.length);
+    return envelope.buffer;
+  }
+  function parseEnvelope(buf) {
+    const bytes = new Uint8Array(buf);
+    const type = bytes[0];
+    if (type === 0) {
+      return { type: 'text', text: new TextDecoder().decode(bytes.slice(1)) };
+    }
+    if (type === 1) {
+      const mimeLen = (bytes[1] << 8) | bytes[2];
+      const mimeType = new TextDecoder().decode(bytes.slice(3, 3 + mimeLen));
+      const data = bytes.slice(3 + mimeLen);
+      return { type: 'image', mimeType, data };
+    }
+    throw new Error('Unrecognized content envelope.');
+  }
+  async function encryptEnvelope(envelopeBuf) {
+    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ciphertextBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, envelopeBuf);
+    const rawKey = await crypto.subtle.exportKey('raw', key);
+    return { ciphertext: toBase64(ciphertextBuf), iv: toBase64(iv), keyB64: toBase64(rawKey) };
+  }
+  async function decryptEnvelope(ciphertextB64, ivB64, keyB64) {
+    const key = await crypto.subtle.importKey('raw', fromBase64(keyB64), 'AES-GCM', false, ['decrypt']);
+    const iv = new Uint8Array(fromBase64(ivB64));
+    const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, fromBase64(ciphertextB64));
+    return parseEnvelope(plainBuf);
+  }
+  const params = new URLSearchParams(window.location.search);
+  const viewId = params.get('id');
+  let viewInitialized = false;
+  let readViewSettled = false; // true once the message is shown or a real (non-connectivity) error is final
+  function showOfflineNotice() {
+    document.getElementById('offline-notice').style.display = 'block';
+    document.getElementById('compose-view').style.display = 'none';
+    document.getElementById('read-view').style.display = 'none';
+  }
+  function applyConnectivity() {
+    if (!navigator.onLine && !readViewSettled) {
+      showOfflineNotice();
+      return;
+    }
+    document.getElementById('offline-notice').style.display = 'none';
+    document.getElementById('compose-view').style.display = viewId ? 'none' : 'block';
+    document.getElementById('read-view').style.display = viewId ? 'block' : 'none';
+    initializeView();
+  }
+  window.addEventListener('online', applyConnectivity);
+  window.addEventListener('offline', applyConnectivity);
+  document.getElementById('retry-connection-btn').addEventListener('click', applyConnectivity);
+  function initializeView() {
+    if (viewInitialized) return;
+    viewInitialized = true;
+  if (viewId) {
+    document.getElementById('page-title').textContent = 'Reading a one-time message';
+    document.getElementById('page-lede').textContent = 'This message can only be opened once. If you reload this page, it will be gone.';
+    (async () => {
+      const statusEl = document.getElementById('view-status');
+      const msgEl = document.getElementById('view-message');
+      const imageWrap = document.getElementById('view-image-wrap');
+      const imageEl = document.getElementById('view-image');
+      const downloadLink = document.getElementById('download-photo');
+      const burnedNote = document.getElementById('burned-note');
+      const hashKey = window.location.hash.replace(/^#key=/, '');
+      if (!hashKey) {
+        statusEl.textContent = 'Missing decryption key in the link.';
+        statusEl.classList.add('error');
+        readViewSettled = true;
+        return;
+      }
+      try {
+        const res = await fetch(`${API_BASE}?action=get&id=${encodeURIComponent(viewId)}`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          statusEl.textContent = err.error || 'This message has already been read or no longer exists.';
+          statusEl.classList.add('error');
+          readViewSettled = true;
+          return;
+        }
+        const data = await res.json();
+        const content = await decryptEnvelope(data.ciphertext, data.iv, hashKey);
+        statusEl.style.display = 'none';
+        if (content.type === 'image') {
+          const blob = new Blob([content.data], { type: content.mimeType });
+          const url = URL.createObjectURL(blob);
+          imageEl.src = url;
+          downloadLink.href = url;
+          const ext = (content.mimeType.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+          downloadLink.download = 'photo.' + ext;
+          imageWrap.classList.add('show');
+        } else {
+          msgEl.textContent = content.text;
+        }
+        burnedNote.style.display = 'block';
+        readViewSettled = true;
+      } catch (e) {
+        if (!navigator.onLine) {
+          // Connection dropped mid-request rather than a real decoding/server error —
+          // let applyConnectivity's listener handle re-showing the offline notice,
+          // and allow a retry once back online instead of marking this as a dead link.
+          viewInitialized = false;
+          return;
+        }
+        statusEl.textContent = 'Could not decrypt this message. The link may be incomplete or corrupted.';
+        statusEl.classList.add('error');
+        readViewSettled = true;
+      }
+    })();
+  } else {
+    const textarea = document.getElementById('message');
+    const createBtn = document.getElementById('create-btn');
+    const charCount = document.getElementById('char-count');
+    const photoDropzone = document.getElementById('photo-dropzone');
+    const photoInput = document.getElementById('photo-input');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoPreviewImg = document.getElementById('photo-preview-img');
+    const photoFileInfo = document.getElementById('photo-file-info');
+    const photoSizeWarning = document.getElementById('photo-size-warning');
+    let activeComposeTab = 'text';
+    let selectedPhoto = null; // { file, buf } once validated
+    document.querySelectorAll('[data-compose-tab]').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('[data-compose-tab]').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        activeComposeTab = tab.dataset.composeTab;
+        document.getElementById('panel-' + activeComposeTab).classList.add('active');
+        updateCreateButtonState();
+      });
+    });
+    function formatSize(bytes) {
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(0) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+    function updateCreateButtonState() {
+      if (activeComposeTab === 'text') {
+        createBtn.disabled = textarea.value.trim().length === 0;
+      } else {
+        createBtn.disabled = !selectedPhoto;
+      }
+    }
+    textarea.addEventListener('input', () => {
+      charCount.textContent = textarea.value.length + ' characters';
+      updateCreateButtonState();
+    });
+    function handlePhotoFile(file) {
+      photoSizeWarning.classList.remove('show');
+      if (!file.type.startsWith('image/')) {
+        photoSizeWarning.textContent = `"${file.name}" doesn't look like an image file.`;
+        photoSizeWarning.classList.add('show');
+        selectedPhoto = null;
+        photoPreview.classList.remove('show');
+        updateCreateButtonState();
+        return;
+      }
+      if (file.size > MAX_PHOTO_BYTES) {
+        photoSizeWarning.textContent = `This photo is ${formatSize(file.size)}, which is over the 10MB limit. Please choose a smaller photo.`;
+        photoSizeWarning.classList.add('show');
+        selectedPhoto = null;
+        photoPreview.classList.remove('show');
+        updateCreateButtonState();
+        return;
+      }
+      selectedPhoto = { file };
+      photoPreviewImg.src = URL.createObjectURL(file);
+      photoFileInfo.textContent = `${file.name} · ${formatSize(file.size)}`;
+      photoPreview.classList.add('show');
+      updateCreateButtonState();
+    }
+    photoDropzone.addEventListener('click', () => photoInput.click());
+    photoDropzone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') photoInput.click(); });
+    photoInput.addEventListener('change', () => { if (photoInput.files[0]) handlePhotoFile(photoInput.files[0]); photoInput.value = ''; });
+    ['dragenter', 'dragover'].forEach(ev => photoDropzone.addEventListener(ev, e => { e.preventDefault(); photoDropzone.classList.add('dragover'); }));
+    ['dragleave', 'drop'].forEach(ev => photoDropzone.addEventListener(ev, e => { e.preventDefault(); photoDropzone.classList.remove('dragover'); }));
+    photoDropzone.addEventListener('drop', e => { if (e.dataTransfer.files[0]) handlePhotoFile(e.dataTransfer.files[0]); });
+    createBtn.addEventListener('click', async () => {
+      createBtn.disabled = true;
+      createBtn.textContent = 'Encrypting…';
+      try {
+        let envelope;
+        if (activeComposeTab === 'photo') {
+          const buf = await selectedPhoto.file.arrayBuffer();
+          envelope = buildImageEnvelope(buf, selectedPhoto.file.type);
+        } else {
+          envelope = buildTextEnvelope(textarea.value);
+        }
+        const { ciphertext, iv, keyB64 } = await encryptEnvelope(envelope);
+        const res = await fetch(`${API_BASE}?action=store`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ciphertext, iv })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Server error');
+        const link = `${window.location.origin}${window.location.pathname}?id=${data.id}#key=${keyB64}`;
+        document.getElementById('link-value').textContent = link;
+        document.getElementById('link-box').classList.add('show');
+        textarea.value = '';
+        charCount.textContent = '0 characters';
+        selectedPhoto = null;
+        photoPreview.classList.remove('show');
+        updateCreateButtonState();
+      } catch (e) {
+        alert('Could not create the link: ' + e.message);
+      } finally {
+        createBtn.disabled = false;
+        createBtn.textContent = 'Create one-time link';
+        updateCreateButtonState();
+      }
+    });
+    document.getElementById('copy-link').addEventListener('click', () => {
+      const link = document.getElementById('link-value').textContent;
+      navigator.clipboard.writeText(link);
+      const btn = document.getElementById('copy-link');
+      const original = btn.textContent;
+      btn.textContent = 'Copied';
+      setTimeout(() => { btn.textContent = original; }, 1400);
+    });
+  }
+  }
+  applyConnectivity();
+</script>
+</body>
+</html>

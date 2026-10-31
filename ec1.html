@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Encryption 1™ Suite</title>
+<meta name="description" content="Free browser-based encryption tool. Encrypt and decrypt text or files locally with AES-GCM — no account, no install, no server storage. Works offline." />
+<style>
+  :root {--bg: #f5f7fb;--card: #ffffff;--text: #1f2937;--muted: #6b7280;--border: #dbe3ee;--accent: #0d6efd;--accent-2: #0b5ed7;--danger: #b42318;--success: #157347;--warning-bg: #ffe6e6;--warning-border: #ff8080;--shadow: 0 10px 30px rgba(0,0,0,.08);}
+  * { box-sizing: border-box; }
+  body {margin: 0;font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);color: var(--text);min-height: 100vh;}
+.nolines { text-decoration: none; font-size: small; }
+.container { max-width: 980px; margin: 0 auto; padding: 24px; }
+.hero { text-align: center; margin-bottom: 20px; }
+.hero h1 { margin: 0 0 8px; font-size: clamp(1.8rem, 3vw, 2.4rem); }
+.hero p { margin: 0; color: var(--muted); line-height: 1.55; }
+.badge {display: inline-block;background: #e9f2ff;color: #0a58ca;border-radius: 999px;padding: 6px 12px;font-size: .85rem;font-weight: 700;margin-bottom: 10px;}
+.warning {margin: 20px 0;padding: 5px 5px;border: 1px solid var(--warning-border);background: var(--warning-bg);border-radius: 14px;color: #5f4b00;line-height: 1.5;font-size: small;text-align: center;}
+.card {background: var(--card);border: 1px solid var(--border);border-radius: 20px;box-shadow: var(--shadow);overflow: hidden;}
+.tabs { display: flex; border-bottom: 1px solid var(--border); background: #fbfcff; flex-wrap: wrap; }
+.tab-btn {appearance: none;border: 0;background: transparent;padding: 16px 20px;cursor: pointer;font: inherit;font-size: 1rem;color: var(--muted);border-bottom: 3px solid transparent;transition: .2s ease;}
+.tab-btn:hover,
+.tab-btn.active {color: var(--accent);border-bottom-color: var(--accent);background: rgba(13, 110, 253, .04);}
+.panel { display: none; padding: 24px; }
+.panel.active { display: block; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 820px) {.grid { grid-template-columns: 1fr; }
+  }
+  label { display: block; font-weight: 600; margin-bottom: 8px; }
+  textarea,
+  input[type="password"],
+  input[type="text"],
+  input[type="file"] {width: 100%;padding: 12px 14px;border: 1px solid var(--border);border-radius: 14px;font: inherit;background: #fff;color: var(--text);}
+  textarea { resize: vertical; line-height: 1.5; }
+.field { margin-bottom: 16px; }
+.help { margin-top: 6px; font-size:small; color: var(--muted); line-height: 1.45; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  button {appearance: none;border: 0;cursor: pointer;padding: 12px 16px;border-radius: 14px;font: inherit;font-weight: 600;transition: transform .05s ease, background .2s ease, opacity .2s ease;}
+  button:active { transform: translateY(1px); }
+  button:disabled { opacity: .55; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover:not(:disabled) { background: var(--accent-2); }
+.btn-secondary { background: #eef2f7; color: var(--text); }
+.btn-secondary:hover:not(:disabled) { background: #e3e9f2; }
+.btn-secondary.small { padding: 8px 12px; font-size: .85rem; white-space: nowrap; flex: none; }
+.btn-danger { background: #fbeaea; color: var(--danger); }
+.btn-danger:hover:not(:disabled) { background: #f7dede; }
+.status { margin-top: 16px; min-height: 24px;font-size:small;}
+.status.error { color: var(--danger); }
+.status.success { color: var(--success); }
+.meta {margin-top: 16px;padding: 14px 16px;border-radius: 14px;background: #f8fafc;border: 1px solid var(--border);color: var(--muted);line-height: 1.5;font-size: .95rem;}
+.mono {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;word-break: break-word;}
+.footer { margin-top: 18px; color: var(--muted); font-size: .9rem; line-height: 1.5; }
+.strength-wrap { margin-top: 10px; }
+.strength-bar {width: 100%;height: 10px;border-radius: 999px;background: #e9eef5;border: 1px solid var(--border);overflow: hidden;}
+.strength-fill {height: 100%;width: 0;border-radius: 999px;background: #d0d7e2;transition: width .2s ease, background .2s ease;}
+.strength-text { margin-top: 8px; font-size:small; color: var(--muted); line-height: 1.4; }
+.dropzone {border: 2px dashed #b9c9dc;border-radius: 18px;padding: 28px 18px;text-align: center;background: #f8fbff;cursor: pointer;transition: .15s;}
+.dropzone:hover,
+.dropzone.dragover { border-color: var(--accent); background: #eef6ff; }
+.dropzone strong { display: block; font-size: 1.05rem; margin-bottom: 5px; }
+.file-info {margin-top: 12px;padding: 12px 14px;background: #f8fafc;border: 1px solid var(--border);border-radius: 12px;font-size:small;}
+.limit { font-weight: 700; color: #0a58ca; }
+.file-list {margin-top: 12px;padding: 6px 14px;background: #f8fafc;border: 1px solid var(--border);border-radius: 12px;font-size:small;}
+.file-row {padding: 10px 0;border-bottom: 1px solid var(--border);}
+.file-row:last-of-type { border-bottom: none; }
+.file-row .file-row-name {display: block;font-weight: 600;overflow-wrap: break-word;word-break: break-word;margin-bottom: 4px;}
+.file-row .file-row-meta {display: flex;justify-content: space-between;align-items: center;gap: 10px;}
+.file-row .file-row-size {color: var(--muted);font-size: .85rem;min-width: 0;overflow-wrap: anywhere;}
+.file-row .file-row-meta button { flex: none; }
+.mode-note {padding: 12px 14px;border-radius: 12px;background: #eef6ff;color: #0a58ca;margin-bottom: 18px;font-size:small;}
+.hidden { display: none; }
+.highlightme {background:#eef6ff;}
+.password-row { display: flex; gap: 8px; align-items: stretch; }
+.password-row input { flex: 1; min-width: 0; }
+.share-block { margin-top: 10px; }
+.share-row-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.share-region { padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: #fff; color: var(--text); font-size: .85rem; }
+.share-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.share-label { font-size: .85rem; color: var(--muted); }
+.share-more-toggle { display: inline-block; margin-top: 8px; background: none; border: none; padding: 0; font-size: .85rem; color: #0a58ca; text-decoration: underline; cursor: pointer; }
+.share-row.hidden, .share-more-toggle.hidden { display: none; }
+.js-required-notice { display: none; }
+.no-js .js-required-notice { display: block; }
+.no-js #appRoot { display: none; }
+.js-required-card {max-width: 560px; margin: 60px auto; padding: 32px 28px; text-align: center;}
+.js-required-card .icon { font-size: 2rem; margin-bottom: 10px; }
+.js-required-card h2 { margin: 0 0 10px; font-size: 1.3rem; }
+.js-required-card p { margin: 0 0 18px; color: var(--muted); line-height: 1.55; }
+.js-required-card .btn-live {display: inline-block; padding: 12px 22px; border-radius: 14px; text-decoration: none;background: var(--accent); color: #fff; font-weight: 700;}
+.js-required-card .btn-live:hover { background: var(--accent-2); }
+.js-required-card .fine-print { margin: 18px 0 0; font-size: .85rem; color: var(--muted); }
+/* ---- Generate modal ---- */
+.gen-modal-overlay {display: none;position: fixed;inset: 0;background: rgba(15,23,42,.5);align-items: center;justify-content: center;padding: 20px;z-index: 200;}
+.gen-modal-overlay.show { display: flex; }
+.gen-modal {background: #fff;border-radius: 20px;box-shadow: 0 24px 64px rgba(0,0,0,.28);width: 100%;max-width: 420px;max-height: 90vh;overflow-y: auto;}
+.gen-modal-header {display: flex;align-items: center;justify-content: space-between;padding: 18px 20px;border-bottom: 1px solid var(--border);}
+.gen-modal-header h2 { margin: 0; font-size: 1.1rem; }
+.gen-modal-close {background: none;border: 0;font-size: 1.3rem;color: var(--muted);cursor: pointer;padding: 4px 8px;border-radius: 8px;line-height: 1;}
+.gen-modal-close:hover { background: #eef2f7; color: var(--text); }
+.gen-modal-body { padding: 18px 20px; }
+.gen-modal-footer {display: flex;gap: 10px;padding: 16px 20px;border-top: 1px solid var(--border);}
+.gen-modal-footer button { flex: 1; }
+.gen-tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.gen-tab-btn {appearance: none;border: 0;background: transparent;padding: 10px 14px;cursor: pointer;font: inherit;font-size: .9rem;color: var(--muted);border-bottom: 2px solid transparent;flex: 1;}
+.gen-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.gen-panel { display: none; }
+.gen-panel.active { display: block; }
+.gen-output {font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;font-size: .92rem;background: #f8fafc;border: 1px solid var(--border);border-radius: 10px;padding: 12px 14px;word-break: break-all;min-height: 20px;margin-bottom: 12px;}
+.gen-output.empty { color: var(--muted); font-family: inherit; font-size: .85rem; }
+.gen-control-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.gen-control-row input[type="range"] { flex: 1; }
+.gen-value-badge {font-family: ui-monospace, monospace;font-size: .8rem;background: #e9f2ff;color: #0a58ca;padding: 3px 9px;border-radius: 999px;font-weight: 700;min-width: 24px;text-align: center;}
+.gen-control-row select {padding: 7px 10px;border: 1px solid var(--border);border-radius: 8px;font: inherit;font-size: .85rem;background: #fff;}
+.gen-strength-bar { height: 6px; border-radius: 999px; background: #e9edf3; overflow: hidden; margin-bottom: 6px; }
+.gen-strength-fill { height: 100%; width: 0%; background: #d0d7e2; transition: width .2s ease, background .2s ease; }
+.gen-strength-text { font-size: .78rem; color: var(--muted); margin-bottom: 14px; }
+.gen-entropy-note { font-size: .78rem; color: var(--muted); margin-bottom: 4px; }
+.gen-row { display: flex; gap: 8px; margin-bottom: 4px; }
+.gen-row button { flex: 1; font-size: .88rem; padding: 10px; }
+/* ---- Right-to-left languages (Arabic, Hebrew, Persian...) ---- */
+[dir="rtl"] body { font-family: system-ui, "Segoe UI", "Geeza Pro", "Noto Sans Arabic", "Noto Sans Hebrew", Tahoma, Arial, sans-serif; }
+[dir="rtl"] .warning, [dir="rtl"] .help, [dir="rtl"] .status, [dir="rtl"] .meta, [dir="rtl"] .strength-text, [dir="rtl"] label { line-height: 1.75; }
+[dir="rtl"] .tab-btn { font-size: 1.05rem; }
+/* filenames, passwords and the .pvault name keep their own direction inside RTL text */
+.mono, .ltr-token { unicode-bidi: isolate; }
+[dir="rtl"] .gen-output { direction: ltr; text-align: left; }
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html" aria-current="page"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="container" id="appRoot">
+<!-- Template card here -->
+<aside id="e1-donate" class="e1-donate" data-campaign="2026-11-10" aria-labelledby="e1-donate-title">
+  <button type="button" class="e1-donate-x" data-e1-dismiss aria-label="Close">&times;</button>
+  <div class="e1-donate-icon" aria-hidden="true">&#9749;</div>
+  <div class="e1-donate-text">
+    <span class="e1-donate-badge">Hosting fund · until 2026-11-10</span>
+    <h2 id="e1-donate-title"><bdi>Encryption 1</bdi> is free, and it will stay free</h2>
+    <p>No ads, no accounts, no tracking — that was true in 1996 and it is true today. Hosting for the site comes due every three months. If <bdi>Encryption 1</bdi> has been useful to you, a small contribution on Ko-fi this week helps keep it online.</p>
+    <div class="e1-donate-actions">
+      <a class="e1-donate-btn" href="https://ko-fi.com/encryption1" target="_blank" rel="noopener" data-e1-dismiss>Support on Ko-fi</a>
+      <a class="e1-donate-link" href="donate.html">Why I ask</a>
+      <button type="button" class="e1-donate-later" data-e1-dismiss>Maybe later</button>
+    </div>
+  </div>
+</aside>
+<style>
+.e1-donate{position:relative;display:flex;gap:16px;align-items:flex-start;
+  background:var(--card,#fff);border:1px solid var(--border,#dbe3ee);border-inline-start:4px solid var(--accent,#0d6efd);
+  border-radius:18px;padding:18px 20px;margin:16px auto;max-width:960px;
+  box-shadow:0 2px 10px rgba(15,23,42,.05);color:var(--text,#1f2937);font-family:inherit}
+.e1-donate[hidden]{display:none}
+.e1-donate-icon{flex:0 0 auto;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;
+  background:#e7f0ff;font-size:22px}
+.e1-donate-badge{display:inline-block;margin:0 0 8px;padding:3px 10px;border-radius:999px;
+  background:#e7f0ff;color:var(--accent-2,#0b5ed7);font-size:.78rem;font-weight:600;letter-spacing:.01em}
+.e1-donate h2{margin:0 0 6px;font-size:1.05rem;line-height:1.3}
+.e1-donate p{margin:0 0 12px;color:var(--muted,#6b7280);line-height:1.5;font-size:.95rem}
+.e1-donate-actions{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.e1-donate-btn{display:inline-block;background:var(--accent,#0d6efd);color:#fff;text-decoration:none;
+  padding:8px 18px;border-radius:999px;font-weight:600;font-size:.92rem}
+.e1-donate-btn:hover,.e1-donate-btn:focus-visible{background:var(--accent-2,#0b5ed7)}
+.e1-donate-link{color:var(--accent,#0d6efd);font-size:.92rem}
+.e1-donate-later{background:none;border:0;padding:0;color:var(--muted,#6b7280);font:inherit;font-size:.92rem;cursor:pointer;text-decoration:underline}
+.e1-donate-x{position:absolute;top:8px;inset-inline-end:10px;background:none;border:0;font-size:22px;line-height:1;
+  color:var(--muted,#6b7280);cursor:pointer;padding:4px 8px;border-radius:8px}
+.e1-donate-x:hover{background:var(--bg,#f5f7fb)}
+@media (max-width:560px){.e1-donate{padding:16px}.e1-donate-icon{display:none}}
+/* Burmese and Thai marks sit above/below the line: give them room */
+.e1-donate:lang(my),.e1-donate:lang(th){line-height:1.9}
+.e1-donate:lang(my) .e1-donate-btn,.e1-donate:lang(my) .e1-donate-badge{padding-top:6px;padding-bottom:6px}
+</style>
+<script>
+(function(){
+  var KEY='e1DonateDismissed', card=document.getElementById('e1-donate');
+  if(!card) return;
+  var id=card.getAttribute('data-campaign'), preview=card.hasAttribute('data-preview');
+  try{ if(!preview && localStorage.getItem(KEY)===id){ card.hidden=true; return; } }catch(e){}
+  function remember(){ if(preview) return; try{ localStorage.setItem(KEY,id); }catch(e){} }
+  card.querySelectorAll('[data-e1-dismiss]').forEach(function(el){
+    el.addEventListener('click',function(){
+      remember();
+      if(el.tagName!=='A') card.hidden=true;
+      else setTimeout(function(){ card.hidden=true; },300);   // Ko-fi opens in a new tab
+    });
+  });
+})();
+</script>
+<!-- Template card here -->
+    <div class="hero">
+        <h1>
+        <img src="img/ec1-logo-med.png" alt="" height="45px" align="absmiddle" /><bdi>Encryption 1™</bdi></h1>
+    </div>
+    <div class="warning">
+        <strong>Important:</strong> If you forget your password, your files and texts cannot be recovered.</div>
+    <div class="save-location-row hidden" id="saveLocationRow">
+        <input type="checkbox" id="chooseLocationToggle">
+        <label for="chooseLocationToggle">Ask me where to save each encrypted file.</label>
+	</div>
+    <div class="card">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="encryptText">Encrypt Text</button>
+            <button class="tab-btn" data-tab="encryptFile">Encrypt File</button>
+            <button class="tab-btn" data-tab="decrypt">Decrypt</button></div>
+        <div id="encryptText" class="panel active">
+            <!-- <div class="mode-note">The original Encryption 1™ text workflow is preserved here.</div> -->
+            <div class="grid">
+                <div class="field">
+                    <label for="plainText">Text to encrypt</label><textarea id="plainText" rows="13" dir="auto" placeholder="Type or paste text here..."></textarea></div>
+                <div>
+                    <div class="field">
+                        <label for="textPassword">Password / passphrase</label><div class="password-row">
+                            <input id="textPassword" type="password" dir="auto" placeholder="Enter a strong password" autocomplete="new-password"><button id="textToggleBtn" class="btn-secondary small" type="button" aria-pressed="false" aria-label="Show password">Show</button><button id="textGenerateBtn" class="btn-secondary small" type="button">Generate</button></div>
+                        <div class="strength-wrap">
+                            <div class="strength-bar">
+                                <div id="textStrengthBar" class="strength-fill">
+                                </div>
+                            </div>
+                            <div id="textStrengthText" class="strength-text">Password strength: not entered yet</div>
+                        </div>
+                        <div id="textStatus" class="status" aria-live="polite">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="textPassword2">Confirm password</label><input id="textPassword2" type="password" dir="auto" placeholder="Re-enter the password" autocomplete="new-password"></div>
+                    <div class="field">
+                        <label for="textFilename">Download filename</label><input id="textFilename" type="text" dir="ltr" value="private-note.pvault"></div>
+                    <div class="actions">
+                        <button id="encryptTextBtn" class="btn-primary">Encrypt &amp; Download</button><button id="clearTextBtn" class="btn-danger">Clear</button></div>
+                    <!-- <div id="textShareRow"></div> -->
+                    <div id="textMeta" class="meta hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="encryptFile" class="panel">
+            <!-- <div class="mode-note"><strong>File limit: 10 MB.</strong> Images, PDFs, Word documents, spreadsheets, ZIP files, and other files can be encrypted as raw bytes.</div> -->
+            <div class="grid">
+                <div>
+                    <label>Select a file</label>
+                    <div id="dropzone" class="dropzone" tabindex="0" role="button">
+                        <strong>Drop a file here</strong><span>or click to choose one</span>
+                        <div class="help">Maximum file size: <span class="limit" dir="ltr">10 MB</span></div>
+                    </div>
+                    <div class="help" style="margin-top: 8px">Need to encrypt multiple files? Try our <a href="ec1-multi.html">multi-file tool</a> →</div>
+                    <input id="fileInput" type="file" class="hidden">
+                    <div id="fileInfo" class="file-info hidden">
+                    </div>
+                </div>
+                <div>
+                    <div class="field">
+                        <label for="filePassword">Password / passphrase</label><div class="password-row">
+                            <input id="filePassword" type="password" dir="auto" placeholder="Enter a strong password" autocomplete="new-password"><button id="fileToggleBtn" class="btn-secondary small" type="button" aria-pressed="false" aria-label="Show password">Show</button><button id="fileGenerateBtn" class="btn-secondary small" type="button">Generate</button></div>
+                        <div class="strength-wrap">
+                            <div class="strength-bar">
+                                <div id="fileStrengthBar" class="strength-fill">
+                                </div>
+                            </div>
+                            <div id="fileStrengthText" class="strength-text">Password strength: not entered yet</div>
+                        </div>
+                        <div id="fileStatus" class="status" aria-live="polite">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label for="filePassword2">Confirm password</label><input id="filePassword2" type="password" dir="auto" placeholder="Re-enter the password" autocomplete="new-password"></div>
+                    <div class="actions">
+                        <button id="encryptFileBtn" class="btn-primary">Encrypt File &amp; Download</button><button id="clearFileBtn" class="btn-danger">Clear</button></div>
+                    <!-- <div id="fileShareRow"></div> -->
+                    <div id="fileMeta" class="meta hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="decrypt" class="panel">
+            <div class="grid">
+                <div>
+                    <div class="field">
+                        <label for="encryptedFile">Encrypted file</label><input id="encryptedFile" type="file" accept=".pvault,.json,application/json,text/plain"><div class="help">Works with Encryption 1™ text files and single- or multi-file packages.</div>
+                    </div>
+                    <div class="field">
+                        <label for="decryptPassword">Password / passphrase</label><input id="decryptPassword" type="password" dir="auto" placeholder="Enter the same password used to encrypt" autocomplete="current-password"></div>
+                    <div class="actions">
+                        <button id="decryptBtn" class="btn-primary">Decrypt</button><button id="clearDecryptBtn" class="btn-danger">Clear</button></div>
+                    <div id="decryptStatus" class="status" aria-live="polite">
+                    </div>
+                    <div id="decryptMeta" class="meta hidden">
+                    </div>
+                </div>
+                <div>
+                    <div id="textDecryptArea" class="field">
+                        <label for="decryptedText">Decrypted text</label><textarea id="decryptedText" dir="auto" placeholder="Decrypted text will appear here..." spellcheck="false" rows="13"></textarea></div>
+                    <div id="textDecryptActions" class="actions">
+                        <button id="copyPlainBtn" class="btn-secondary" disabled>Copy text</button><button id="downloadPlainBtn" class="btn-secondary" disabled>Download as .txt</button></div>
+                    <div id="fileDecryptArea" class="meta hidden">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="browserStatus" class="status" aria-live="polite">
+    </div>
+    <strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</div>
+<script>
+'use strict';
+/* Interface text for this language, from /lang/ec1/en.json */
+const I18N = {"show":"Show","hide":"Hide","showPasswordAria":"Show password","hidePasswordAria":"Hide password","strengthVeryWeak":"Very weak","strengthWeak":"Weak","strengthMedium":"Medium","strengthStrong":"Strong","strengthVeryStrong":"Very strong","strengthNotEnteredLabel":"Not entered yet","needLength":"at least 8 characters","needCapital":"one capital letter","needSpecial":"one special character","strengthNotEntered":"Password strength: not entered yet","strengthMet":"Password strength: {label}. Minimum requirement met.","strengthMissing":"Password strength: {label}. Still needed: {list}.","clearedNote":"For your safety, your input and passwords have been cleared from this page.","browserOld":"This browser is too old or not running in a secure context for encryption to work. Please update your browser or open this page in a newer one.","browserPassed":"Browser compatibility: Passed","noWebCrypto":"This browser context does not provide the required Web Crypto API.","webCryptoUnavailable":"Web Crypto is not available in this browser context.","pwEnter":"Please enter a password.","pwNoMatch":"The passwords do not match.","pwRequirements":"Password requirements: at least 8 characters, including at least one capital letter and one special character.","genNoClipboard":"Password generated and shown above. This browser doesn't support automatic clipboard copying, so please copy it manually before encrypting.","genCopied":"Password generated and copied to your clipboard. Save it somewhere safe now — it cannot be recovered later. Clear wipes it from the clipboard too.","genCopyFailed":"Password generated and shown above. Copying to the clipboard failed automatically — please copy it manually before encrypting.","shareText":"Encryption 1™ password: {password}\n\nI'll send the encrypted (.pvault) file separately — for safety, please don't forward this password together with the file.","shareEmailSubject":"Your Encryption 1™ password","shareLabel":"Share password:","shareRegionGlobal":"Global","shareRegionLine":"Japan / Taiwan / Thailand (LINE)","shareMore":"More options","shareFewer":"Fewer options","shareHelp":"These buttons open the app with the password pre-filled — nothing is sent until you hit send there.","shareNeedPassword":"Enter or generate a password first, then share it.","shareAppEmail":"Email","savedPicked":"Saved to the location you chose.","savedDefault":"Saved to this browser’s default downloads location — check your device’s Downloads folder (or the Files app on iPhone/iPad).","enterText":"Please enter some text to encrypt.","encryptingLocally":"Encrypting locally...","textEncryptedMeta":"\u003Cstrong\u003EEncryption complete.\u003C/strong\u003E\u003Cbr\u003EText was encrypted locally and the encrypted file was downloaded.","encryptionComplete":"Encryption complete.","encryptionFailed":"Encryption failed: {error}","fileTooBig":"That file is {size}. Encryption 1™ supports files up to 10 MB.","fileReady":"File ready to encrypt.","chooseFileFirst":"Please choose a file first.","readingEncrypting":"Reading and encrypting locally...","fileEncryptedMeta":"\u003Cstrong\u003EEncryption complete.\u003C/strong\u003E\u003Cbr\u003EOriginal file: {name}\u003Cbr\u003ESize: {size}\u003Cbr\u003EThe encrypted package was downloaded locally.","fileEncryptedOk":"File encrypted successfully.","selectPvault":"Please select an encrypted .pvault file.","enterPassword":"Please enter the password.","decryptingLocally":"Decrypting locally...","fileDecryptedArea":"\u003Cstrong\u003EFile decrypted successfully.\u003C/strong\u003E\u003Cbr\u003ERestored: {name}\u003Cbr\u003ESize: {size}","downloadAgain":"Download restored file again","filePackageMeta":"\u003Cstrong\u003EFile package decrypted.\u003C/strong\u003E\u003Cbr\u003EThe original file was restored locally and downloaded.","decryptSuccess":"Decryption successful.","filesDecrypted":{"one":"{n} file decrypted successfully.","other":"{n} files decrypted successfully."},"download":"Download","downloadAll":{"one":"Download {n} file","other":"Download all {n} files"},"multiDownloadHelp":"Your browser may ask permission to allow multiple downloads from this page.","multiMeta":{"one":"\u003Cstrong\u003EFile package decrypted.\u003C/strong\u003E\u003Cbr\u003E{n} file was restored locally.","other":"\u003Cstrong\u003EFile package decrypted.\u003C/strong\u003E\u003Cbr\u003E{n} files were restored locally."},"textDecryptedMeta":"\u003Cstrong\u003EText decrypted successfully.\u003C/strong\u003E\u003Cbr\u003EThis may be a legacy Encryption 1™ text package or an Advanced text package.","decryptFailed":"Decryption failed. The password may be wrong, the file may be corrupted, or the file format may be unsupported.","copiedText":"Decrypted text copied to clipboard.","copyFailed":"Could not copy text to the clipboard in this browser."};
+const UI_LANG = document.documentElement.lang || 'en';
+// T('key') returns the text; T('key', {n: 3}) fills {n} and picks the right plural form.
+function T(key, vars) {
+  let s = I18N[key];
+  if (s == null) return key;
+  if (typeof s === 'object') {
+    let form = 'other';
+    try { form = new Intl.PluralRules(UI_LANG).select(vars && vars.n); } catch (e) {}
+    s = s[form] ?? s.other;
+  }
+  if (vars) for (const k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+// "a, b and c" in the page's language
+function listJoin(items) {
+  try { return new Intl.ListFormat(UI_LANG, { style: 'long', type: 'conjunction' }).format(items); }
+  catch (e) { return items.join(', '); }
+}
+const APP_VERSION = 2.0;
+const PBKDF2_ITERATIONS = 250000;
+const SALT_LENGTH = 16, IV_LENGTH = 12, MAX_FILE_SIZE = 10 * 1024 * 1024;
+const encoder = new TextEncoder(), decoder = new TextDecoder();
+const $ = id => document.getElementById(id);
+const els = {
+ tabs: document.querySelectorAll('.tab-btn'), panels: document.querySelectorAll('.panel'),
+ plainText:$('plainText'), textPassword:$('textPassword'), textPassword2:$('textPassword2'), textToggleBtn:$('textToggleBtn'), textGenerateBtn:$('textGenerateBtn'), textFilename:$('textFilename'), encryptTextBtn:$('encryptTextBtn'), clearTextBtn:$('clearTextBtn'), textStatus:$('textStatus'), textMeta:$('textMeta'), textStrengthBar:$('textStrengthBar'), textStrengthText:$('textStrengthText'), textShareRow:$('textShareRow'),
+ dropzone:$('dropzone'), fileInput:$('fileInput'), fileInfo:$('fileInfo'), filePassword:$('filePassword'), filePassword2:$('filePassword2'), fileToggleBtn:$('fileToggleBtn'), fileGenerateBtn:$('fileGenerateBtn'), encryptFileBtn:$('encryptFileBtn'), clearFileBtn:$('clearFileBtn'), fileStatus:$('fileStatus'), fileMeta:$('fileMeta'), fileStrengthBar:$('fileStrengthBar'), fileStrengthText:$('fileStrengthText'), fileShareRow:$('fileShareRow'),
+ encryptedFile:$('encryptedFile'), decryptPassword:$('decryptPassword'), decryptBtn:$('decryptBtn'), clearDecryptBtn:$('clearDecryptBtn'), decryptStatus:$('decryptStatus'), decryptMeta:$('decryptMeta'), decryptedText:$('decryptedText'), copyPlainBtn:$('copyPlainBtn'), downloadPlainBtn:$('downloadPlainBtn'), textDecryptArea:$('textDecryptArea'), textDecryptActions:$('textDecryptActions'), fileDecryptArea:$('fileDecryptArea'), browserStatus:$('browserStatus')
+};
+let selectedFile = null, currentDecryptedText = '';
+// True only while the clipboard holds a password this app generated, so Clear
+// can wipe it without touching anything the user copied from elsewhere.
+let generatedPasswordInClipboard = false;
+function setStatus(el,msg,type=''){el.textContent=msg;el.className='status'+(type?' '+type:'')}
+function showMeta(el,html){el.innerHTML=html;el.classList.remove('hidden')}
+function hide(el){el.classList.add('hidden')}
+function uint8ToBase64(bytes){let binary='';const chunk=0x8000;for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));return btoa(binary)}
+function base64ToUint8(base64){const binary=atob(base64);const bytes=new Uint8Array(binary.length);for(let i=0;i<binary.length;i++)bytes[i]=binary.charCodeAt(i);return bytes}
+function sanitizeFilename(name){const cleaned=(name||'private-note.pvault').trim().replace(/[\\/:*?"<>|]+/g,'_');return cleaned||'private-note.pvault'}
+function ensurePvaultExtension(name){return /\.pvault$/i.test(name)?name:name+'.pvault'}
+function formatBytes(n){if(n<1024)return n+' B';if(n<1024*1024)return (n/1024).toFixed(1)+' KB';return (n/(1024*1024)).toFixed(2)+' MB'}
+async function deriveKey(password,salt,usages){const material=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:PBKDF2_ITERATIONS,hash:'SHA-256'},material,{name:'AES-GCM',length:256},false,usages)}
+async function encryptBytes(bytes,password,kind,extra={}){const salt=crypto.getRandomValues(new Uint8Array(SALT_LENGTH)),iv=crypto.getRandomValues(new Uint8Array(IV_LENGTH));const key=await deriveKey(password,salt,['encrypt']);const encrypted=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,bytes);return {version:APP_VERSION,app:'Encryption 1™',format:kind==='file'?'E1A-FILE-1':'E1-TEXT-1',cipher:'AES-GCM',kdf:'PBKDF2',hash:'SHA-256',iterations:PBKDF2_ITERATIONS,salt:uint8ToBase64(salt),iv:uint8ToBase64(iv),data:uint8ToBase64(new Uint8Array(encrypted)),createdAt:new Date().toISOString(),...extra}}
+async function decryptBytes(payload,password){validatePayload(payload);const salt=base64ToUint8(payload.salt),iv=base64ToUint8(payload.iv),data=base64ToUint8(payload.data);const key=await deriveKey(password,salt,['decrypt']);return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv},key,data))}
+function validatePayload(p){if(!p||typeof p!=='object')throw Error('Invalid encrypted file format.');for(const k of ['version','cipher','kdf','salt','iv','data'])if(!(k in p))throw Error('Missing encrypted file field: '+k);if(p.cipher!=='AES-GCM'||p.kdf!=='PBKDF2')throw Error('Unsupported encryption format.');if(p.iterations!==PBKDF2_ITERATIONS)throw Error('Unsupported PBKDF2 iteration count.');}
+function evaluatePasswordStrength(password){const c={length8:password.length>=8,uppercase:/[A-Z]/.test(password),special:/[^A-Za-z0-9]/.test(password),lowercase:/[a-z]/.test(password),number:/\d/.test(password),length12:password.length>=12,length16:password.length>=16};let score=0;if(c.length8)score+=30;if(c.uppercase)score+=20;if(c.special)score+=20;if(c.lowercase)score+=10;if(c.number)score+=10;if(c.length12)score+=5;if(c.length16)score+=5;let label=T('strengthVeryWeak'),color='#b42318';if(!password){label=T('strengthNotEnteredLabel');color='#d0d7e2';score=0}else if(score>=90){label=T('strengthVeryStrong');color='#157347'}else if(score>=70){label=T('strengthStrong');color='#2d8a57'}else if(score>=50){label=T('strengthMedium');color='#b7791f'}else if(score>=30){label=T('strengthWeak');color='#c05621'}return{score,label,color,checks:c,meetsMinimum:c.length8&&c.uppercase&&c.special}}
+function updateStrength(input,bar,text){const r=evaluatePasswordStrength(input.value);bar.style.width=r.score+'%';bar.style.background=r.color;const missing=[];if(!r.checks.length8)missing.push(T('needLength'));if(!r.checks.uppercase)missing.push(T('needCapital'));if(!r.checks.special)missing.push(T('needSpecial'));text.textContent=!input.value?T('strengthNotEntered'):r.meetsMinimum?T('strengthMet',{label:r.label}):T('strengthMissing',{label:r.label,list:listJoin(missing)});return r}
+function downloadBlob(filename,blob){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function downloadPayload(filename,payload){downloadBlob(filename,new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}))}
+function checkSecure(){return !!window.isSecureContext&&!!window.crypto?.subtle}
+function setBrowserCompatibilityStatus(){const secure=!!window.isSecureContext,cryptoSupported=!!window.crypto?.subtle,supported=secure&&cryptoSupported;if(!supported){setStatus(els.browserStatus,T('browserOld'),'error');[els.encryptTextBtn,els.encryptFileBtn,els.decryptBtn].forEach(b=>b.disabled=true)}else{setStatus(els.browserStatus,T('browserPassed'),'success')}}
+function switchTab(name){els.tabs.forEach(b=>b.classList.toggle('active',b.dataset.tab===name));els.panels.forEach(p=>p.classList.toggle('active',p.id===name))}
+function validPassword(p1,p2){if(!p1)return T('pwEnter');if(p1!==p2)return T('pwNoMatch');if(!evaluatePasswordStrength(p1).meetsMinimum)return T('pwRequirements');return ''}
+function generateStrongPassword(length=24){const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*-_=+';const random=new Uint32Array(length);crypto.getRandomValues(random);let result='';for(let i=0;i<random.length;i++)result+=alphabet[random[i]%alphabet.length];return result}
+function setFieldVisibility(input,toggleBtn,visible){input.type=visible?'text':'password';toggleBtn.textContent=visible?T('hide'):T('show');toggleBtn.setAttribute('aria-pressed',String(visible));toggleBtn.setAttribute('aria-label',visible?T('hidePasswordAria'):T('showPasswordAria'))}
+async function generateInto(input,input2,toggleBtn,statusEl,strengthFn){const password=generateStrongPassword();input.value=password;input2.value=password;setFieldVisibility(input,toggleBtn,true);strengthFn();input.focus();input.select();if(!navigator.clipboard?.writeText){setStatus(statusEl,T('genNoClipboard'),'error');return}try{await navigator.clipboard.writeText(password);generatedPasswordInClipboard=true;setStatus(statusEl,T('genCopied'),'success')}catch{setStatus(statusEl,T('genCopyFailed'),'error')}}
+function clearGeneratedClipboard(){if(generatedPasswordInClipboard&&navigator.clipboard?.writeText){navigator.clipboard.writeText('').catch(()=>{});generatedPasswordInClipboard=false}}
+function buildPasswordShareText(password){return T('shareText',{password:password})}
+// ---- download-location notice (prototype) ----
+// showSaveFilePicker lets the person pick the exact folder themselves, on browsers that
+// support it (Chromium-based desktop + Android). Safari and Firefox don't support it at all,
+// so this is strictly an opt-in enhancement layered on top of the existing download flow —
+// nothing changes for anyone who doesn't tick the box, or whose browser can't offer it.
+const canPickSaveLocation = typeof window.showSaveFilePicker === 'function';
+let chooseLocationEnabled = false;
+const saveLocationRow = $('saveLocationRow'), chooseLocationToggle = $('chooseLocationToggle');
+if (canPickSaveLocation) {
+saveLocationRow.classList.remove('hidden');
+chooseLocationToggle.addEventListener('change', () => { chooseLocationEnabled = chooseLocationToggle.checked; });
+}
+function downloadLocationNote(viaPicker) {
+return '<div class="download-note"><span class="icon">'+(viaPicker?'📁':'⬇️')+'</span>'
++ (viaPicker
+? T('savedPicked')
+: T('savedDefault'))
++ '</div>';
+}
+// Returns true if saved via the native picker, false if saved via the normal download flow,
+// or null if the person opened the picker and then cancelled (in which case nothing was saved
+// and the caller should not show a success message).
+async function downloadBlobSmart(filename, blob) {
+if (chooseLocationEnabled && canPickSaveLocation) {
+try {
+const handle = await window.showSaveFilePicker({ suggestedName: filename });
+const writable = await handle.createWritable();
+await writable.write(blob);
+await writable.close();
+return true;
+} catch (err) {
+if (err && err.name === 'AbortError') return null;
+// any other picker failure falls back to the standard download below
+}
+}
+downloadBlob(filename, blob);
+return false;
+}
+// LINE's plain text-share link (line.me/R/msg/text) is a long-standing, widely used scheme but is
+// NOT officially documented by LINE the way wa.me/t.me are — behavior can vary by app/OS version.
+const SHARE_APPS={whatsapp:{label:'WhatsApp',open:text=>openShareUrl('https://wa.me/?text='+encodeURIComponent(text))},telegram:{label:'Telegram',open:text=>openShareUrl('https://t.me/share/url?text='+encodeURIComponent(text))},signal:{label:'Signal',open:text=>openShareUrl('https://signal.me/#text='+encodeURIComponent(text))},line:{label:'LINE',open:text=>openShareUrl('https://line.me/R/msg/text/?'+encodeURIComponent(text))},email:{label:T('shareAppEmail'),open:text=>{window.location.href='mailto:?subject='+encodeURIComponent(T('shareEmailSubject'))+'&body='+encodeURIComponent(text)}}};
+const SHARE_REGIONS=[{id:'global',label:T('shareRegionGlobal'),apps:['whatsapp','telegram','signal','email']},{id:'line',label:T('shareRegionLine'),apps:['line','whatsapp','email']}];
+function openShareUrl(url){window.open(url,'_blank','noopener')}
+function renderShareButtons(container,appIds,passwordInput,statusEl){container.innerHTML='';appIds.forEach(id=>{const app=SHARE_APPS[id];if(!app)return;const btn=document.createElement('button');btn.type='button';btn.className='btn-secondary small share-btn';btn.textContent=app.label;btn.dataset.app=id;btn.addEventListener('click',()=>{const password=passwordInput.value;if(!password){setStatus(statusEl,T('shareNeedPassword'),'error');return}app.open(buildPasswordShareText(password))});container.appendChild(btn)})}
+function initShareUI(mountEl,passwordInput,statusEl){if(!mountEl)return;const wrap=document.createElement('div');wrap.className='share-block';const top=document.createElement('div');top.className='share-row-top';const label=document.createElement('span');label.className='share-label';label.textContent=T('shareLabel');const select=document.createElement('select');select.className='share-region';SHARE_REGIONS.forEach(r=>{const o=document.createElement('option');o.value=r.id;o.textContent=r.label;select.appendChild(o)});top.appendChild(label);top.appendChild(select);const primaryRow=document.createElement('div');primaryRow.className='share-row';const moreToggle=document.createElement('button');moreToggle.type='button';moreToggle.className='share-more-toggle';moreToggle.textContent=T('shareMore');const moreRow=document.createElement('div');moreRow.className='share-row hidden';const help=document.createElement('div');help.className='help';help.style.marginTop='6px';help.textContent=T('shareHelp');function refresh(){const region=SHARE_REGIONS.find(r=>r.id===select.value)||SHARE_REGIONS[0];const primaryIds=region.apps;const moreIds=Object.keys(SHARE_APPS).filter(id=>!primaryIds.includes(id));renderShareButtons(primaryRow,primaryIds,passwordInput,statusEl);renderShareButtons(moreRow,moreIds,passwordInput,statusEl);moreRow.classList.add('hidden');moreToggle.textContent=T('shareMore');moreToggle.classList.toggle('hidden',moreIds.length===0)}select.addEventListener('change',refresh);moreToggle.addEventListener('click',()=>{const willShow=moreRow.classList.contains('hidden');moreRow.classList.toggle('hidden',!willShow);moreToggle.textContent=willShow?T('shareFewer'):T('shareMore')});wrap.appendChild(top);wrap.appendChild(primaryRow);wrap.appendChild(moreToggle);wrap.appendChild(moreRow);wrap.appendChild(help);mountEl.appendChild(wrap);refresh()}
+els.tabs.forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+els.textPassword.addEventListener('input',()=>updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText));
+els.filePassword.addEventListener('input',()=>updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText));
+els.textToggleBtn.addEventListener('click',()=>{setFieldVisibility(els.textPassword,els.textToggleBtn,els.textPassword.type==='password');els.textPassword.focus()});
+els.fileToggleBtn.addEventListener('click',()=>{setFieldVisibility(els.filePassword,els.fileToggleBtn,els.filePassword.type==='password');els.filePassword.focus()});
+els.textGenerateBtn.addEventListener('click',()=>generateInto(els.textPassword,els.textPassword2,els.textToggleBtn,els.textStatus,()=>updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText)));
+els.fileGenerateBtn.addEventListener('click',()=>generateInto(els.filePassword,els.filePassword2,els.fileToggleBtn,els.fileStatus,()=>updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText)));
+initShareUI(els.textShareRow,els.textPassword,els.textStatus);
+initShareUI(els.fileShareRow,els.filePassword,els.fileStatus);
+els.encryptTextBtn.addEventListener('click',async()=>{hide(els.textMeta);setStatus(els.textStatus,'');if(!checkSecure()){setStatus(els.textStatus,T('noWebCrypto'),'error');return}const text=els.plainText.value,p=els.textPassword.value,p2=els.textPassword2.value,err=validPassword(p,p2);if(!text.trim())return setStatus(els.textStatus,T('enterText'),'error');if(err)return setStatus(els.textStatus,err,'error');try{els.encryptTextBtn.disabled=true;setStatus(els.textStatus,T('encryptingLocally'),'success');const payload=await encryptBytes(encoder.encode(text),p,'text');downloadPayload(ensurePvaultExtension(sanitizeFilename(els.textFilename.value)),payload);showMeta(els.textMeta,T('textEncryptedMeta'));setStatus(els.textStatus,T('encryptionComplete'),'success')}catch(e){setStatus(els.textStatus,T('encryptionFailed',{error:(e.message||e)}),'error')}finally{els.encryptTextBtn.disabled=false}});
+function selectFile(file){if(!file)return;if(file.size>MAX_FILE_SIZE){selectedFile=null;hide(els.fileInfo);setStatus(els.fileStatus,T('fileTooBig',{size:formatBytes(file.size)}),'error');return}selectedFile=file;els.fileInfo.innerHTML='<strong><bdi>'+escapeHtml(file.name)+'</bdi></strong><br><bdi>'+formatBytes(file.size)+(file.type?' • '+escapeHtml(file.type):'')+'</bdi>';els.fileInfo.classList.remove('hidden');setStatus(els.fileStatus,T('fileReady'),'success')}
+function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function fileExtLabel(name){const m=/\.([a-z0-9]{1,8})$/i.exec(name||'');return m?m[1].toUpperCase():'FILE'}
+els.fileInput.addEventListener('change',()=>selectFile(els.fileInput.files[0]));els.dropzone.addEventListener('click',()=>els.fileInput.click());els.dropzone.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' ')els.fileInput.click()});['dragenter','dragover'].forEach(ev=>els.dropzone.addEventListener(ev,e=>{e.preventDefault();els.dropzone.classList.add('dragover')}));['dragleave','drop'].forEach(ev=>els.dropzone.addEventListener(ev,e=>{e.preventDefault();els.dropzone.classList.remove('dragover')}));els.dropzone.addEventListener('drop',e=>selectFile(e.dataTransfer.files[0]));
+els.encryptFileBtn.addEventListener('click',async()=>{hide(els.fileMeta);if(!checkSecure()){setStatus(els.fileStatus,T('noWebCrypto'),'error');return}if(!selectedFile)return setStatus(els.fileStatus,T('chooseFileFirst'),'error');const p=els.filePassword.value,p2=els.filePassword2.value,err=validPassword(p,p2);if(err)return setStatus(els.fileStatus,err,'error');try{els.encryptFileBtn.disabled=true;setStatus(els.fileStatus,T('readingEncrypting'),'success');const bytes=new Uint8Array(await selectedFile.arrayBuffer());const container=encoder.encode(JSON.stringify({filename:selectedFile.name,mimeType:selectedFile.type||'application/octet-stream',size:selectedFile.size,data:uint8ToBase64(bytes)}));const payload=await encryptBytes(container,p,'file');downloadPayload(sanitizeFilename(selectedFile.name)+'.pvault',payload);showMeta(els.fileMeta,T('fileEncryptedMeta',{name:'<span class="mono">'+escapeHtml(selectedFile.name)+'</span>',size:'<bdi>'+formatBytes(selectedFile.size)+'</bdi>'}));setStatus(els.fileStatus,T('fileEncryptedOk'),'success')}catch(e){setStatus(els.fileStatus,T('encryptionFailed',{error:(e.message||e)}),'error')}finally{els.encryptFileBtn.disabled=false}});
+els.decryptBtn.addEventListener('click',async()=>{hide(els.decryptMeta);hide(els.fileDecryptArea);els.decryptedText.value='';els.textDecryptArea.classList.remove('hidden');els.textDecryptActions.classList.remove('hidden');els.copyPlainBtn.disabled=true;els.downloadPlainBtn.disabled=true;currentDecryptedText='';if(!checkSecure()){setStatus(els.decryptStatus,T('noWebCrypto'),'error');return}const file=els.encryptedFile.files[0],p=els.decryptPassword.value;if(!file)return setStatus(els.decryptStatus,T('selectPvault'),'error');if(!p)return setStatus(els.decryptStatus,T('enterPassword'),'error');try{els.decryptBtn.disabled=true;setStatus(els.decryptStatus,T('decryptingLocally'),'success');const payload=JSON.parse(await file.text()),bytes=await decryptBytes(payload,p);if(payload.format==='E1A-FILE-1'){const container=JSON.parse(decoder.decode(bytes));if(!container.filename||!container.data)throw Error('The encrypted file package is invalid.');const original=base64ToUint8(container.data);const blob=new Blob([original],{type:container.mimeType||'application/octet-stream'});downloadBlob(sanitizeFilename(container.filename),blob);els.textDecryptArea.classList.add('hidden');els.textDecryptActions.classList.add('hidden');els.fileDecryptArea.innerHTML=T('fileDecryptedArea',{name:'<span class="mono">'+escapeHtml(container.filename)+'</span>',size:'<bdi>'+formatBytes(original.byteLength)+'</bdi>'})+'<br><button id="downloadRestored" class="btn-primary" style="margin-top:12px">'+T('downloadAgain')+'</button>';els.fileDecryptArea.classList.remove('hidden');$('downloadRestored').addEventListener('click',()=>downloadBlob(sanitizeFilename(container.filename),new Blob([original],{type:container.mimeType||'application/octet-stream'})));showMeta(els.decryptMeta,T('filePackageMeta'));setStatus(els.decryptStatus,T('decryptSuccess'),'success')}else if(payload.format==='E1A-MULTIFILE-1'){const container=JSON.parse(decoder.decode(bytes));if(!Array.isArray(container.files)||container.files.length===0)throw Error('The encrypted package is invalid.');const restored=container.files.map(f=>({filename:f.filename,mimeType:f.mimeType||'application/octet-stream',bytes:base64ToUint8(f.data)}));els.textDecryptArea.classList.add('hidden');els.textDecryptActions.classList.add('hidden');const rows=restored.map((f,i)=>'<div class="file-row"><span class="file-row-name mono">'+escapeHtml(f.filename)+'</span><div class="file-row-meta"><span class="file-row-size"><bdi>'+formatBytes(f.bytes.byteLength)+' \u2022 '+fileExtLabel(f.filename)+'</bdi></span><button type="button" class="btn-secondary small download-restored" data-index="'+i+'">'+T('download')+'</button></div></div>').join('');els.fileDecryptArea.innerHTML='<strong>'+T('filesDecrypted',{n:restored.length})+'</strong><div style="margin-top:10px">'+rows+'</div><button id="downloadAllRestored" class="btn-primary" style="margin-top:14px">'+T('downloadAll',{n:restored.length})+'</button><div class="help" style="margin-top:8px">'+T('multiDownloadHelp')+'</div>';els.fileDecryptArea.classList.remove('hidden');els.fileDecryptArea.querySelectorAll('.download-restored').forEach(btn=>{btn.addEventListener('click',()=>{const f=restored[+btn.dataset.index];downloadBlob(sanitizeFilename(f.filename),new Blob([f.bytes],{type:f.mimeType}))})});$('downloadAllRestored').addEventListener('click',async()=>{for(let i=0;i<restored.length;i++){const f=restored[i];downloadBlob(sanitizeFilename(f.filename),new Blob([f.bytes],{type:f.mimeType}));if(i<restored.length-1)await new Promise(r=>setTimeout(r,400))}});showMeta(els.decryptMeta,T('multiMeta',{n:restored.length}));setStatus(els.decryptStatus,T('decryptSuccess'),'success')}else{const text=decoder.decode(bytes);currentDecryptedText=text;els.decryptedText.value=text;els.copyPlainBtn.disabled=false;els.downloadPlainBtn.disabled=false;showMeta(els.decryptMeta,T('textDecryptedMeta'));setStatus(els.decryptStatus,T('decryptSuccess'),'success')}}catch(e){setStatus(els.decryptStatus,T('decryptFailed'),'error')}finally{els.decryptBtn.disabled=false}});
+els.copyPlainBtn.addEventListener('click',async()=>{try{await navigator.clipboard.writeText(currentDecryptedText);generatedPasswordInClipboard=false;setStatus(els.decryptStatus,T('copiedText'),'success')}catch{setStatus(els.decryptStatus,T('copyFailed'),'error')}});
+els.downloadPlainBtn.addEventListener('click',()=>{if(currentDecryptedText)downloadBlob('decrypted-text.txt',new Blob([currentDecryptedText],{type:'text/plain;charset=utf-8'}))});
+function clearText(){els.plainText.value='';els.textPassword.value='';els.textPassword2.value='';els.textFilename.value='private-note.pvault';setFieldVisibility(els.textPassword,els.textToggleBtn,false);updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText);hide(els.textMeta);setStatus(els.textStatus,'');clearGeneratedClipboard()}
+function clearFile(){selectedFile=null;els.fileInput.value='';els.filePassword.value='';els.filePassword2.value='';hide(els.fileInfo);hide(els.fileMeta);setFieldVisibility(els.filePassword,els.fileToggleBtn,false);updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText);setStatus(els.fileStatus,'');clearGeneratedClipboard()}
+function clearDecrypt(){els.encryptedFile.value='';els.decryptPassword.value='';els.decryptedText.value='';currentDecryptedText='';els.copyPlainBtn.disabled=true;els.downloadPlainBtn.disabled=true;hide(els.decryptMeta);hide(els.fileDecryptArea);els.textDecryptArea.classList.remove('hidden');els.textDecryptActions.classList.remove('hidden');setStatus(els.decryptStatus,'');clearGeneratedClipboard()}
+els.clearTextBtn.addEventListener('click',clearText);els.clearFileBtn.addEventListener('click',clearFile);els.clearDecryptBtn.addEventListener('click',clearDecrypt);
+updateStrength(els.textPassword,els.textStrengthBar,els.textStrengthText);updateStrength(els.filePassword,els.fileStrengthBar,els.fileStrengthText);
+setBrowserCompatibilityStatus();
+if(!checkSecure()){setStatus(els.textStatus,T('webCryptoUnavailable'),'error');setStatus(els.fileStatus,T('webCryptoUnavailable'),'error');setStatus(els.decryptStatus,T('webCryptoUnavailable'),'error');[els.encryptTextBtn,els.encryptFileBtn,els.decryptBtn].forEach(b=>b.disabled=true)}
+</script>
+<script>
+const aboutModalBackdrop = document.getElementById('aboutModalBackdrop');
+const aboutOpenBtn = document.getElementById('aboutOpenBtn');
+const heroAboutBtn = document.getElementById('heroAboutBtn');
+const aboutCloseBtn = document.getElementById('aboutCloseBtn');
+function openAboutModal(event) {
+if (event) event.preventDefault();
+aboutModalBackdrop.classList.add('active');
+aboutModalBackdrop.setAttribute('aria-hidden', 'false');
+document.body.style.overflow = 'hidden';
+}
+function closeAboutModal() {
+aboutModalBackdrop.classList.remove('active');
+aboutModalBackdrop.setAttribute('aria-hidden', 'true');
+document.body.style.overflow = '';
+}
+if (aboutOpenBtn) aboutOpenBtn.addEventListener('click', openAboutModal);
+if (heroAboutBtn) heroAboutBtn.addEventListener('click', openAboutModal);
+if (aboutCloseBtn) aboutCloseBtn.addEventListener('click', closeAboutModal);
+if (aboutModalBackdrop) aboutModalBackdrop.addEventListener('click', (event) => {
+if (event.target === aboutModalBackdrop) closeAboutModal();
+});
+document.addEventListener('keydown', (event) => {
+if (event.key === 'Escape' && aboutModalBackdrop && aboutModalBackdrop.classList.contains('active')) {
+closeAboutModal();
+}
+});
+</script>
+</body>
+</html>

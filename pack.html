@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<!-- Encryption 1™ -- released under the MIT License. See LICENSE, or https://www.encryption-one.com/license.html -->
+<html lang="en" dir="ltr" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<script>document.documentElement.className=document.documentElement.className.replace('no-js','js');</script>
+<title>Pack - Encrypt files and folders into one package - Encryption 1™</title>
+  <meta name="description" content="Free browser-based tool that encrypts files and whole folders into one password-protected package you can carry on a USB stick or send. Folders, names and dates are kept and locked. Nothing is uploaded; works offline." />
+
+<style>
+/* Layout: EC1 Suite card system; two tabs (make / open); a file list; progress bar */
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --text:#1f2937; --muted:#6b7280; --border:#dbe3ee;
+  --accent:#0d6efd; --accent-2:#0b5ed7; --accent-soft:#e7f0ff;
+  --danger:#b42318; --danger-bg:#fdecea; --warn:#a15c07; --warn-bg:#fff4e0;
+  --success:#157347; --success-bg:#e6f4ec; --note:#475467; --note-bg:#eef1f6; --field:#fbfcfe;
+  --font: system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Helvetica Neue",Arial,sans-serif;
+  --mono: ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e131c; --card:#161d2a; --text:#e6eaf1; --muted:#9aa5b6; --border:#2a3446;
+  --accent:#5b9bff; --accent-2:#7aaeff; --accent-soft:#1b2a45;
+  --danger:#ff8a7a; --danger-bg:#3a1a17; --warn:#f5b545; --warn-bg:#352812;
+  --success:#5fd39a; --success-bg:#132f22; --note:#b8c2d3; --note-bg:#222b3a; --field:#111824; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e131c; --card:#161d2a; --text:#e6eaf1; --muted:#9aa5b6; --border:#2a3446;
+  --accent:#5b9bff; --accent-2:#7aaeff; --accent-soft:#1b2a45;
+  --danger:#ff8a7a; --danger-bg:#3a1a17; --warn:#f5b545; --warn-bg:#352812;
+  --success:#5fd39a; --success-bg:#132f22; --note:#b8c2d3; --note-bg:#222b3a; --field:#111824; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55}
+.wrap{max-width:960px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:6px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-size:clamp(28px,4vw,38px);line-height:1.1;margin:0;letter-spacing:-.01em}
+h1 .tag{font-size:12px;vertical-align:middle;margin-inline-start:8px;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent);letter-spacing:.04em;font-weight:700}
+h2{font-size:16px;margin:0}
+.lede{margin:0;color:var(--muted);max-width:72ch}
+.tabs{display:flex;gap:6px;background:var(--note-bg);padding:5px;border-radius:999px;align-self:flex-start;flex-wrap:wrap}
+.tabs button{border:0;background:transparent;border-radius:999px;padding:8px 18px;font:inherit;font-weight:600;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.panel{display:flex;flex-direction:column;gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.drop{border:2px dashed var(--border);border-radius:16px;padding:26px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;background:var(--field);transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop p{margin:0}
+.drop .bar{justify-content:center}
+button{font:inherit;font-size:14px;cursor:pointer;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--text);padding:8px 16px}
+button:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;padding:10px 22px}
+button.primary:hover:not(:disabled){background:var(--accent-2);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+button.small{padding:4px 12px;font-size:13px}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 45%,transparent);outline-offset:2px}
+input[type=file]{display:none}
+input[type=text],input[type=password]{width:100%;font:inherit;font-size:15px;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:12px;padding:10px 12px;min-width:0}
+label{font-weight:600;font-size:14px}
+.field{display:flex;flex-direction:column;gap:6px}
+.row{display:flex;gap:8px;align-items:stretch}
+.row input{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:720px){.grid{grid-template-columns:1fr}}
+.check{display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:14px}
+.check input{margin-top:4px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spacer{flex:1}
+.meter{height:8px;border-radius:999px;background:var(--note-bg);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--border);transition:width .2s,background .2s}
+.list{border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.li{display:flex;gap:10px;align-items:center;padding:9px 12px;border-top:1px solid var(--border);font-size:14px;min-width:0}
+.li:first-child{border-top:0}
+.li .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.li .mt{color:var(--muted);font-size:13px;white-space:nowrap}
+.kind{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:999px;padding:2px 8px;background:var(--note-bg);color:var(--note);white-space:nowrap}
+.kind.dir{background:var(--accent-soft);color:var(--accent)}
+.msg{margin:0;font-size:14px;border-radius:12px;padding:10px 12px}
+.msg.err{background:var(--danger-bg);color:var(--danger)}
+.msg.warn{background:var(--warn-bg);color:var(--warn)}
+.msg.ok{background:var(--success-bg);color:var(--success)}
+.msg.info{background:var(--note-bg);color:var(--note)}
+.msg a{color:inherit}
+.progress{display:flex;flex-direction:column;gap:8px}
+.progress .meter{height:10px}
+.progress .meter i{background:var(--accent)}
+.result{border-inline-start:6px solid var(--success)}
+.result.bad{border-inline-start-color:var(--danger)}
+.next-step{margin:0;font-size:14px}
+.next-step a,footer a{color:var(--accent)}
+code{font-family:var(--mono);font-size:13px}
+details.how{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:14px 18px}
+details.how summary{cursor:pointer;font-weight:650}
+details.how .body{display:flex;flex-direction:column;gap:10px;margin-top:10px;max-width:74ch}
+details.how p,details.how li{font-size:14px;margin:0}
+details.how ul{margin:0;padding-inline-start:20px;display:flex;flex-direction:column;gap:6px}
+footer{font-size:13px;color:var(--muted);max-width:78ch;display:flex;flex-direction:column;gap:6px}
+footer p{margin:0}
+.js-required{display:none;max-width:640px;margin:24px auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));text-align:center}
+.no-js .js-required{display:block}
+.no-js .wrap{display:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.e1nav-bar{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid silver;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px max(15px,env(safe-area-inset-right,0px)) 8px max(15px,env(safe-area-inset-left,0px));font-family:inherit}
+.e1nav-bar>ylc-lang-picker{margin-inline-start:auto}
+.e1nav-toggle{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;font-weight:600;color:#1f2937;background:#fff;border:1px solid #dbe3ee;border-radius:10px;padding:7px 12px;cursor:pointer;line-height:1.2}
+.e1nav-toggle:hover{border-color:#0d6efd;color:#0d6efd}
+.e1nav-toggle svg{width:18px;height:18px}
+.e1nav-brand{font-weight:700;color:#1f2937;text-decoration:none;font-size:15px;white-space:nowrap}
+.e1nav-brand:hover{color:#0d6efd}
+.e1nav-toggle:focus-visible,.e1nav-panel a:focus-visible,.e1nav-close:focus-visible,.e1nav-brand:focus-visible{outline:3px solid rgba(13,110,253,.45);outline-offset:2px}
+.e1nav-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s;z-index:1040}
+.e1nav-panel{position:fixed;top:0;bottom:0;inset-inline-start:0;width:min(320px,86vw);background:#fff;color:#1f2937;z-index:1045;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.25);transform:translateX(-100%);visibility:hidden;transition:transform .3s ease,visibility .3s;font-family:inherit}
+[dir="rtl"] .e1nav-panel{transform:translateX(100%)}
+.e1nav-open .e1nav-backdrop{opacity:1;visibility:visible}
+.e1nav-open .e1nav-panel{transform:none;visibility:visible}
+.e1nav-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e9f0}
+.e1nav-head a{font-weight:700;font-size:16px;color:#1f2937;text-decoration:none}
+.e1nav-close{border:0;background:transparent;font-size:26px;line-height:1;cursor:pointer;color:#6b7280;padding:2px 8px;border-radius:8px}
+.e1nav-close:hover{color:#1f2937;background:#eef1f6}
+.e1nav-body{overflow-y:auto;padding:6px 8px 24px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.e1nav-body h2{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;background:#f1f4f9;border-radius:8px;margin:12px 2px 2px;padding:6px 10px;font-weight:700}
+.e1nav-body h2:first-child{margin-top:4px}
+.e1nav-body ul{list-style:none;margin:0;padding:0}
+.e1nav-body a{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:8px;color:#1f2937;text-decoration:none;font-size:15px;line-height:1.35}
+.e1nav-body a:hover{background:#eef4ff;color:#0a58ca}
+.e1nav-body a[aria-current="page"]{background:#e7f0ff;color:#0a58ca;font-weight:650}
+.e1nav-name{display:flex;flex-direction:column;align-items:flex-start;min-width:0}
+.e1nav-gloss{font-size:12.5px;color:#6b7280;line-height:1.35;font-weight:400}
+.e1nav-body a[aria-current="page"] .e1nav-gloss{color:#3d6fb8}
+:lang(my) .e1nav-gloss{line-height:1.8}
+.e1nav-body .e1nav-beta{font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:#e7f0ff;color:#0a58ca;border-radius:999px;padding:2px 7px}
+html.e1nav-lock,html.e1nav-lock body{overflow:hidden}
+:lang(ar) .e1nav-body h2,:lang(my) .e1nav-body h2,:lang(th) .e1nav-body h2,:lang(hi) .e1nav-body h2,:lang(ja) .e1nav-body h2,:lang(zh) .e1nav-body h2,:lang(ko) .e1nav-body h2{letter-spacing:0;font-size:12.5px}
+:lang(my) .e1nav-body a,:lang(my) .e1nav-body h2,:lang(my) .e1nav-toggle{line-height:1.9}
+:lang(my) .e1nav-body a{padding-block:6px}
+@media (prefers-reduced-motion:reduce){.e1nav-panel,.e1nav-backdrop{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="e1nav-bar">
+  <button type="button" class="e1nav-toggle" id="e1navToggle" aria-controls="e1navPanel" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    <span>Menu</span>
+  </button>
+  <a class="e1nav-brand" href="index.php"><bdi>EC-1</bdi></a>
+  <div class="e1nav-backdrop" id="e1navBackdrop"></div>
+  <nav class="e1nav-panel" id="e1navPanel" aria-label="Menu" tabindex="-1">
+    <div class="e1nav-head">
+      <a href="index.php"><bdi>Encryption 1™</bdi> Suite home</a>
+      <button type="button" class="e1nav-close" id="e1navClose" aria-label="Close menu">&times;</button>
+    </div>
+    <div class="e1nav-body">
+      <h2>Encrypt</h2>
+      <ul>
+        <li><a href="ec1.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi></bdi><small class="e1nav-gloss"><bdi>Encrypt text and files</bdi></small></span></a></li>
+        <li><a href="ec1-multi.html"><span class="e1nav-name"><bdi><bdi>Encryption 1™</bdi> Multi-File</bdi><small class="e1nav-gloss"><bdi>Encrypt multiple files simultaneously</bdi></small></span></a></li>
+        <li><a href="journal.html"><span class="e1nav-name"><bdi>EC-1 Personal Journal</bdi><small class="e1nav-gloss"><bdi>Encrypted private journal</bdi></small></span></a></li>
+        <li><a href="pack.html" aria-current="page"><span class="e1nav-name"><bdi>Pack</bdi><small class="e1nav-gloss"><bdi>Pack folders into a single package</bdi></small></span></a></li>
+      </ul>
+      <h2>Check and clean</h2>
+      <ul>
+        <li><a href="fingerprint.html"><span class="e1nav-name"><bdi>Fingerprint</bdi><small class="e1nav-gloss"><bdi>Check if files are unmodified</bdi></small></span></a></li>
+        <li><a href="scrub.html"><span class="e1nav-name"><bdi>Scrub</bdi><small class="e1nav-gloss"><bdi>Remove hidden data from files</bdi></small></span></a></li>
+        <li><a href="redact.html"><span class="e1nav-name"><bdi>Redact</bdi><small class="e1nav-gloss"><bdi>Redact confidential information</bdi></small></span></a></li>
+        <li><a href="reveal.html"><span class="e1nav-name"><bdi>Reveal</bdi><small class="e1nav-gloss"><bdi>Find hidden and unreadable characters</bdi></small></span></a></li>
+        <li><a href="filetruth.html"><span class="e1nav-name"><bdi>File Truth</bdi><small class="e1nav-gloss"><bdi>Determine what the file actually contains</bdi></small></span></a></li>
+        <li><a href="clarify.html"><span class="e1nav-name"><bdi>Clarify</bdi><small class="e1nav-gloss"><bdi>Identify risky clauses in contracts</bdi></small></span></a></li>
+      </ul>
+      <h2>Share and keep</h2>
+      <ul>
+        <li><a href="burn.html"><span class="e1nav-name"><bdi>Burn</bdi><small class="e1nav-gloss"><bdi>a one-time readable message</bdi></small></span></a></li>
+        <li><a href="vault.html"><span class="e1nav-name"><bdi>Vault</bdi><small class="e1nav-gloss"><bdi>Password vault</bdi></small></span></a></li>
+        <li><a href="split.html"><span class="e1nav-name"><bdi>Split</bdi><small class="e1nav-gloss"><bdi>Divide secrets into parts</bdi></small></span></a></li>
+      </ul>
+      <h2>Passwords and codes</h2>
+      <ul>
+        <li><a href="forge.html"><span class="e1nav-name"><bdi>Forge</bdi><small class="e1nav-gloss"><bdi>Password generator</bdi></small></span></a></li>
+        <li><a href="token.html"><span class="e1nav-name"><bdi>Token</bdi><small class="e1nav-gloss"><bdi>Two-factor verification code</bdi></small></span></a></li>
+      </ul>
+      <h2>Help and legal</h2>
+      <ul>
+        <li><a href="downloads/index.html"><span class="e1nav-name"><bdi>Portable Edition</bdi></span></a></li>
+        <li><a href="security-guide.html"><span class="e1nav-name"><bdi>Security Guide</bdi></span></a></li>
+        <li><a href="faq.html"><span class="e1nav-name"><bdi>Frequently Asked Questions</bdi></span></a></li>
+        <li><a href="tos.html"><span class="e1nav-name"><bdi>Terms and Conditions</bdi></span></a></li>
+        <li><a href="privacy.html"><span class="e1nav-name"><bdi>Privacy Policy</bdi></span></a></li>
+      </ul>
+    </div>
+  </nav>
+<script>
+(function(){
+  var root = document.documentElement, btn = document.getElementById('e1navToggle'), panel = document.getElementById('e1navPanel'),
+      closeBtn = document.getElementById('e1navClose'), back = document.getElementById('e1navBackdrop'), lastFocus = null;
+  function focusables(){ return Array.prototype.slice.call(panel.querySelectorAll('a[href],button:not([disabled])')); }
+  function open(){
+    lastFocus = document.activeElement;
+    root.classList.add('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'true');
+    var cur = panel.querySelector('[aria-current="page"]');
+    setTimeout(function(){ (cur || closeBtn).focus(); if (cur && cur.scrollIntoView) cur.scrollIntoView({block: 'center'}); }, 30);
+  }
+  function close(){
+    root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false');
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  btn.addEventListener('click', function(){ root.classList.contains('e1nav-open') ? close() : open(); });
+  closeBtn.addEventListener('click', close);
+  back.addEventListener('click', close);
+  document.addEventListener('keydown', function(e){
+    if (!root.classList.contains('e1nav-open')) return;
+    if (e.key === 'Escape'){ e.preventDefault(); close(); return; }
+    if (e.key === 'Tab'){                      // keep keyboard focus inside the open menu
+      var f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+  });
+  // Coming back with the browser's Back button can restore the page with the menu still open.
+  window.addEventListener('pageshow', function(){ root.classList.remove('e1nav-open', 'e1nav-lock'); btn.setAttribute('aria-expanded', 'false'); });
+})();
+</script>
+</div>
+<div class="js-required">
+  <img src="img/ec1-logo-med.png" height="119" alt="" />
+  <h2>This page needs JavaScript</h2>
+  <p>Pack encrypts your files inside the browser, so it needs JavaScript turned on. Open this page in a regular browser such as Safari, Chrome, Firefox or Edge.</p>
+</div>
+
+<div class="wrap">
+
+
+
+
+
+
+
+  <header>
+    <div class="eyebrow"><bdi>Encryption 1™</bdi></div>
+    <h1><img src="img/ec1-logo-med.png" height="45" alt="" style="vertical-align:middle" onerror="this.style.display='none'"> <bdi>Pack</bdi> <span class="tag">Beta</span></h1>
+    <p class="lede">Lock files and whole folders into one encrypted package. Carry it on a USB stick, keep it in the cloud or send it, then open it on another computer with the password. Everything happens in this browser: nothing is uploaded.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabMake" aria-selected="true" aria-controls="panelMake">Make a package</button>
+    <button type="button" role="tab" id="tabOpen" aria-selected="false" aria-controls="panelOpen">Open a package</button>
+  </div>
+
+  <!-- ============ MAKE A PACKAGE ============ -->
+  <div class="panel" id="panelMake" role="tabpanel" aria-labelledby="tabMake">
+    <section class="card">
+      <div class="drop" id="makeDrop">
+        <p><strong>Drop files or folders here</strong></p>
+        <p class="hint">Folders keep their structure. Up to 10,000 files.</p>
+        <div class="bar">
+          <button type="button" class="primary" id="addFilesBtn">Add files</button>
+          <button type="button" id="addFolderBtn" hidden>Add a folder</button>
+        </div>
+        <input type="file" id="filesIn" multiple>
+        <input type="file" id="folderIn" multiple webkitdirectory>
+      </div>
+      <p class="msg info" id="addMsg" hidden aria-live="polite"></p>
+      <div id="selBox" hidden>
+        <div class="bar" style="margin-bottom:8px">
+          <h2 id="selSummary"></h2><span class="spacer"></span>
+          <button type="button" class="small" id="clearListBtn">Clear list</button>
+        </div>
+        <div class="list" id="selList"></div>
+      </div>
+      <p class="msg warn" id="bigWarn" hidden></p>
+    </section>
+
+    <section class="card">
+      <div class="field">
+        <label for="pkgName">Package name</label>
+        <input type="text" id="pkgName" dir="auto" value="package.e1pack" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="grid">
+        <div class="field">
+          <label for="pw1">Password</label>
+          <div class="row">
+            <input type="password" id="pw1" dir="auto" autocomplete="new-password">
+            <button type="button" class="small" id="showBtn" aria-pressed="false"></button>
+            <button type="button" class="small" id="genBtn">Generate</button>
+          </div>
+          <div class="meter"><i id="meterFill"></i></div>
+          <p class="hint" id="strengthText" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="pw2">Type the password again</label>
+          <input type="password" id="pw2" dir="auto" autocomplete="new-password">
+        </div>
+      </div>
+      <p class="msg warn">Keep this password safe. Without it, no one can open the package — not even Encryption 1.</p>
+      <label class="check"><input type="checkbox" id="verifyChk" checked> <span>Check the package after making it (opens it again and compares every file; takes a little longer)</span></label>
+      <p class="hint" id="pickerNote" hidden>Your browser will ask where to save the package.</p>
+      <div class="bar"><button type="button" class="primary" id="makeBtn">Encrypt and save package</button></div>
+      <div class="progress" id="makeProg" hidden>
+        <div class="meter"><i id="makeFill"></i></div>
+        <div class="bar"><span class="hint" id="makeStep" aria-live="polite"></span><span class="spacer"></span><button type="button" class="small" id="makeCancel">Stop</button></div>
+      </div>
+      <p class="msg err" id="makeErr" hidden role="alert"></p>
+    </section>
+
+    <section class="card result" id="makeResult" hidden aria-live="polite"></section>
+    <p class="next-step" id="nextStep" hidden>Keep the password somewhere safe: store it in <a href="vault.php"><bdi>Vault</bdi></a>, or split it into shares with <a href="split.php"><bdi>Split</bdi></a>.</p>  </div>
+
+  <!-- ============ OPEN A PACKAGE ============ -->
+  <div class="panel" id="panelOpen" role="tabpanel" aria-labelledby="tabOpen" hidden>
+    <section class="card" id="openCard">
+      <div class="drop" id="openDrop">
+        <p><strong>Drop a .e1pack package here</strong></p>
+        <p class="hint" id="openPicked">Or choose it from your device.</p>
+        <div class="bar"><button type="button" class="primary" id="chooseBtn">Choose package</button></div>
+        <input type="file" id="pkgIn">
+      </div>
+      <div class="field">
+        <label for="openPw">Password</label>
+        <input type="password" id="openPw" dir="auto" autocomplete="current-password">
+      </div>
+      <div class="bar"><button type="button" class="primary" id="openBtn">Open package</button></div>
+      <p class="msg err" id="openErr" hidden role="alert"></p>
+    </section>
+
+    <section class="card" id="contents" hidden>
+      <div class="bar"><h2>Inside this package</h2><span class="spacer"></span><button type="button" class="small" id="closeBtn">Close package</button></div>
+      <p class="hint" id="openSummary"></p>
+      <div class="bar" id="saveBar"></div>
+      <p class="hint" id="folderHelp" hidden>A new folder named after the package is made inside the folder you choose, so nothing already there is touched.</p>
+      <div class="progress" id="openProg" hidden>
+        <div class="meter"><i id="openFill"></i></div>
+        <div class="bar"><span class="hint" id="openStep" aria-live="polite"></span><span class="spacer"></span><button type="button" class="small" id="openCancel">Stop</button></div>
+      </div>
+      <p class="msg" id="openMsg" hidden aria-live="polite"></p>
+      <div class="list" id="openList"></div>
+    </section>
+    <p class="next-step" id="openNext" hidden>Not sure about a file you received? Check it with <a href="filetruth.php"><bdi>File Truth</bdi></a> before you open it.</p>  </div>
+
+  <details class="how">
+    <summary>How Pack works, and its limits</summary>
+    <div class="body">
+      <p>Pack puts files and whole folders into one locked file, a package. On another computer, open this page, choose the package and enter the password to get everything back, folders and all.</p>
+      <ul>
+        <li><b>Stays on your device.</b> Your files are read and encrypted inside this browser tab. Nothing is uploaded, and a saved copy of this page works offline.</li>
+        <li><b>Everything is locked.</b> File names, folder names, dates and contents are all inside the encryption (AES-256-GCM, with the password strengthened by 600,000 rounds of PBKDF2). From the outside, a package only shows its size.</li>
+        <li><b>Any change is caught.</b> The package is sealed in 1 MB pieces, each with its own check. If a piece is changed, missing, added or moved, or the end is cut off, it won&#039;t open. Every file is also compared with its fingerprint (SHA-256) when you save it.</li>
+        <li><b>Big folders are fine.</b> Chrome and Edge on a computer write the package straight to disk, so the size is only limited by free space. Safari, Firefox and phones build it in memory first, so keep packages made there under about 1.5 GB.</li>
+        <li><b>Forgot the password?</b> Then no one can open the package. There is no reset and no back door. Keep the password somewhere safe.</li>
+      </ul>
+      <p><b>What Pack doesn&#039;t do:</b> It doesn&#039;t make files smaller, doesn&#039;t hide how big the package is, and can&#039;t protect files on a computer that already has malware. Packages use the new .e1pack format; older .pvault files open in Encryption 1 or Multi-File.</p>
+    </div>
+  </details>
+
+<footer>
+  <div class="footer-note"><strong>Encryption 1™</strong> &copy; 1996-2001, <span id="year"></span> by Seán L. Young. MIT License<br />No account needed • Works offline
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</div>
+</footer>
+<script>
+/* Interface text for this language, from /lang/pack/en.json */
+var I18N = {"show":"Show","hide":"Hide","kindFile":"File","kindFolder":"Folder","remove":"Remove","selSummary":{"one":"1 file, {size}","other":"{n} files, {size}"},"folderMeta":{"one":"1 file, {size}","other":"{n} files, {size}"},"emptyFolder":"empty","skippedSys":{"one":"Left out 1 system file (like .DS_Store or Thumbs.db).","other":"Left out {n} system files (like .DS_Store or Thumbs.db)."},"skippedDup":{"one":"1 file was already in the list.","other":"{n} files were already in the list."},"tooMany":"A package can hold up to {max} files. The rest were not added.","readFolderFailed":"Part of a folder could not be read. Try the Add a folder button instead.","bigWarn":"That's a lot for this browser: it builds the package in memory before saving and may run out. For more than about 1.5 GB, use Chrome or Edge on a computer, which save straight to disk.","strengthEmpty":"Not entered yet.","strengthVeryWeak":"Very weak","strengthWeak":"Weak","strengthMedium":"Medium","strengthStrong":"Strong","strengthVeryStrong":"Very strong","strengthMet":"{label}. Meets the minimum.","strengthMissing":"{label}. Still needs {list}.","needLength":"8 or more characters","needCapital":"a capital letter","needSpecial":"a symbol (like ! or #)","generated":"A new password is in the box. Write it down or keep it in Vault before you continue: without it, the package can't be opened.","errNoFiles":"Add at least one file or folder first.","errNoPw":"Enter a password.","errPwMatch":"The two passwords don't match.","errPwWeak":"The password doesn't meet the minimum yet: 8 or more characters, with a capital letter and a symbol.","errNoCrypto":"This browser can't encrypt here. Use a current browser, and open the page from encryption-one.com or as a saved file.","stepKey":"Preparing the key from your password…","stepEncrypt":"Encrypting: {pct}% ({done} of {total})","stepSaving":"Saving…","stepKeyCheck":"Checking: opening the package again…","stepCheck":"Checking every file: {pct}%","errCancelled":"Stopped. Nothing was saved.","errReadFailed":"Couldn't read “{name}”. It may have been moved, changed or deleted while packing. Nothing was saved.","errMemory":"The browser ran out of memory or disk space. Try fewer files at a time, or use Chrome or Edge on a computer.","errNotAllowed":"The browser didn't allow saving there. Try another place, or a different browser.","errGeneric":"Something went wrong ({error}). Nothing was saved.","doneTitle":"Package ready","doneSaved":{"one":"Saved {name} ({size}) with 1 file inside.","other":"Saved {name} ({size}) with {n} files inside."},"doneChecked":{"one":"Checked: it opens with your password and the file matches exactly.","other":"Checked: it opens with your password and all {n} files match exactly."},"doneNotChecked":"Not checked (the check was turned off).","doneCheckStopped":"The check was stopped before it finished, so this package wasn't checked.","checkFailedTitle":"Don't use this package","checkFailedSaved":"The check found a problem. Please delete {name} and make the package again.","checkFailedBlob":"The check found a problem, so the package was not saved. Please try again.","downloadAgain":"Download again","saveList":"Save a list of what's inside (.txt)","saveListNote":"The list is not encrypted: anyone who sees it can read the file names. It's useful for checking what you packed.","clearedNote":"The password and the file list were cleared from this page.","listSuffix":"contents","listTitle":"Encryption 1 Pack: list of contents","listPackage":"Package: {name}","listCreated":"Made: {date}","listFiles":{"one":"1 file, {size} in total","other":"{n} files, {size} in total"},"listSize":"Size: {bytes} bytes","listNote":"This list is not encrypted. Each fingerprint (SHA-256) can be checked with the Encryption 1 Fingerprint tool.","picked":"Selected: {name} ({size})","openNeedFile":"Choose a .e1pack package first.","openNeedPw":"Enter the package's password.","stepOpening":"Opening… preparing the key takes a moment.","errWrongPw":"Wrong password, or the package was changed or damaged.","errDamaged":"This package is damaged or was changed after it was made, so it can't be trusted.","errDamagedPart":"The package is damaged starting at “{name}”. Files saved before it are complete and checked; “{name}” and the files after it were not saved.","errNotPack":"This isn't an Encryption 1 package (.e1pack).","errPvault":"This is a .pvault file from Encryption 1 or Multi-File. Open it with {link}.","pvaultLinkText":"Encryption 1 Multi-File","errNewer":"This package was made by a newer version of Pack. Please use the latest page at encryption-one.com.","errBadHeader":"The start of this package is damaged, so it can't be opened.","errReadPkg":"Couldn't read the package file. If it's on a USB stick or in a cloud folder, copy it to this device first.","errCancelledOpen":"Stopped. The file that was being saved was not finished.","openSummary":{"one":"1 file, {size} · made {date}","other":"{n} files, {size} · made {date}"},"emptyFolders":{"one":"Plus 1 empty folder.","other":"Plus {n} empty folders."},"saveOne":"Save the file","saveAllFolder":"Save all to a folder…","saveAllZip":"Download all as one ZIP","save":"Save","moreRows":{"one":"…and 1 more file. Use the buttons above to save everything.","other":"…and {n} more files. Use the buttons above to save everything."},"zipTooBig":"This is too big for one ZIP file (over 4 GB or 65,000 files). Save to a folder, or save files one at a time.","folderWrongPerm":"The browser wasn't allowed to save in that folder. Try another folder, or download a ZIP.","stepExtract":"Saving {name}: {pct}%","stepFile":"Saving file {i} of {n}: {name}","stepZip":"Building the ZIP: file {i} of {n}","savedOne":"Saved {name}. It matches the package exactly.","savedFolder":{"one":"Saved 1 file into the new folder “{folder}”. It matches the package exactly.","other":"Saved {n} files into the new folder “{folder}”. Every file matches the package exactly."},"savedZip":"{name} is ready. Every file was checked before it went into the ZIP.","closedNote":"Package closed. Choose a package to open."};
+var MULTI_URL = "\/ec1-multi.php";
+</script>
+<script>
+/* ================================================================
+   Pack engine - Encryption 1 Suite. MIT License.
+   Puts files and folders into one encrypted .e1pack package and opens
+   it again. Everything runs in the browser; nothing is sent anywhere.
+
+   .e1pack format, version 1
+   -------------------------
+   [8]  magic: "E1PACK" 0x00 0x01
+   [4]  header length L (big-endian)
+   [L]  header JSON (UTF-8, not secret): format, cipher, kdf,
+        iterations, salt, nonce, chunkSize
+   then the sealed chunks, one after another:
+        each chunk = AES-256-GCM(up to chunkSize bytes) + 16-byte tag.
+        Every chunk is full size except the last.
+        IV  = nonce(7) | chunk number (4, big-endian) | last-chunk flag (1)
+        AAD = the first 12+L bytes of the file (magic + header)
+   So a changed, missing, added or reordered chunk, a cut-off end, or a
+   changed header all make decryption fail.
+
+   Key: PBKDF2-HMAC-SHA-256(password in Unicode NFC form, salt, iterations).
+
+   Inside the chunks (the "plain stream"):
+        [4] manifest length M, [M] manifest JSON
+            { v:1, created, items:[{p:path, s:size, t:type, m:modified}], dirs:[...] }
+        the bytes of every file, in manifest order
+        trailer JSON { sha256:[hex per file] }, then [4] trailer length
+   ================================================================ */
+(function (root) {
+'use strict';
+
+var MAGIC = [0x45, 0x31, 0x50, 0x41, 0x43, 0x4B, 0x00, 0x01];
+var FORMAT = 'E1-PACK-1';
+var DEFAULT_CHUNK = 1 << 20;            // 1 MB of file data per sealed chunk
+var TAG = 16, NONCE_LEN = 7, SALT_LEN = 16;
+var DEFAULT_ITER = 600000, MIN_ITER = 100000, MAX_ITER = 10000000;
+var MIN_CHUNK = 1024, MAX_CHUNK = 64 << 20;
+var MAX_HEADER = 4096, MAX_MANIFEST = 32 << 20, MAX_TRAILER = 8 << 20;
+var MAX_ITEMS = 10000;
+var ZIP_LIMIT = 0xFFFFFFFF - 1, ZIP_MAX_ENTRIES = 65534;
+
+var te = new TextEncoder();
+function decodeUtf8(b) { return new TextDecoder('utf-8', { fatal: true }).decode(b); }
+function cryptoObj() { var c = root.crypto || (typeof globalThis !== 'undefined' && globalThis.crypto); if (!c || !c.subtle) throw fail('noCrypto'); return c; }
+function rand(n) { var a = new Uint8Array(n); cryptoObj().getRandomValues(a); return a; }
+function fail(code, extra) { var e = new Error(code); e.code = code; if (extra) for (var k in extra) e[k] = extra[k]; return e; }
+function u32get(b, o) { return ((b[o] << 24) >>> 0) + (b[o + 1] << 16) + (b[o + 2] << 8) + b[o + 3]; }
+function u32bytes(n) { return new Uint8Array([(n >>> 24) & 255, (n >>> 16) & 255, (n >>> 8) & 255, n & 255]); }
+var B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+function b64(bytes) {
+  var s = '', i;
+  for (i = 0; i + 2 < bytes.length; i += 3) { var n = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]; s += B64[n >> 18] + B64[(n >> 12) & 63] + B64[(n >> 6) & 63] + B64[n & 63]; }
+  var r = bytes.length - i;
+  if (r === 1) { var a = bytes[i] << 16; s += B64[a >> 18] + B64[(a >> 12) & 63] + '=='; }
+  else if (r === 2) { var c = (bytes[i] << 16) | (bytes[i + 1] << 8); s += B64[c >> 18] + B64[(c >> 12) & 63] + B64[(c >> 6) & 63] + '='; }
+  return s;
+}
+function unb64(s) {
+  if (typeof s !== 'string' || !/^[A-Za-z0-9+/]*={0,2}$/.test(s) || s.length % 4) throw fail('badHeader');
+  var out = [], i;
+  for (i = 0; i < s.length; i += 4) {
+    var n = 0, pad = 0;
+    for (var j = 0; j < 4; j++) { var ch = s[i + j]; if (ch === '=') { pad++; n <<= 6; } else n = (n << 6) | B64.indexOf(ch); }
+    out.push((n >> 16) & 255); if (pad < 2) out.push((n >> 8) & 255); if (pad < 1) out.push(n & 255);
+  }
+  return new Uint8Array(out);
+}
+function hex(bytes) { var s = ''; for (var i = 0; i < bytes.length; i++) s += (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16); return s; }
+
+/* ---------- SHA-256, fed piece by piece (Web Crypto can only hash a whole buffer) ---------- */
+var K256 = new Uint32Array([
+  0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+  0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+  0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+  0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+  0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+  0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+  0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+  0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2]);
+function Sha256() {
+  this.h = new Uint32Array([0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19]);
+  this.buf = new Uint8Array(64); this.bl = 0; this.len = 0; this.w = new Int32Array(64);
+}
+Sha256.prototype._block = function (d, o) {
+  var w = this.w, h = this.h, j;
+  for (j = 0; j < 16; j++) w[j] = (d[o + 4 * j] << 24) | (d[o + 4 * j + 1] << 16) | (d[o + 4 * j + 2] << 8) | d[o + 4 * j + 3];
+  for (j = 16; j < 64; j++) {
+    var a = w[j - 15], b = w[j - 2];
+    var s0 = ((a >>> 7) | (a << 25)) ^ ((a >>> 18) | (a << 14)) ^ (a >>> 3);
+    var s1 = ((b >>> 17) | (b << 15)) ^ ((b >>> 19) | (b << 13)) ^ (b >>> 10);
+    w[j] = (w[j - 16] + s0 + w[j - 7] + s1) | 0;
+  }
+  var A = h[0] | 0, B = h[1] | 0, C = h[2] | 0, D = h[3] | 0, E = h[4] | 0, F = h[5] | 0, G = h[6] | 0, H = h[7] | 0;
+  for (j = 0; j < 64; j++) {
+    var S1 = ((E >>> 6) | (E << 26)) ^ ((E >>> 11) | (E << 21)) ^ ((E >>> 25) | (E << 7));
+    var t1 = (H + S1 + ((E & F) ^ (~E & G)) + K256[j] + w[j]) | 0;
+    var S0 = ((A >>> 2) | (A << 30)) ^ ((A >>> 13) | (A << 19)) ^ ((A >>> 22) | (A << 10));
+    var t2 = (S0 + ((A & B) ^ (A & C) ^ (B & C))) | 0;
+    H = G; G = F; F = E; E = (D + t1) | 0; D = C; C = B; B = A; A = (t1 + t2) | 0;
+  }
+  h[0] += A; h[1] += B; h[2] += C; h[3] += D; h[4] += E; h[5] += F; h[6] += G; h[7] += H;
+};
+Sha256.prototype.update = function (d) {
+  var i = 0, n = d.length;
+  this.len += n;
+  if (this.bl) {
+    var take = Math.min(64 - this.bl, n);
+    this.buf.set(d.subarray(0, take), this.bl); this.bl += take; i = take;
+    if (this.bl === 64) { this._block(this.buf, 0); this.bl = 0; }
+  }
+  for (; i + 64 <= n; i += 64) this._block(d, i);
+  if (i < n) { this.buf.set(d.subarray(i), 0); this.bl = n - i; }
+  return this;
+};
+Sha256.prototype.hex = function () {
+  var bits = this.len * 8, hi = Math.floor(bits / 4294967296), lo = bits >>> 0;
+  var padLen = ((this.bl < 56) ? 56 : 120) - this.bl;
+  var pad = new Uint8Array(padLen + 8); pad[0] = 0x80;
+  pad.set(u32bytes(hi), padLen); pad.set(u32bytes(lo), padLen + 4);
+  var keep = this.len; this.update(pad); this.len = keep;
+  var out = new Uint8Array(32);
+  for (var i = 0; i < 8; i++) out.set(u32bytes(this.h[i]), i * 4);
+  return hex(out);
+};
+
+/* ---------- CRC-32 (for ZIP export) ---------- */
+var CRC_T = (function () { var t = new Int32Array(256); for (var n = 0; n < 256; n++) { var c = n; for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c; } return t; })();
+function Crc32() { this.c = -1; }
+Crc32.prototype.update = function (d) { var c = this.c; for (var i = 0; i < d.length; i++) c = CRC_T[(c ^ d[i]) & 255] ^ (c >>> 8); this.c = c; return this; };
+Crc32.prototype.value = function () { return (this.c ^ -1) >>> 0; };
+
+/* ---------- keys and chunk IVs ---------- */
+async function deriveKey(password, salt, iterations) {
+  var s = cryptoObj().subtle;
+  var base = await s.importKey('raw', te.encode(String(password).normalize('NFC')), 'PBKDF2', false, ['deriveKey']);
+  return s.deriveKey({ name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+function chunkIv(nonce, index, last) {
+  var iv = new Uint8Array(12);
+  iv.set(nonce, 0); iv.set(u32bytes(index), 7); iv[11] = last ? 1 : 0;
+  return iv;
+}
+
+/* ---------- making a package ----------
+   items: [{ path, size, type, lastModified, read(start, end) -> Promise<Uint8Array> }]
+   sink:  { write(Uint8Array) -> Promise }  (the page provides a file or memory sink)
+   opts:  { dirs, chunkSize, iterations, onProgress(done, total), signal:{aborted} }  */
+async function create(items, password, sink, opts) {
+  opts = opts || {};
+  if (!items || !items.length) throw fail('empty');
+  if (items.length > MAX_ITEMS) throw fail('tooMany', { max: MAX_ITEMS });
+  if (!password) throw fail('noPassword');
+  var chunk = opts.chunkSize || DEFAULT_CHUNK, iter = opts.iterations || DEFAULT_ITER;
+  var salt = rand(SALT_LEN), nonce = rand(NONCE_LEN);
+  var header = { app: 'Encryption 1', format: FORMAT, cipher: 'AES-256-GCM', kdf: 'PBKDF2-SHA-256', iterations: iter, password: 'NFC', salt: b64(salt), nonce: b64(nonce), chunkSize: chunk };
+  var hj = te.encode(JSON.stringify(header));
+  var head = new Uint8Array(12 + hj.length);
+  head.set(MAGIC, 0); head.set(u32bytes(hj.length), 8); head.set(hj, 12);
+  var key = await deriveKey(password, salt, iter);
+  var subtle = cryptoObj().subtle;
+  var signal = opts.signal || {};
+  var total = 0;
+  items.forEach(function (it) { total += it.size; });
+  var manifest = {
+    v: 1, created: new Date().toISOString(),
+    items: items.map(function (it) { return { p: String(it.path), s: it.size, t: it.type || '', m: it.lastModified || 0 }; }),
+    dirs: (opts.dirs || []).map(String)
+  };
+  var written = 0, index = 0;
+  await sink.write(head); written += head.length;
+  // Chunker: holds up to one chunk; a full chunk is sealed only once more data
+  // arrives, so the very last chunk can always be marked as the last.
+  var buf = new Uint8Array(chunk), fill = 0;
+  async function seal(last) {
+    var ct = new Uint8Array(await subtle.encrypt({ name: 'AES-GCM', iv: chunkIv(nonce, index, last), additionalData: head, tagLength: 128 }, key, buf.slice(0, fill)));
+    await sink.write(ct); written += ct.length; index++; fill = 0;
+  }
+  async function push(d) {
+    var i = 0;
+    while (i < d.length) {
+      if (fill === chunk) await seal(false);
+      var take = Math.min(chunk - fill, d.length - i);
+      buf.set(d.subarray(i, i + take), fill); fill += take; i += take;
+    }
+  }
+  var mj = te.encode(JSON.stringify(manifest));
+  await push(u32bytes(mj.length)); await push(mj);
+  var hashes = [], done = 0;
+  for (var n = 0; n < items.length; n++) {
+    var it = items[n], h = new Sha256(), pos = 0;
+    while (pos < it.size) {
+      if (signal.aborted) throw fail('cancelled');
+      var end = Math.min(it.size, pos + chunk), part;
+      try { part = await it.read(pos, end); } catch (e) { throw fail('readFailed', { path: it.path }); }
+      if (!part || part.length !== end - pos) throw fail('readFailed', { path: it.path });
+      h.update(part); await push(part);
+      pos = end; done += part.length;
+      if (opts.onProgress) opts.onProgress(done, total);
+    }
+    hashes.push(h.hex());
+  }
+  var tj = te.encode(JSON.stringify({ sha256: hashes }));
+  await push(tj); await push(u32bytes(tj.length));
+  await seal(true);
+  return { header: header, manifest: manifest, sha256: hashes, size: written, chunks: index };
+}
+
+/* ---------- opening a package ----------
+   size: package size in bytes; read(start, end) -> Promise<Uint8Array>  */
+function looksLikePack(first) {
+  if (!first || first.length < 8) return false;
+  for (var i = 0; i < 6; i++) if (first[i] !== MAGIC[i]) return false;
+  return true;
+}
+function looksLikePvault(first) {
+  // Older Encryption 1 / Multi-File files are JSON text with these fields.
+  try { var s = new TextDecoder('utf-8').decode(first.subarray(0, 2048)); } catch (e) { return false; }
+  return /^\s*\{/.test(s) && /"(format|cipher)"\s*:\s*"(E1|AES-GCM)/.test(s);
+}
+async function open(size, read, password, opts) {
+  opts = opts || {};
+  var first = await read(0, Math.min(size, 12 + MAX_HEADER));
+  if (!looksLikePack(first)) throw fail(looksLikePvault(first) ? 'pvault' : 'notPack');
+  if (first[6] !== 0 || first[7] !== 1) throw fail('newerVersion');
+  var hl = u32get(first, 8);
+  if (hl < 2 || hl > MAX_HEADER || 12 + hl > first.length) throw fail('badHeader');
+  var head = first.slice(0, 12 + hl), hdr;
+  try { hdr = JSON.parse(decodeUtf8(head.subarray(12))); } catch (e) { throw fail('badHeader'); }
+  if (!hdr || hdr.format !== FORMAT || hdr.cipher !== 'AES-256-GCM' || hdr.kdf !== 'PBKDF2-SHA-256') throw fail('badHeader');
+  var iter = hdr.iterations, chunk = hdr.chunkSize;
+  if (!Number.isInteger(iter) || iter < MIN_ITER || iter > MAX_ITER) throw fail('badHeader');
+  if (!Number.isInteger(chunk) || chunk < MIN_CHUNK || chunk > MAX_CHUNK) throw fail('badHeader');
+  var salt = unb64(hdr.salt), nonce = unb64(hdr.nonce);
+  if (salt.length !== SALT_LEN || nonce.length !== NONCE_LEN) throw fail('badHeader');
+  var body = size - head.length, csz = chunk + TAG;
+  var count = Math.ceil(body / csz), lastLen = body - (count - 1) * csz;
+  if (count < 1 || lastLen <= TAG) throw fail('damaged');
+  if (count > 0xFFFFFFFF) throw fail('damaged');
+  var plainTotal = (count - 1) * chunk + (lastLen - TAG);
+  var key = await deriveKey(password || '', salt, iter);
+  var subtle = cryptoObj().subtle;
+  var cache = [];                                   // a few recently opened chunks
+  async function chunkPlain(i) {
+    for (var c = 0; c < cache.length; c++) if (cache[c].i === i) return cache[c].d;
+    var start = head.length + i * csz, end = Math.min(size, start + csz), ct, d;
+    try { ct = await read(start, end); } catch (e) { throw fail('readFailed'); }
+    if (!ct || ct.length !== end - start) throw fail('readFailed');
+    try {
+      d = new Uint8Array(await subtle.decrypt({ name: 'AES-GCM', iv: chunkIv(nonce, i, i === count - 1), additionalData: head, tagLength: 128 }, key, ct));
+    } catch (e) { throw fail(i === 0 ? 'wrongPassword' : 'damaged', { chunk: i }); }
+    if (d.length !== (i === count - 1 ? lastLen - TAG : chunk)) throw fail('damaged');
+    cache.push({ i: i, d: d }); if (cache.length > 3) cache.shift();
+    return d;
+  }
+  // Calls each(piece) for the plain-stream bytes [start, end), in order.
+  async function range(start, end, each) {
+    if (start < 0 || end > plainTotal || start > end) throw fail('damaged');
+    var pos = start;
+    while (pos < end) {
+      if (opts.signal && opts.signal.aborted) throw fail('cancelled');
+      var ci = Math.floor(pos / chunk), d = await chunkPlain(ci), off = pos - ci * chunk;
+      var take = Math.min(d.length - off, end - pos);
+      var r = each(d.subarray(off, off + take)); if (r && r.then) await r;
+      pos += take;
+    }
+  }
+  async function bytes(start, end) {
+    var out = new Uint8Array(end - start), at = 0;
+    await range(start, end, function (p) { out.set(p, at); at += p.length; });
+    return out;
+  }
+  if (plainTotal < 8) throw fail('damaged');
+  var mlen = u32get(await bytes(0, 4), 0);
+  if (mlen > MAX_MANIFEST || 4 + mlen > plainTotal) throw fail('damaged');
+  var manifest;
+  try { manifest = JSON.parse(decodeUtf8(await bytes(4, 4 + mlen))); } catch (e) { if (e.code) throw e; throw fail('damaged'); }
+  if (!manifest || manifest.v !== 1 || !Array.isArray(manifest.items) || !manifest.items.length || manifest.items.length > MAX_ITEMS) throw fail('damaged');
+  var items = [], offset = 4 + mlen;
+  manifest.items.forEach(function (x, i) {
+    if (!x || typeof x.p !== 'string' || !x.p || !Number.isSafeInteger(x.s) || x.s < 0) throw fail('damaged');
+    items.push({ index: i, path: x.p, size: x.s, type: typeof x.t === 'string' ? x.t : '', modified: Number.isFinite(x.m) ? x.m : 0, offset: offset });
+    offset += x.s;
+  });
+  var dataEnd = offset;
+  if (dataEnd + 4 > plainTotal) throw fail('damaged');
+  var tlen = u32get(await bytes(plainTotal - 4, plainTotal), 0);
+  if (tlen > MAX_TRAILER || dataEnd + tlen + 4 !== plainTotal) throw fail('damaged');
+  var trailer;
+  try { trailer = JSON.parse(decodeUtf8(await bytes(dataEnd, dataEnd + tlen))); } catch (e) { if (e.code) throw e; throw fail('damaged'); }
+  if (!trailer || !Array.isArray(trailer.sha256) || trailer.sha256.length !== items.length) throw fail('damaged');
+  items.forEach(function (it, i) { var h = trailer.sha256[i]; if (typeof h !== 'string' || !/^[0-9a-f]{64}$/.test(h)) throw fail('damaged'); it.sha256 = h; });
+  var total = dataEnd - 4 - mlen;
+  var dirs = Array.isArray(manifest.dirs) ? manifest.dirs.filter(function (d) { return typeof d === 'string' && d; }) : [];
+
+  // Sends one file's bytes to each(piece); checks its SHA-256 at the end.
+  async function readFile(i, each, onProgress) {
+    var it = items[i]; if (!it) throw fail('damaged');
+    var h = new Sha256(), done = 0;
+    await range(it.offset, it.offset + it.size, function (p) {
+      h.update(p); done += p.length;
+      if (onProgress) onProgress(done, it.size);
+      return each ? each(p) : null;
+    });
+    if (h.hex() !== it.sha256) throw fail('hashMismatch', { path: it.path });
+    return it.sha256;
+  }
+  return {
+    header: hdr, created: typeof manifest.created === 'string' ? manifest.created : '',
+    items: items, dirs: dirs, total: total, chunks: count, size: size,
+    readFile: readFile
+  };
+}
+
+/* ---------- safe names when restoring ----------
+   Takes the stored path apart and cleans each folder/file name, so nothing
+   can climb out of the chosen folder ("..", "/", "C:") or hide behind
+   invisible or direction-changing characters. Windows-reserved names and
+   characters are made safe too. */
+var RESERVED = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$/i;
+function cleanSegment(s) {
+  s = String(s).normalize('NFC')
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, '')
+    .replace(/[\u200b-\u200f\u202a-\u202e\u2060-\u2069\ufeff]/g, '')
+    .replace(/[<>:"\\|?*]/g, '_')
+    .replace(/[. ]+$/, '');
+  if (!s || s === '.' || s === '..') s = '_';
+  if (RESERVED.test(s)) s = '_' + s;
+  if (s.length > 200) { var m = /(\.[^.]{1,12})$/.exec(s); s = s.slice(0, 200 - (m ? m[1].length : 0)) + (m ? m[1] : ''); }
+  return s;
+}
+function splitPath(p) {
+  return String(p).split(/[\/\\]+/).filter(function (x) { return x !== '' && x !== '.'; }).map(cleanSegment);
+}
+// Returns one safe, unique "a/b/c.txt" path per input path (folders included).
+function safePaths(paths) {
+  var used = Object.create(null), out = [];
+  paths.forEach(function (p) {
+    var segs = splitPath(p); if (!segs.length) segs = ['_'];
+    var joined = segs.join('/'), k = joined.toLowerCase(), n = 2;
+    if (used[k]) {
+      var last = segs[segs.length - 1], m = /^(.*?)(\.[^.]{1,12})?$/.exec(last);
+      do { segs[segs.length - 1] = m[1] + ' (' + n++ + ')' + (m[2] || ''); joined = segs.join('/'); k = joined.toLowerCase(); } while (used[k]);
+    }
+    used[k] = true; out.push(joined);
+  });
+  return out;
+}
+
+/* ---------- ZIP export (stored, no compression; files are already in memory) ----------
+   entries: [{ name, size, crc, modified, data(Blob or Uint8Array), dir:true? }]
+   Returns the list of parts to put into one Blob.  */
+function dosTime(ms) {
+  var d = new Date(ms || Date.now()); if (isNaN(d) || d.getFullYear() < 1980) d = new Date(1980, 0, 1);
+  return { time: (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1), date: ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate() };
+}
+function zipParts(entries) {
+  if (entries.length > ZIP_MAX_ENTRIES) throw fail('zipTooBig');
+  var parts = [], central = [], offset = 0;
+  entries.forEach(function (e) {
+    var name = te.encode(e.dir ? e.name.replace(/\/?$/, '/') : e.name), t = dosTime(e.modified);
+    var size = e.dir ? 0 : e.size, crc = e.dir ? 0 : e.crc;
+    if (offset + 30 + name.length + size > ZIP_LIMIT) throw fail('zipTooBig');
+    var lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, t.time, true); lh.setUint16(12, t.date, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, size, true); lh.setUint32(22, size, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    var ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 0x0314, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true); ch.setUint16(12, t.time, true); ch.setUint16(14, t.date, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, size, true); ch.setUint32(24, size, true); ch.setUint16(28, name.length, true);
+    ch.setUint16(30, 0, true); ch.setUint16(32, 0, true); ch.setUint16(34, 0, true); ch.setUint16(36, 0, true);
+    ch.setUint32(38, e.dir ? ((0o40755 << 16) | 0x10) >>> 0 : ((0o100644 << 16) >>> 0), true); ch.setUint32(42, offset, true);
+    parts.push(new Uint8Array(lh.buffer), name); if (!e.dir) parts.push(e.data);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + size;
+  });
+  var cdSize = 0; central.forEach(function (c) { cdSize += c.length; });
+  if (offset + cdSize > ZIP_LIMIT) throw fail('zipTooBig');
+  var end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, entries.length, true); end.setUint16(10, entries.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  return parts.concat(central, [new Uint8Array(end.buffer)]);
+}
+
+root.PACK = {
+  FORMAT: FORMAT, MAX_ITEMS: MAX_ITEMS, DEFAULT_CHUNK: DEFAULT_CHUNK, DEFAULT_ITER: DEFAULT_ITER, ZIP_LIMIT: ZIP_LIMIT,
+  create: create, open: open, looksLikePack: looksLikePack, looksLikePvault: looksLikePvault,
+  Sha256: Sha256, Crc32: Crc32, safePaths: safePaths, cleanSegment: cleanSegment, zipParts: zipParts
+};
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* Pack - page logic. Encryption 1 Suite, MIT License.
+   Files are read and encrypted in this browser tab. Nothing is uploaded. */
+(function () {
+'use strict';
+var UI_LANG = document.documentElement.lang || 'en';
+function T(key, vars) {
+  var s = I18N[key];
+  if (s == null) return key;
+  if (typeof s === 'object') {
+    var form = 'other';
+    try { form = new Intl.PluralRules(UI_LANG).select(vars && vars.n); } catch (e) {}
+    s = (s[form] != null) ? s[form] : s.other;
+  }
+  if (vars) for (var k in vars) s = s.split('{' + k + '}').join(String(vars[k]));
+  return s;
+}
+var $ = function (id) { return document.getElementById(id); };
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function num(n) { return Number(n).toLocaleString(UI_LANG); }
+function size(n) {
+  var u = ['B', 'KB', 'MB', 'GB', 'TB'], i = 0, v = n;
+  while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+  return (i ? v.toLocaleString(UI_LANG, { maximumFractionDigits: 1 }) : num(v)) + '\u00a0' + u[i];
+}
+function pct(a, b) { return b ? Math.min(100, Math.floor(a * 100 / b)) : 100; }
+function dateText(iso) { var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString(UI_LANG, { dateStyle: 'medium', timeStyle: 'short' }); }
+function show(el, on) { el.hidden = !on; }
+function msg(el, kind, html) { el.className = 'msg ' + kind; el.innerHTML = html; el.hidden = false; }
+var BIG = 1.5 * 1024 * 1024 * 1024;
+var canSaveFile = typeof window.showSaveFilePicker === 'function';
+var canSaveDir = typeof window.showDirectoryPicker === 'function';
+var busy = false;
+window.addEventListener('beforeunload', function (e) { if (busy) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ---------- tabs ---------- */
+function tab(which) {
+  var make = which === 'make';
+  $('tabMake').setAttribute('aria-selected', String(make)); $('tabOpen').setAttribute('aria-selected', String(!make));
+  show($('panelMake'), make); show($('panelOpen'), !make);
+}
+$('tabMake').addEventListener('click', function () { tab('make'); });
+$('tabOpen').addEventListener('click', function () { tab('open'); });
+
+/* ---------- saving helpers ---------- */
+// Collects pieces in memory; groups them into Blobs as it goes so the browser can move them out of the page's memory.
+function memorySink() {
+  var blobs = [], parts = [];
+  return {
+    write: function (b) { parts.push(b); if (parts.length >= 32) { blobs.push(new Blob(parts)); parts = []; } return Promise.resolve(); },
+    finish: function (type) { if (parts.length) { blobs.push(new Blob(parts)); parts = []; } return new Blob(blobs, { type: type || 'application/octet-stream' }); }
+  };
+}
+async function fileSink(handle) {
+  var w = await handle.createWritable();
+  return { write: function (b) { return w.write(b); }, close: function () { return w.close(); }, abort: function () { return w.abort().catch(function () {}); } };
+}
+function download(blob, name) {
+  var url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 120000);
+}
+async function askSaveFile(name) {
+  if (!canSaveFile) return null;
+  try { return await window.showSaveFilePicker({ suggestedName: name }); }
+  catch (e) { if (e && e.name === 'AbortError') throw e; return null; }   // not allowed here: fall back to a download
+}
+function fileReader(file) { return function (s, e) { return file.slice(s, e).arrayBuffer().then(function (b) { return new Uint8Array(b); }); }; }
+function isAbort(e) { return e && e.name === 'AbortError'; }
+function errText(e, ctx) {
+  var c = e && e.code;
+  if (c === 'readFailed') return ctx === 'open' ? T('errReadPkg') : T('errReadFailed', { name: esc(e.path || '') });
+  if (c === 'cancelled') return T(ctx === 'open' ? 'errCancelledOpen' : 'errCancelled');
+  if (c === 'tooMany') return T('tooMany', { max: num(PACK.MAX_ITEMS) });
+  if (c === 'noCrypto') return T('errNoCrypto');
+  if (c === 'wrongPassword') return T('errWrongPw');
+  if (c === 'damaged' || c === 'hashMismatch') return T('errDamaged');
+  if (c === 'notPack') return T('errNotPack');
+  if (c === 'newerVersion') return T('errNewer');
+  if (c === 'badHeader') return T('errBadHeader');
+  if (c === 'zipTooBig') return T('zipTooBig');
+  if (c === 'pvault') return T('errPvault', { link: '<a href="' + esc(MULTI_URL) + '">' + esc(T('pvaultLinkText')) + '</a>' });
+  if (e && (e.name === 'QuotaExceededError' || e.name === 'NotReadableError' || e instanceof RangeError)) return T('errMemory');
+  if (e && (e.name === 'NotAllowedError' || e.name === 'SecurityError')) return T('errNotAllowed');
+  return T('errGeneric', { error: esc((e && (e.message || e.name)) || e) });
+}
+function baseName(n) { return String(n || '').replace(/\.e1pack$/i, '') || 'package'; }
+function contentsText(name, created, items) {
+  var total = 0; items.forEach(function (it) { total += it.size; });
+  var lines = [T('listTitle'), T('listPackage', { name: name })];
+  if (created) lines.push(T('listCreated', { date: dateText(created) }));
+  lines.push(T('listFiles', { n: items.length, size: size(total) }), '');
+  items.forEach(function (it) { lines.push(it.path, '    ' + T('listSize', { bytes: num(it.size) }), '    SHA-256: ' + it.sha256, ''); });
+  lines.push(T('listNote'), '');
+  return new Blob([lines.join('\r\n')], { type: 'text/plain;charset=utf-8' });
+}
+
+/* ================= MAKE ================= */
+var sel = [], emptyDirs = [], userNamed = false, cancelMake = { aborted: false }, lastBlob = null;
+var SYSTEM = /^(\.DS_Store|Thumbs\.db|desktop\.ini|ehthumbs\.db)$/i;
+if (canSaveFile) show($('pickerNote'), true);
+if ('webkitdirectory' in document.createElement('input')) show($('addFolderBtn'), true);
+$('addFilesBtn').addEventListener('click', function () { $('filesIn').click(); });
+$('addFolderBtn').addEventListener('click', function () { $('folderIn').click(); });
+$('filesIn').addEventListener('change', function (e) { addFiles(Array.prototype.map.call(e.target.files || [], function (f) { return { file: f, path: f.name }; }), []); e.target.value = ''; });
+$('folderIn').addEventListener('change', function (e) {
+  addFiles(Array.prototype.map.call(e.target.files || [], function (f) { return { file: f, path: f.webkitRelativePath || f.name }; }), []);
+  e.target.value = '';
+});
+dropZone($('makeDrop'), async function (dt) {
+  var entries = [], loose = [];
+  if (dt.items && dt.items.length && typeof dt.items[0].webkitGetAsEntry === 'function') {
+    for (var i = 0; i < dt.items.length; i++) { var en = dt.items[i].webkitGetAsEntry && dt.items[i].webkitGetAsEntry(); if (en) entries.push(en); else { var f = dt.items[i].getAsFile && dt.items[i].getAsFile(); if (f) loose.push(f); } }
+  } else loose = Array.prototype.slice.call(dt.files || []);
+  var out = loose.map(function (f) { return { file: f, path: f.name }; }), dirs = [], failed = false;
+  for (var j = 0; j < entries.length; j++) { try { await walk(entries[j], '', out, dirs); } catch (err) { failed = true; } }
+  addFiles(out, dirs, failed);
+});
+function dropZone(el, onDrop) {
+  ['dragenter', 'dragover'].forEach(function (t) { el.addEventListener(t, function (e) { e.preventDefault(); el.classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (t) { el.addEventListener(t, function (e) { e.preventDefault(); el.classList.remove('over'); }); });
+  el.addEventListener('drop', function (e) { if (!busy) onDrop(e.dataTransfer); });
+}
+async function walk(entry, prefix, out, dirs) {
+  if (entry.isFile) {
+    var f = await new Promise(function (res, rej) { entry.file(res, rej); });
+    out.push({ file: f, path: prefix + f.name });
+  } else if (entry.isDirectory) {
+    var rd = entry.createReader(), all = [], batch;
+    do { batch = await new Promise(function (res, rej) { rd.readEntries(res, rej); }); all = all.concat(Array.prototype.slice.call(batch)); } while (batch.length);
+    var here = prefix + entry.name + '/';
+    if (!all.length) dirs.push(here);
+    for (var i = 0; i < all.length; i++) await walk(all[i], here, out, dirs);
+  }
+}
+function addFiles(list, dirs, failed) {
+  var have = Object.create(null), sys = 0, dup = 0, over = 0, added = 0;
+  sel.forEach(function (s) { have[s.path] = true; });
+  list.forEach(function (x) {
+    var p = String(x.path).replace(/^\/+/, ''), name = p.split('/').pop();
+    if (SYSTEM.test(name) || /(^|\/)__MACOSX\//.test(p)) { sys++; return; }
+    if (have[p]) { dup++; return; }
+    if (sel.length >= PACK.MAX_ITEMS) { over++; return; }
+    have[p] = true; sel.push({ file: x.file, path: p }); added++;
+  });
+  dirs.forEach(function (d) { if (emptyDirs.indexOf(d) < 0) emptyDirs.push(d); });
+  var notes = [];
+  if (failed) notes.push(T('readFolderFailed'));
+  if (sys) notes.push(T('skippedSys', { n: sys }));
+  if (dup) notes.push(T('skippedDup', { n: dup }));
+  if (over) notes.push(T('tooMany', { max: num(PACK.MAX_ITEMS) }));
+  if (notes.length) msg($('addMsg'), over || failed ? 'warn' : 'info', esc(notes.join(' '))); else show($('addMsg'), false);
+  if (added || dirs.length) { show($('makeResult'), false); if ($('nextStep')) show($('nextStep'), false); }
+  renderSel();
+}
+function groups() {
+  var g = [], at = Object.create(null);
+  sel.forEach(function (s) {
+    var parts = s.path.split('/'), top = parts[0], dir = parts.length > 1;
+    var k = (dir ? 'd:' : 'f:') + top;
+    if (!at[k]) { at[k] = { key: k, name: top, dir: dir, n: 0, bytes: 0 }; g.push(at[k]); }
+    at[k].n++; at[k].bytes += s.file.size;
+  });
+  emptyDirs.forEach(function (d) { var top = d.split('/')[0], k = 'd:' + top; if (!at[k]) { at[k] = { key: k, name: top, dir: true, n: 0, bytes: 0 }; g.push(at[k]); } });
+  return g;
+}
+function totalBytes() { var t = 0; sel.forEach(function (s) { t += s.file.size; }); return t; }
+function renderSel() {
+  var g = groups(), t = totalBytes();
+  show($('selBox'), g.length > 0);
+  $('selSummary').textContent = T('selSummary', { n: sel.length, size: size(t) });
+  $('selList').innerHTML = g.map(function (x) {
+    var meta = x.dir ? (x.n ? T('folderMeta', { n: x.n, size: size(x.bytes) }) : T('emptyFolder')) : size(x.bytes);
+    return '<div class="li"><span class="kind' + (x.dir ? ' dir' : '') + '">' + esc(T(x.dir ? 'kindFolder' : 'kindFile')) + '</span><span class="nm">' + esc(PACK.cleanSegment(x.name)) + '</span><span class="mt">' + esc(meta) + '</span><button type="button" class="small" data-remove="' + esc(x.key) + '">' + esc(T('remove')) + '</button></div>';
+  }).join('');
+  if (!canSaveFile && t > BIG) msg($('bigWarn'), 'warn', esc(T('bigWarn'))); else show($('bigWarn'), false);
+  if (!userNamed) $('pkgName').value = g.length === 1 ? PACK.cleanSegment(g[0].name) + '.e1pack' : 'package-' + new Date().toISOString().slice(0, 10) + '.e1pack';
+}
+$('selList').addEventListener('click', function (e) {
+  var k = e.target.getAttribute && e.target.getAttribute('data-remove'); if (!k || busy) return;
+  var dir = k.charAt(0) === 'd', top = k.slice(2);
+  sel = sel.filter(function (s) { var p = s.path.split('/'); return !(p[0] === top && (p.length > 1) === dir); });
+  if (dir) emptyDirs = emptyDirs.filter(function (d) { return d.split('/')[0] !== top; });
+  show($('addMsg'), false); renderSel();
+});
+$('clearListBtn').addEventListener('click', function () { if (busy) return; sel = []; emptyDirs = []; userNamed = false; show($('addMsg'), false); renderSel(); });
+$('pkgName').addEventListener('input', function () { userNamed = true; });
+
+/* ---------- password ---------- */
+function strength(p) {
+  var c = { len: p.length >= 8, up: /[A-Z]/.test(p), sym: /[^A-Za-z0-9]/.test(p), low: /[a-z]/.test(p), dig: /\d/.test(p), l12: p.length >= 12, l16: p.length >= 16 };
+  var s = (c.len ? 30 : 0) + (c.up ? 20 : 0) + (c.sym ? 20 : 0) + (c.low ? 10 : 0) + (c.dig ? 10 : 0) + (c.l12 ? 5 : 0) + (c.l16 ? 5 : 0);
+  var label = 'strengthVeryWeak', color = 'var(--danger)';
+  if (s >= 90) { label = 'strengthVeryStrong'; color = 'var(--success)'; } else if (s >= 70) { label = 'strengthStrong'; color = 'var(--success)'; }
+  else if (s >= 50) { label = 'strengthMedium'; color = 'var(--warn)'; } else if (s >= 30) { label = 'strengthWeak'; color = 'var(--warn)'; }
+  return { score: p ? s : 0, label: T(label), color: p ? color : 'var(--border)', c: c, ok: c.len && c.up && c.sym };
+}
+function updateStrength() {
+  var p = $('pw1').value, r = strength(p), miss = [];
+  $('meterFill').style.width = r.score + '%'; $('meterFill').style.background = r.color;
+  if (!r.c.len) miss.push(T('needLength')); if (!r.c.up) miss.push(T('needCapital')); if (!r.c.sym) miss.push(T('needSpecial'));
+  var list; try { list = new Intl.ListFormat(UI_LANG, { style: 'long', type: 'conjunction' }).format(miss); } catch (e) { list = miss.join(', '); }
+  $('strengthText').textContent = !p ? T('strengthEmpty') : r.ok ? T('strengthMet', { label: r.label }) : T('strengthMissing', { label: r.label, list: list });
+}
+function setVisible(on) { $('pw1').type = on ? 'text' : 'password'; $('pw2').type = on ? 'text' : 'password'; $('showBtn').textContent = T(on ? 'hide' : 'show'); $('showBtn').setAttribute('aria-pressed', String(on)); }
+$('showBtn').addEventListener('click', function () { setVisible($('pw1').type === 'password'); });
+$('pw1').addEventListener('input', updateStrength);
+// Same alphabet as the rest of the Suite; rejection sampling keeps every character equally likely.
+function randomIndex(n) { var lim = Math.floor(4294967296 / n) * n, a = new Uint32Array(1); do { crypto.getRandomValues(a); } while (a[0] >= lim); return a[0] % n; }
+$('genBtn').addEventListener('click', function () {
+  var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*-_=+', p = '';
+  do { p = ''; for (var i = 0; i < 24; i++) p += abc[randomIndex(abc.length)]; } while (!strength(p).ok);
+  $('pw1').value = p; $('pw2').value = p; setVisible(true); updateStrength();
+  msg($('makeErr'), 'info', esc(T('generated')));
+});
+setVisible(false); updateStrength();
+
+/* ---------- make ---------- */
+function makeStep(text, done, total) { $('makeStep').textContent = text; $('makeFill').style.width = (total ? pct(done, total) : 0) + '%'; }
+function lockMake(on) {
+  busy = on; show($('makeProg'), on);
+  ['makeBtn', 'addFilesBtn', 'addFolderBtn', 'clearListBtn', 'genBtn', 'pkgName', 'pw1', 'pw2'].forEach(function (id) { $(id).disabled = on; });
+}
+$('makeCancel').addEventListener('click', function () { cancelMake.aborted = true; $('makeCancel').disabled = true; });
+$('makeBtn').addEventListener('click', async function () {
+  show($('makeErr'), false); show($('makeResult'), false);
+  var p1 = $('pw1').value, p2 = $('pw2').value;
+  if (!window.crypto || !crypto.subtle) return msg($('makeErr'), 'err', esc(T('errNoCrypto')));
+  if (!sel.length) return msg($('makeErr'), 'err', esc(T('errNoFiles')));
+  if (!p1) return msg($('makeErr'), 'err', esc(T('errNoPw')));
+  if (p1 !== p2) return msg($('makeErr'), 'err', esc(T('errPwMatch')));
+  if (!strength(p1).ok) return msg($('makeErr'), 'err', esc(T('errPwWeak')));
+  var name = PACK.cleanSegment($('pkgName').value.trim() || 'package');
+  if (!/\.e1pack$/i.test(name)) name += '.e1pack';
+  var handle = null;
+  try { handle = await askSaveFile(name); } catch (e) { return; }          // they closed the save window
+  if (handle && handle.name) name = handle.name;
+  cancelMake = { aborted: false }; $('makeCancel').disabled = false;
+  lockMake(true); makeStep(T('stepKey'), 0, 0);
+  var sink = null, mem = null, total = totalBytes(), made, blob = null;
+  var items = sel.map(function (s) { return { path: s.path, size: s.file.size, type: s.file.type, lastModified: s.file.lastModified, read: fileReader(s.file) }; });
+  try {
+    sink = handle ? await fileSink(handle) : (mem = memorySink());
+    made = await PACK.create(items, p1, sink, {
+      dirs: emptyDirs.slice(), signal: cancelMake,
+      onProgress: function (d, t) { makeStep(T('stepEncrypt', { pct: pct(d, t), done: size(d), total: size(t) }), d, t); }
+    });
+    makeStep(T('stepSaving'), 1, 1);
+    if (handle) await sink.close(); else blob = mem.finish();
+  } catch (e) {
+    if (handle && sink && sink.abort) await sink.abort();
+    lockMake(false);
+    return msg($('makeErr'), 'err', errText(e, 'make'));
+  }
+  var checked = null;
+  if ($('verifyChk').checked) {
+    try {
+      var f = handle ? await handle.getFile() : blob;
+      makeStep(T('stepKeyCheck'), 0, 0);
+      var pk = await PACK.open(f.size, fileReader(f), p1, { signal: cancelMake }), done = 0;
+      if (pk.items.length !== made.sha256.length) throw Object.assign(new Error('count'), { code: 'damaged' });
+      for (var i = 0; i < pk.items.length; i++) {
+        var hx = await pk.readFile(i, null, function (d) { makeStep(T('stepCheck', { pct: pct(done + d, total) }), done + d, total); });
+        if (hx !== made.sha256[i] || pk.items[i].path !== items[i].path) throw Object.assign(new Error('mismatch'), { code: 'damaged' });
+        done += pk.items[i].size;
+      }
+      checked = true;
+    } catch (e) {
+      if (e && e.code === 'cancelled') checked = null; else checked = false;
+    }
+  }
+  lockMake(false);
+  var r = $('makeResult');
+  if (checked === false) {
+    r.className = 'card result bad';
+    r.innerHTML = '<h2>' + esc(T('checkFailedTitle')) + '</h2><p class="msg err">' + esc(handle ? T('checkFailedSaved', { name: name }) : T('checkFailedBlob')) + '</p>';
+    show(r, true); return;
+  }
+  if (!handle) { lastBlob = { blob: blob, name: name }; download(blob, name); }
+  var listItems = made.manifest.items.map(function (it, i) { return { path: it.p, size: it.s, sha256: made.sha256[i] }; });
+  var created = made.manifest.created, nameForList = name;
+  r.className = 'card result';
+  r.innerHTML = '<h2>' + esc(T('doneTitle')) + '</h2>' +
+    '<p style="margin:0">' + esc(T('doneSaved', { n: items.length, name: name, size: size(made.size) })) + '</p>' +
+    '<p class="msg ' + (checked ? 'ok' : 'info') + '">' + esc(checked ? T('doneChecked', { n: items.length }) : T($('verifyChk').checked ? 'doneCheckStopped' : 'doneNotChecked')) + '</p>' +
+    '<div class="bar">' + (handle ? '' : '<button type="button" id="againBtn">' + esc(T('downloadAgain')) + '</button>') +
+    '<button type="button" id="listBtn">' + esc(T('saveList')) + '</button></div>' +
+    '<p class="hint">' + esc(T('saveListNote')) + '</p><p class="hint">' + esc(T('clearedNote')) + '</p>';
+  show(r, true);
+  if ($('againBtn')) $('againBtn').addEventListener('click', function () { if (lastBlob) download(lastBlob.blob, lastBlob.name); });
+  $('listBtn').addEventListener('click', function () { download(contentsText(nameForList, created, listItems), baseName(nameForList) + '-' + T('listSuffix') + '.txt'); });
+  if ($('nextStep')) show($('nextStep'), true);
+  // Clear the password and the file list once the package is made.
+  $('pw1').value = ''; $('pw2').value = ''; setVisible(false); updateStrength(); show($('makeErr'), false);
+  sel = []; emptyDirs = []; userNamed = false; show($('addMsg'), false); renderSel();
+});
+
+/* ================= OPEN ================= */
+var pkgFile = null, pkg = null, safe = [], cancelOpen = { aborted: false };
+$('chooseBtn').addEventListener('click', function () { $('pkgIn').click(); });
+$('pkgIn').addEventListener('change', function (e) { if (e.target.files && e.target.files[0]) pickPkg(e.target.files[0]); e.target.value = ''; });
+dropZone($('openDrop'), function (dt) { var f = dt.files && dt.files[0]; if (f) pickPkg(f); });
+function pickPkg(f) {
+  closePkg(); pkgFile = f; show($('openErr'), false);
+  $('openPicked').innerHTML = esc(T('picked', { name: f.name, size: size(f.size) }));
+  $('openPw').focus();
+}
+function lockOpen(on) {
+  busy = on; show($('openProg'), on);
+  ['openBtn', 'chooseBtn', 'openPw', 'closeBtn'].forEach(function (id) { $(id).disabled = on; });
+  Array.prototype.forEach.call(document.querySelectorAll('#saveBar button, #openList button'), function (b) { b.disabled = on; });
+}
+function openStep(text, done, total) { $('openStep').textContent = text; $('openFill').style.width = (total ? pct(done, total) : 0) + '%'; }
+$('openCancel').addEventListener('click', function () { cancelOpen.aborted = true; $('openCancel').disabled = true; });
+$('openPw').addEventListener('keydown', function (e) { if (e.key === 'Enter') $('openBtn').click(); });
+$('openBtn').addEventListener('click', async function () {
+  show($('openErr'), false);
+  if (!window.crypto || !crypto.subtle) return msg($('openErr'), 'err', esc(T('errNoCrypto')));
+  if (!pkgFile) return msg($('openErr'), 'err', esc(T('openNeedFile')));
+  var pw = $('openPw').value;
+  if (!pw) return msg($('openErr'), 'err', esc(T('openNeedPw')));
+  $('openBtn').disabled = true; msg($('openErr'), 'info', esc(T('stepOpening')));
+  try {
+    cancelOpen = { aborted: false };
+    pkg = await PACK.open(pkgFile.size, fileReader(pkgFile), pw, { signal: cancelOpen });
+  } catch (e) {
+    pkg = null; $('openBtn').disabled = false;
+    return msg($('openErr'), 'err', errText(e, 'open'));
+  }
+  $('openBtn').disabled = false; show($('openErr'), false);
+  $('openPw').value = '';
+  safe = PACK.safePaths(pkg.items.map(function (it) { return it.path; }));
+  renderContents();
+});
+var MAX_ROWS = 500;
+function renderContents() {
+  var n = pkg.items.length;
+  $('openSummary').textContent = T('openSummary', { n: n, size: size(pkg.total), date: dateText(pkg.created) }) + (pkg.dirs.length ? ' ' + T('emptyFolders', { n: pkg.dirs.length }) : '');
+  var bar = '';
+  if (n === 1) bar = '<button type="button" class="primary" data-act="one">' + esc(T('saveOne')) + '</button>';
+  else {
+    if (canSaveDir) bar += '<button type="button" class="primary" data-act="folder">' + esc(T('saveAllFolder')) + '</button>';
+    bar += '<button type="button"' + (canSaveDir ? '' : ' class="primary"') + ' data-act="zip">' + esc(T('saveAllZip')) + '</button>';
+  }
+  bar += '<button type="button" data-act="list">' + esc(T('saveList')) + '</button>';
+  $('saveBar').innerHTML = bar;
+  show($('folderHelp'), n > 1 && canSaveDir);
+  var rows = pkg.items.slice(0, MAX_ROWS).map(function (it, i) {
+    return '<div class="li"><span class="nm">' + esc(safe[i]) + '</span><span class="mt">' + esc(size(it.size)) + '</span><button type="button" class="small" data-save="' + i + '">' + esc(T('save')) + '</button></div>';
+  }).join('');
+  if (n > MAX_ROWS) rows += '<div class="li"><span class="nm hint">' + esc(T('moreRows', { n: n - MAX_ROWS })) + '</span></div>';
+  $('openList').innerHTML = rows;
+  show($('openMsg'), false); show($('contents'), true); show($('openCard'), false);
+  if ($('openNext')) show($('openNext'), true);
+}
+function closePkg() {
+  pkg = null; safe = []; show($('contents'), false); show($('openCard'), true);
+  $('openList').innerHTML = ''; $('saveBar').innerHTML = '';
+  if ($('openNext')) show($('openNext'), false);
+}
+$('closeBtn').addEventListener('click', function () {
+  closePkg(); pkgFile = null; $('openPicked').textContent = T('closedNote');
+});
+$('saveBar').addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('button'); if (!b || busy || !pkg) return;
+  var act = b.getAttribute('data-act');
+  if (act === 'one') saveOne(0);
+  else if (act === 'folder') saveFolder();
+  else if (act === 'zip') saveZip();
+  else if (act === 'list') download(contentsText(pkgFile.name, pkg.created, pkg.items.map(function (it, i) { return { path: safe[i], size: it.size, sha256: it.sha256 }; })), baseName(pkgFile.name) + '-' + T('listSuffix') + '.txt');
+});
+$('openList').addEventListener('click', function (e) {
+  var i = e.target.getAttribute && e.target.getAttribute('data-save'); if (i == null || busy || !pkg) return;
+  saveOne(+i);
+});
+function fileName(i) { return safe[i].split('/').pop(); }
+async function run(job) {
+  cancelOpen = { aborted: false }; $('openCancel').disabled = false;
+  show($('openMsg'), false); lockOpen(true);
+  try { var ok = await job(); if (ok) msg($('openMsg'), 'ok', esc(ok)); }
+  catch (e) {
+    if (isAbort(e)) { show($('openMsg'), false); }
+    else if (e && e.atName && (e.code === 'damaged' || e.code === 'hashMismatch')) msg($('openMsg'), 'err', esc(T('errDamagedPart', { name: e.atName })));
+    else msg($('openMsg'), 'err', errText(e, 'open'));
+  }
+  finally { lockOpen(false); }
+}
+function tag(e, i) { if (e && typeof e === 'object' && !e.atName) e.atName = safe[i]; return e; }
+async function saveOne(i) {
+  var name = fileName(i), it = pkg.items[i];
+  var handle = null;
+  try { handle = await askSaveFile(name); } catch (e) { return; }
+  await run(async function () {
+    if (handle) {
+      var s = await fileSink(handle);
+      try { await pkg.readFile(i, function (p) { return s.write(p); }, function (d) { openStep(T('stepExtract', { name: name, pct: pct(d, it.size) }), d, it.size); }); await s.close(); }
+      catch (e) { await s.abort(); throw e; }
+    } else {
+      var parts = [];
+      await pkg.readFile(i, function (p) { parts.push(p.slice()); }, function (d) { openStep(T('stepExtract', { name: name, pct: pct(d, it.size) }), d, it.size); });
+      download(new Blob(parts, { type: it.type || 'application/octet-stream' }), name);
+    }
+    return T('savedOne', { name: name });
+  });
+}
+async function saveFolder() {
+  var parent;
+  try { parent = await window.showDirectoryPicker({ mode: 'readwrite' }); } catch (e) { if (!isAbort(e)) msg($('openMsg'), 'err', esc(T('folderWrongPerm'))); return; }
+  await run(async function () {
+    var base = PACK.cleanSegment(baseName(pkgFile.name)), folder = base, n = 2;
+    while (true) {
+      try { await parent.getDirectoryHandle(folder); folder = base + ' (' + n++ + ')'; }
+      catch (e) { if (e && e.name === 'NotFoundError') break; if (e && e.name === 'TypeMismatchError') { folder = base + ' (' + n++ + ')'; continue; } throw e; }
+    }
+    var root;
+    try { root = await parent.getDirectoryHandle(folder, { create: true }); } catch (e) { throw Object.assign(new Error('perm'), { name: 'NotAllowedError' }); }
+    var cache = Object.create(null);
+    async function dirFor(segs) {
+      var h = root, key = '';
+      for (var j = 0; j < segs.length; j++) { key += '/' + segs[j]; if (!cache[key]) cache[key] = await h.getDirectoryHandle(segs[j], { create: true }); h = cache[key]; }
+      return h;
+    }
+    var dirSafe = PACK.safePaths(pkg.dirs);
+    for (var d = 0; d < dirSafe.length; d++) await dirFor(dirSafe[d].split('/'));
+    var total = pkg.total, done = 0, count = pkg.items.length;
+    for (var i = 0; i < count; i++) {
+      var segs = safe[i].split('/'), nm = segs.pop(), it = pkg.items[i];
+      var dh = await dirFor(segs), fh = await dh.getFileHandle(nm, { create: true }), s = await fileSink(fh);
+      try {
+        await pkg.readFile(i, function (p) { return s.write(p); }, function (x) { openStep(T('stepFile', { i: i + 1, n: count, name: nm }), done + x, total); });
+        await s.close();
+      } catch (e) { await s.abort(); try { await dh.removeEntry(nm); } catch (x) {} throw tag(e, i); }
+      done += it.size;
+    }
+    return T('savedFolder', { n: count, folder: folder });
+  });
+}
+async function saveZip() {
+  if (pkg.total + pkg.items.length * 200 > PACK.ZIP_LIMIT || pkg.items.length + pkg.dirs.length > 65534) return msg($('openMsg'), 'err', esc(T('zipTooBig')));
+  await run(async function () {
+    var entries = [], total = pkg.total, done = 0, count = pkg.items.length;
+    PACK.safePaths(pkg.dirs).forEach(function (d) { entries.push({ name: d, dir: true, modified: Date.now() }); });
+    for (var i = 0; i < count; i++) {
+      var it = pkg.items[i], crc = new PACK.Crc32(), mem = memorySink();
+      try {
+        await pkg.readFile(i, function (p) { crc.update(p); return mem.write(p.slice()); }, function (x) { openStep(T('stepZip', { i: i + 1, n: count }), done + x, total); });
+      } catch (e) { throw tag(e, i); }
+      entries.push({ name: safe[i], size: it.size, crc: crc.value(), modified: it.modified, data: mem.finish() });
+      done += it.size;
+    }
+    var zipName = baseName(pkgFile.name) + '.zip';
+    download(new Blob(PACK.zipParts(entries), { type: 'application/zip' }), zipName);
+    return T('savedZip', { name: zipName });
+  });
+}
+})();
+</script>
+</body>
+</html>
