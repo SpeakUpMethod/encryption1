@@ -57,18 +57,18 @@ TRANSPARENCY AND TRUST
 		Use it offline if preferred
 	There are no hidden processes, tracking mechanisms, or server interactions.
 
-BACKGROUND
-Encryption 1 was originally developed between 1998 and 2001 as a desktop application using algorithms such as:
-Blowfish
-Skipjack
-TEA (Tiny Encryption Algorithm)
-This online version reflects a modern evolution of that work, using current cryptographic standards and browser capabilities to give users direct control over their own data and privacy.
-
+UPDATES AS OF OCTOBER 30 2026: 
+This release adds five new tools in public beta. 
+Reveal finds hidden characters and lookalike letters. 
+Split divides a secret into shares using Shamir’s Secret Sharing. 
+Redact blacks out parts of images and text and checks that nothing underneath survives in the saved file. 
+Pack encrypts whole files and folders into a single package. 
+File Truth checks what a file really is, regardless of its name. 
+Existing tools were also hardened, partly in response to an independent cybersecurity review. Password and passphrase generation now uses rejection sampling instead of modulo selection, which removes a small statistical bias. Token adds SHA-256 and SHA-512 support and stricter validation of setup links. Burn checks the key in the link before contacting the server, and the server now securely deletes data and forbids caching. Scrub now also removes PDF XMP metadata. Vault gains auto-lock, automatic clipboard clearing and an unsaved-changes warning. The three flagship tools now clear text and passwords from the page once encryption finishes. As always, the code is MIT-licensed, and feedback, issues and pull requests are welcome.
 🌐 Philosophy
 This tool reflects a simple idea: Your privacy is YOURS.
 
 👤 Author
 Seán L. Young
-YLCLearning Systems
-sean@speakupmethod.com
-https://www.speakupmethod.com
+seanlyoung@encryption-one.com
+https://www.encryption-one.com
